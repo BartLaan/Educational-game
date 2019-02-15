@@ -1,0 +1,24 @@
+{
+  "name": "Educational-game",
+  "version": "1.0.0",
+  "description": "Test repo for small educational game using phaser",
+  "main": "index.js",
+  "dependencies": {
+    "phaser": "^3.12.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonathan-gerb/Educational-game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jonathan-gerb/Educational-game/issues"
+  },
+  "homepage": "https://github.com/jonathan-gerb/Educational-game#readme"
+}
