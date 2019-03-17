@@ -1,37 +1,29 @@
-let exampleStack = [
-	{
-		func: "step",
-	},
-	{
-		func: "if",
-		condition: function(){ return !ossie.facingWall() },
-		do: [
-			{ func: "step" }
-		],
-		else: [
-			{ func: "turnL" }
-		],
-	},
-	{
-		func: "for",
-		limit: 3,
-		do: [
-			{ func: "step" },
-			{ func: "step" },
-			{ func: "turnR" },
-		],
+EVENT_OSSIEPOS_CHANGE = 'EVENT_OSSIEPOS_CHANGE'
+EVENT_RESET = 'EVENT_RESET'
+EVENT_START = 'EVENT_START'
+EVENT_WALKINTOWALL = 'EVENT_WALKINTOWALL'
+EVENT_WIN = 'EVENT_WIN'
 
-	}
-];
-
-let exampleNodes = [
-	
-]
-
-function Ossie(nodes, allowedFuncs) {
+// Constructor for Ossie game instance
+//	nodes should be an object with nodes (documentated more detailed in utils.js)
+//	initPosition should be an object containing the index of the node ossie starts on, and the direction he is facing
+//	config should be an object specifying config values to be overriden. Possible values are:
+//		allowedFuncs: array of functions that the player is allowed to use. Default is every entry in programSpecs
+//		timing: time in ms to wait before executing next programming block
+//		secretLimit: limit for unlimited while loops before game automatically stops
+function Ossie(nodes, initPosition, onEvent, config) {
 	this.nodes = nodes;
-	this.allowedFuncs = allowedFuncs !== undefined ? allowedFuncs : Object.keys(ossie.programSpecs);
-	ossie.loadSprites();
+	this.initPosition = initPosition;
+	this.ossiePos = initPosition;
+	this.onEvent onEvent;
+
+	if (config !== undefined) {
+		for (key in config) {
+			this[key] = config[key];
+		}
+	}
+
+	// this.loadSprites();
 };
 
 Ossie.prototype.programSpecs = {
@@ -50,7 +42,7 @@ Ossie.prototype.programSpecs = {
 			'do' // Stack to execute repeatedly
 		],
 		optional: [
-			'limit' // Maximum amount of iterations of "do" stack
+			'counts' // Maximum amount of iterations of "do" stack
 		],
 	},
 
@@ -58,128 +50,168 @@ Ossie.prototype.programSpecs = {
 	step: { required: [], optional: [] },
 	turnL: { required: [], optional: [] },
 	turnR: { required: [], optional: [] },
-	turn: {
+	turnDegrees: {
 		required: [
-			'degrees' // Degrees to turn by, handled clockwise. E.g. turn 90 is the same as turnR
+			'degrees' // Degrees to turn by, handled clockwise. E.g. turn 90 is equal to turnR
 		],
 		optional: []
 	}
 }
 
-Ossie.prototype.gameStart = function() {
-	// disableInteraction();
+Ossie.prototype.allowedFuncs = Object.keys(Ossie.prototype.programSpecs);
+Ossie.prototype.timing = 300;
+Ossie.prototype.secretLimit = 20;
 
-	let timer = setInterval(function(){
-		console.log(stack);
-
-		if (stack.length === 0) { return false }
-
-		let next = stack.shift();
-		executeStack(next);
-
-		if (ossie.betweenIters() || ossie.stack.length > 0) {
-			clearInterval(timer);
-		}
-	}, 500);
-
-	// enableInteraction();
+Ossie.prototype.addToStack = function(stackItem) {
+	this.stack.push(stackItem);
+	this.debugStackItem(stackItem);
 }
 
-Ossie.prototype.executeStack = function(stackItem) {
-	debugStackItem(stackItem);
-	if (ossie.allowedFuncs.indexOf(stackItem.func) == -1) {
-		console.error('Stack contains unallowed item "' + stackItem.funct + '"');
+Ossie.prototype.getPosition = function() {
+	return this.ossiePos;
+}
+
+Ossie.prototype.reset = function() {
+	this.stack = [];
+	this.ossiePos = this.initPosition;
+	this.onEvent(EVENT_RESET);
+}
+
+Ossie.prototype.step = function() {
+	let newNode = this.nodes[this.ossiePos.nodeLocation][this.ossiePos.orientation];
+	if (newNode !== undefined) {
+		this.ossiePos.nodeLocation = newNode;
+		this.onEvent(EVENT_OSSIEPOS_CHANGE);
+	} else {
+		this.onEvent(EVENT_WALKINTOWALL);
+		console.log("BONK, you walked into a wall");
+	}
+}
+
+Ossie.prototype.facingWall = function() {
+	let node = this.nodes[this.ossiePos.nodeLocation];
+	return node[this.ossiePos.orientation] === undefined;
+}
+
+Ossie.prototype.pathExistsTo = function(direction) {
+	let node = this.nodes[this.ossiePos.nodeLocation];
+	return node[direction] !== undefined;
+}
+
+Ossie.prototype.turnClock = function(clockWise) {
+	let cardinals = ['north', 'east', 'south', 'west'];
+	let shift = clockWise ? cardinals.length - 1 : 1; // 3 = -1 when doing modulo operation
+
+	let orientationIdx = cardinals.indexOf(this.ossiePos.orientation);
+	let newOrientationIdx = (orientationIdx + shift) % (cardinals.length - 1);
+
+	this.ossiePos.orientation = cardinals[newOrientationIdx];
+	this.onEvent(EVENT_OSSIEPOS_CHANGE);
+}
+Ossie.prototype.turnL = function() { this.turnClock(false); }
+Ossie.prototype.turnR = function() { this.turnClock(true); }
+
+Ossie.prototype.turnDegrees = function(degrees) {
+	if (typeof degrees != 'number') { return console.error('I want a number here, not a string or degrees') }
+	this.ossiePos.orientation = this.ossiePos.orientation + degrees;
+}
+
+Ossie.prototype.gameStart = function() {
+	this.onEvent(EVENT_START);
+	this.stackExecute(this.stack, []);
+}
+
+Ossie.prototype.gameEnd = function() {
+	if (this.nodes[this.ossiePos.nodeLocation].goal){
+		this.onEvent(EVENT_WIN);
+		console.log('won');
+		return;
+	}
+	// this.reset();
+}
+
+//
+Ossie.prototype.stackExecute = function(stack, callbackStacks) {
+	// console.log('Stack execute:', stack.length, callbackStacks.length);
+	let newStack = stack.length > 0 ? stack : callbackStacks.shift();
+
+	if (newStack === undefined || newStack.length == 0) {
+		return this.gameEnd();
+	}
+
+	let me = this;
+	setTimeout(function(){
+		me.executeStackItem(newStack, callbackStacks);
+		console.log(JSON.stringify(me.ossiePos));
+		// console.log(d, JSON.stringify(stacks.stack));
+	}, this.timing)
+}
+
+// Execute a stack item. Returns true if player enters win condition
+Ossie.prototype.executeStackItem = function(stack, callbackStacks) {
+	let stackItem = stack[0];
+	this.debugStackItem(stackItem);
+
+	if (stackItem.func !== "for") {
+		stack.shift();
 	}
 
 	switch (stackItem.func) {
 		case "if":
-			if (stackItem.condition()) {
-				stackExecute(stackItem.do);
+			callbackStacks.unshift(stack);
+			if (stackItem.condition(this)) {
+				return this.stackExecute(stackItem.do, callbackStacks);
 			} else if (stackItem.else !== undefined) {
-				stackExecute(stackItem.else);
+				return this.stackExecute(stackItem.else, callbackStacks);
 			}
 			break;
 
 		case "for":
-			if (stackItem.limit !== undefined) {
-				for (let i = 0; i < stackItem.limit; i++) {
-					if (stackExecute(stackItem.do)) { return true }
-				}
-			} else {
-				let secretLimit = 361;
-				while (true) {
-					stackExecute(stackItem.do);
-				}
+			stackItem.counts -= 1;
+			if (stackItem.counts == 0) {
+				stack.shift();
 			}
-			break;
+			callbackStacks.unshift(stack);
+
+			let forStack = Utils.deepCopy(stackItem.do);
+			return this.executeStackItem(forStack, callbackStacks);
 
 		case "step":
-			ossie.step();
+			this.step();
 			break;
 
 		case "turnL":
+			this.turnL();
+			break;
 		case "turnR":
-			ossie.turnSide(stackItem.func === "turnL" ? 'left' : 'right');
+			this.turnR();
 			break;
 
 		case "turn":
-			ossie.turnDegrees(stackItem.degrees);
-
-		default:
-			ossie.action(stackItem.func);
+			this.turnDegrees(stackItem.degrees);
 			break;
-
 	}
 
-	return true;
+	return this.stackExecute(stack, callbackStacks);
 }
 
 Ossie.prototype.debugStackItem = function(stackItem) {
+	console.log('Executing stack item: ', stackItem.func);
 	if (stackItem.func === undefined) {
 		console.error('Stack error: No action name');
 		return false;
 	}
-	if (programSpecs[stackItem.func] === undefined) {
+	if (this.programSpecs[stackItem.func] === undefined) {
 		console.error('Stack error: Unrecognized action name "' + stackItem.func + '"');
 		return false;
 	}
-	for (requirement of programSpecs[stackItem.func]) {
+	for (let requirement of this.programSpecs[stackItem.func].required) {
 		if (stackItem[requirement] === undefined) {
 			console.error('Stack error: action "' + stackItem.func + '" missing required property "' + requirement + '"');
 			return false;
 		}
 	}
-}
-
-Ossie.prototype.loadSprites = function(phaser) {
-	phaser.load.image('background', 'assets/1-achtergrond.jpg');
-	phaser.load.image('stap', 'assets/stap.png');
-	phaser.load.image('open', 'assets/open.png');
-	phaser.load.image('opnieuw', 'assets/opnieuw.png');
-	phaser.load.image('sluit', 'assets/sluit.jpg');
-	phaser.load.image('uitvoeren', 'assets/uitvoeren.png');
-	phaser.load.image('oeps', 'assets/oeps.jpg');
-	phaser.load.image('ossie', 'assets/ossie.png');
-	// phaser.load.image('vraagteken', 'assets/vraagteken.png');
-	phaser.load.image('victory', 'assets/placeholder_victory.png');
-	phaser.load.image('victory-hover', 'assets/placeholder_victory-hover.png');
-
-	// hover textures
-	phaser.load.image('opnieuw-hover', 'assets/opnieuw-hover.png');
-	phaser.load.image('open-hover', 'assets/open-hover.png');
-	phaser.load.image('uitvoeren-hover', 'assets/uitvoeren-hover.png');
-	phaser.load.image('stap-hover', 'assets/stap-hover.png');
-	phaser.load.image('sluit-hover', 'assets/sluit-hover.png');
-
-	phaser.load.image('0', 'assets/0.png');
-	phaser.load.image('one', 'assets/1.png');
-	phaser.load.image('2', 'assets/2.png');
-	phaser.load.image('3', 'assets/3.png');
-	phaser.load.image('4', 'assets/4.png');
-	phaser.load.image('5', 'assets/5.png');
-	phaser.load.image('6', 'assets/6.png');
-	phaser.load.image('7', 'assets/7.png');
-	phaser.load.image('8', 'assets/8.png');
-	phaser.load.image('nine', 'assets/9.png');
-	phaser.load.image('slash', 'assets/slash.png');
+	if (this.allowedFuncs.indexOf(stackItem.func) == -1) {
+		console.error('Stack contains unallowed item "' + stackItem.funct + '"');
+	}
 }

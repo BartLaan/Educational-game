@@ -1,41 +1,65 @@
-let exampleRepr = [
-	[1,1,1,0,0],
-	[0,0,1,0,0],
-	[0,1,0,0,0],
-	[0,2,0,0,0],
-]
+Utils = {};
 
-// WIDTH/COLUMNS FIRST
-function coordToStr(x, y) {
-	return x.toString() + ':' + y.toString();
+Utils.deepCopy = function(object) {
+	let result = {};
+	// array
+	if (object.length !== undefined) {
+		result = [];
+		for (let item of object) {
+			let newItem = (typeof item == 'object') ? Utils.deepCopy(item) : item;
+			result.push(newItem)
+		}
+		return result;
+	}
+
+	for (let key in object) {
+		let item = object[key];
+		let newItem = (typeof item == 'object') ? Utils.deepCopy(item) : item;
+		result[key] = newItem;
+	}
+	return result;
 }
 
-function strToCoord(coordStr) {
-	let coords = coordStr.split(':');
-	let x = parseInt(coords[0], 10);
-	let y = parseInt(coords[1], 10);
-	return [x, y];
+// WIDTH/COLUMNS FIRST, START AT 0,0
+Utils.coordToStr = function(x, y) {
+	return x.toString() + ',' + y.toString();
 }
 
-function boardToNodes(board) {
+Utils.strToCoord = function(coordStr) {
+	let coords = coordStr.split(',');
+	return {
+		x: parseInt(coords[0], 10),
+		y: parseInt(coords[1], 10),
+	}
+}
+
+Utils.boardToNodes = function(board) {
 	let nodes = {};
-
-	for (y of board) {
-		for (x of row) {
-			let nodeName = coordToStr(x, y);
+	console.log(board);
+	for (let y in board) {
+		y = parseInt(y, 10);
+		for (let x in board[y]) {
+			x = parseInt(x, 10);
+			if (board[y][x] == 0) {
+				continue;
+			}
+			let nodeName = Utils.coordToStr(x, y);
 			let node = {};
 
-			if (y > 0) {
-				node.north = coordToStr(x, y - 1);
+			if (y > 0 && board[y - 1][x] != 0) {
+				node.north = Utils.coordToStr(x, y - 1);
 			}
-			if (y - 1 < board.length) {
-				node.south = coordToStr(x, y + 1);
+			if (y + 1 < board.length && board[y + 1][x] != 0) {
+				node.south = Utils.coordToStr(x, y + 1);
 			}
-			if (x > 0) {
-				node.west = coordToStr(x - 1, y);
+			if (x > 0 && board[y][x - 1] != 0) {
+				node.west = Utils.coordToStr(x - 1, y);
 			}
-			if (x - 1 < row.length) {
-				node.east = coordToStr(x + 1, y);
+			if (x + 1 < board[y].length && board[y][x + 1] != 0) {
+				node.east = Utils.coordToStr(x + 1, y);
+			}
+			if (board[y][x] == 2) {
+				node.goal = true;
 			}
 
 			nodes[nodeName] = node;
@@ -44,31 +68,36 @@ function boardToNodes(board) {
 	return nodes;
 }
 
-function resizeBoard(board, minSize) {
+Utils.resizeBoard = function(board, minSize) {
 
-	let size = [board.length > 0 ? board[0].length : 0, board.length];
+	let size = {
+		x: board[0].length - 1,
+		y: board.length - 1
+	};
 
-	while (minSize[1] > size[1]) {
+	while (minSize[1] > size.y) {
 		board.push[[]];
-		size[1] = size[1] + 1;
-		while (board[size[1]].length < size[0]) {
-			board[size[1]].push([1]);
+		size.y = size.y + 1;
+		while (board[size.y].length < size.x) {
+			board[size.y].push([0]);
 		}
 	}
 	while (minSize[0] > size[0]) {
-		size[0] = size[0] + 1;
+		size.x = size.x + 1;
 		for (row in board) {
 			board[row].push([0])
 		}
 	}
+
+	return board;
 }
 
-function nodesToBoard(nodes) {
+Utils.nodesToBoard = function(nodes) {
 	let board = [[0]];
 	for (node of nodes) {
-		let tile = strToCoord(node);
+		let tile = Utils.strToCoord(node);
 		// Resize board if necessary
-		board = resizeBoard(board, tile);
+		board = Utils.resizeBoard(board, tile);
 		board[tile[1]][tile[0]] = 1;
 	}
 	return board;

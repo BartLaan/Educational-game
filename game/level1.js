@@ -10,38 +10,7 @@ var level1 = new Phaser.Class({
     },
 
     preload: function ()
-    {
-        // REPLACE THIS WITH SPRITESHEET
-        this.load.image('background', 'assets/1-achtergrond.jpg');
-        this.load.image('stap', 'assets/stap.png');
-        this.load.image('open', 'assets/open.png');
-        this.load.image('opnieuw', 'assets/opnieuw.png');
-        this.load.image('sluit', 'assets/sluit.jpg');
-        this.load.image('uitvoeren', 'assets/uitvoeren.png');
-        this.load.image('oeps', 'assets/oeps.jpg');
-        this.load.image('ossie', 'assets/ossie.png');
-        // this.load.image('vraagteken', 'assets/vraagteken.png');
-        this.load.image('victory', 'assets/placeholder_victory.png');
-        this.load.image('victory-hover', 'assets/placeholder_victory-hover.png');
-
-        // hover textures
-        this.load.image('opnieuw-hover', 'assets/opnieuw-hover.png');
-        this.load.image('open-hover', 'assets/open-hover.png');
-        this.load.image('uitvoeren-hover', 'assets/uitvoeren-hover.png');
-        this.load.image('stap-hover', 'assets/stap-hover.png');
-        this.load.image('sluit-hover', 'assets/sluit-hover.png');
-
-        this.load.image('0', 'assets/0.png');
-        this.load.image('one', 'assets/1.png');
-        this.load.image('2', 'assets/2.png');
-        this.load.image('3', 'assets/3.png');
-        this.load.image('4', 'assets/4.png');
-        this.load.image('5', 'assets/5.png');
-        this.load.image('6', 'assets/6.png');
-        this.load.image('7', 'assets/7.png');
-        this.load.image('8', 'assets/8.png');
-        this.load.image('nine', 'assets/9.png');
-        this.load.image('slash', 'assets/slash.png');
+        window.loadSprites(this);
     },
 
     create: function ()
@@ -56,15 +25,15 @@ var level1 = new Phaser.Class({
 
         // this was done by trial and error, sorry bout that
         var stepsize_horizontal = window.innerHeight / 9.9
-        var stepsize_vertical = window.innerHeight / 9.9       
-        
+        var stepsize_vertical = window.innerHeight / 9.9
+
         // ================================================================
         // PREPARING ASSETS
         // ================================================================
 
         var background = this.add.image(width/2, height/2, 'background')
         background.setDisplaySize(width, height)
-        
+
         var player = this.add.sprite(0, 0, 'ossie')
         playerscaling = 0.15 * scalingfactor
         player.setDisplaySize(player.width * playerscaling, player.height * playerscaling)
@@ -81,7 +50,7 @@ var level1 = new Phaser.Class({
         sluitscaling = 1.0 * scalingfactor
         sluit.setDisplaySize(sluit.width * sluitscaling, sluit.height * sluitscaling)
 
-        
+
         var stapbuttons  = []
         for (var i = 0; i < 20; i++) {
             let stap = this.add.sprite(0, 0, "stap")
@@ -90,7 +59,7 @@ var level1 = new Phaser.Class({
             stap.setDepth(2)
             stapbuttons.push(stap)
         }
-        
+
 
         var uitvoeren = this.add.sprite(0, 0, "uitvoeren")
         uitvoerenscaling = 1.0 * scalingfactor
@@ -103,7 +72,7 @@ var level1 = new Phaser.Class({
         // var vraagteken = this.add.sprite(0, 0, "vraagteken")
         // vraagtekenscaling = 1.1 * scalingfactor
         // vraagteken.setDisplaySize(vraagteken.width * vraagtekenscaling, vraagteken.height * vraagtekenscaling)
-        
+
         var slash = this.add.sprite(0, 0, "slash")
         slashscaling = 1.1 * scalingfactor
         slash.setDisplaySize(slash.width * slashscaling, slash.height * slashscaling)
@@ -125,7 +94,7 @@ var level1 = new Phaser.Class({
 
         stapbuttons.forEach(function(element) {
             Phaser.Display.Align.In.Center(element, background);
-            element.x += width/5.2 
+            element.x += width/5.2
             element.y += height/4.5
             element.data = {"command":"stap", "id":i}
             element.setOrigin(0)
@@ -164,7 +133,7 @@ var level1 = new Phaser.Class({
         one.y += height/ 6.4
         levelcount.x -= width/ 30
         levelcount.y += height/ 6.4
-        
+
         open.setOrigin(0)
         sluit.setOrigin(0)
 
@@ -176,7 +145,7 @@ var level1 = new Phaser.Class({
         opnieuw.setInteractive()
 
         // ================================================================
-        // PREPARING DEFAULT GAME INTERACTIONS  
+        // PREPARING DEFAULT GAME INTERACTIONS
         // ================================================================
 
         var zone = this.add.zone(0, 0, width/4, height/1.3).setRectangleDropZone(width/4, height/1.3);
@@ -189,7 +158,7 @@ var level1 = new Phaser.Class({
         // Phaser.Display.Align.In.Center(graphics, background);
         // graphics.lineStyle(2, 0xffff00);
         // graphics.strokeRect(zone.x - zone.input.hitArea.width / 2, zone.y - zone.input.hitArea.height / 2, zone.input.hitArea.width, zone.input.hitArea.height);
-        
+
 
         var commandList = []
         var commandPos = {"x":zone.x, "y": height/10}
@@ -208,7 +177,7 @@ var level1 = new Phaser.Class({
         // ================================================================
         // handle click events for different buttons
         // ================================================================
-        
+
         this.input.on('dragstart', function (pointer, gameObject) {
             this.children.bringToTop(gameObject);
             newDrag = true
@@ -306,7 +275,7 @@ var level1 = new Phaser.Class({
         uitvoeren.on('pointerup', function (pointer) {
             this.clearTint();
         });
-        
+
         opnieuw.on('pointerover', function (event, gameObjects) {
             opnieuw.setTexture("opnieuw-hover")
         });
@@ -323,7 +292,7 @@ var level1 = new Phaser.Class({
 
         // global variable used to determine position in the commandList
         var commandIndex = 0
-        
+
         /**
         * process the commandList, calls processSingle using timed events.
         */
@@ -332,7 +301,7 @@ var level1 = new Phaser.Class({
 
                 let extra_steps = 0 //extra steps added by repeat
                 let commandNames = []
-                commandList.forEach(function(commandObject) { 
+                commandList.forEach(function(commandObject) {
                     commandNames.push(commandObject.data.command)
                     if (commandObject.data.command == "herhaal") {
                         extra_steps += commandObject.data.range
@@ -340,7 +309,7 @@ var level1 = new Phaser.Class({
                     if (commandObject.data.command == "herhaal-x") {
                         extra_steps += commandObject.data.range * commandObject.data.repeats
                     }
-                    
+
                 });
                 console.log("executing the follow command chain: ", commandNames)
                 console.log("lenght of command chain: ", commandList.length)
@@ -349,13 +318,13 @@ var level1 = new Phaser.Class({
                 timedEvent = myself.time.addEvent({ delay: 500, callback: processSingle, callbackScope: myself, repeat: commandList.length-1 + extra_steps});
             }
         }
-        
+
         /**
         * displays a victory image on screen when victory event is fired
         */
         this.events.on('victory', handlevictory, this);
         function handlevictory()
-        {   
+        {
             var victoryimage = this.add.image(0, 0, 'victory');
             Phaser.Display.Align.In.Center(victoryimage, background);
             victoryimage.setDisplaySize(width/4, height/4)
@@ -379,11 +348,11 @@ var level1 = new Phaser.Class({
                             [1,1,1,1,1,1,1,1,0],
                             [0,0,0,0,0,0,0,0,0]
                         ]
-        
+
         var herhaalcounter = 0 // commands left in the repeated section (moving through the section)
         var herhaalrange = 0 // range of the repeated section (next x commands to repeat)
         var herhaalx = 0 // times the section needs to be repeated
-        
+
         /**
         * Processes a single command from the commandList, takes the command at the global commandIndex variable
         */
@@ -466,12 +435,12 @@ var level1 = new Phaser.Class({
             // check if if we are at the end of a repeated section of commands
             if(herhaalcounter > 0) {
                 herhaalcounter -= 1
-            } 
+            }
             if (herhaalcounter == 0) {
                     console.log(2)
                     if (herhaalx == 0) {
                         console.log(3)
-                        // commandIndex -= herhaalrange // 
+                        // commandIndex -= herhaalrange //
                         herhaalrange = 0 // reset herhaalrange
                     } else {
                         console.log(4)
@@ -545,7 +514,7 @@ var level1 = new Phaser.Class({
                 // position bracket underneat regular commands
                 bracket.setDepth(1)
         }
-        
+
         this.input.on('pointerover', function (event, gameObjectList) {
             try {
                 console.log(gameObjectList[0])
@@ -566,6 +535,6 @@ var level1 = new Phaser.Class({
                 console.log(err.message);
             }
         });
-        
+
     }
     });
