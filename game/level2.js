@@ -2,9 +2,7 @@ var level2 = new Phaser.Class({
 
 	Extends: Phaser.Scene,
 
-	initialize:
-
-	function level2 ()
+	initialize: function level2 ()
 	{
 		Phaser.Scene.call(this, { key: 'level2' });
 	},
@@ -27,9 +25,7 @@ var level2 = new Phaser.Class({
 
 	create: function ()
 	{
-		let myself = this;
-
-		let gameboard = [
+		const gameboard = [
 			[0,0,0,0,0,0,0,2,0],
 			[0,0,0,0,0,1,1,1,0],
 			[0,1,1,1,0,1,0,0,0],
@@ -37,12 +33,18 @@ var level2 = new Phaser.Class({
 			[0,1,0,0,0,0,0,0,0],
 			[1,1,0,0,0,0,0,0,0]
 		];
-		let nodes = Utils.boardToNodes(gameboard);
-		let initPosition = '0,5';
-		let levelConfig = {
+		const nodes = Utils.boardToNodes(gameboard);
+		const levelConfig = {
 			background: 'background',
+			goalPosition: '8,0',
+			initPosition: {
+				direction: 'east',
+				nodeLocation: '0,5',
+			},
+			levelCount: 2,
+			levelName: 'level2',
+			nextLevelName: 'level3',
 			nodes: nodes,
-			initPosition: '0,5',
 			objects: [
 				'draailinks',
 				'draairechts',
@@ -56,8 +58,10 @@ var level2 = new Phaser.Class({
 				'sluit',
 				'stap',
 				'vraagteken',
-			]
+			],
+			orientationType: 'cardinals',
+			spaceType: 'grid',
 		}
-		let interface = new PhaserInterface(this, levelconfig);
+		let ossieGame = new OssieGame(levelConfig, this);
 	}
 });
