@@ -1,4 +1,4 @@
-var level2 = new Phaser.Class({
+window.level2 = new Phaser.Class({
 
 	Extends: Phaser.Scene,
 
@@ -50,7 +50,7 @@ var level2 = new Phaser.Class({
 				'draairechts',
 				'levelcount',
 				'nine',
-				'one'
+				'one',
 				'open',
 				'opnieuw',
 				'player',

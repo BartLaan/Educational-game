@@ -105,7 +105,7 @@ InterPhaser.prototype.setGameObject = function(config) {
 	return gameObject;
 }
 
-InterPhaser.prototype.setInteractions()
+InterPhaser.prototype.setInteractions = function()
 {
 	// ================================================================
 	// PREPARING DEFAULT GAME INTERACTIONS
@@ -302,7 +302,7 @@ InterPhaser.prototype.win = function() {
 	}, this);
 }
 
-InterPhaser.prototype.updateOssiePos(ossiePos) {
+InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	let player = this.player
 	if (this.levelConfig.spaceType === 'grid') {
 		let ossieCoords = ossiePos.nodeLocation.split(',')
@@ -318,7 +318,7 @@ InterPhaser.prototype.updateOssiePos(ossiePos) {
 	}
 }
 
-InterPhaser.prototype.onCommandExecute(commandObject) {
+InterPhaser.prototype.onCommandExecute = function(commandObject) {
 	// clear color of previous command if applicable
 	if (this.activeCommand !== undefined) {
 		this.activeCommand.clearTint();
@@ -384,7 +384,7 @@ window.handleRepeat = function() {
 	positionHerhaal(null, selectedObject)
 }
 // FUNCTIONS TO HANDLE INTERACTION WITH HTML
-renderRepeatPrompt("")
+// renderRepeatPrompt("")
 function renderRepeatPrompt(text) {
 	el = document.getElementById("repeatOverlay");
 	let html = "";
@@ -515,6 +515,7 @@ InterPhaser.prototype.gameObjectsConfigsMultiple = {
 	},
 }
 
+window.PhaserUtils = {};
 PhaserUtils.loadSprites = function(phaser, spriteArray) {
 	spriteArray.shift(commonSprites);
 	for (let spriteID of spriteArray) {
