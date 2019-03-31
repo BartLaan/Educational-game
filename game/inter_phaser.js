@@ -17,11 +17,13 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.levelConfig = levelConfig;
 	this.eventHandler = eventHandler;
 
+	this.levelConfig.objects = this.levelConfig.objects.concat(PhaserUtils.commonSprites);
 	this.setLevel();
 	this.setInteractions();
 };
 
 InterPhaser.prototype.setLevel = function() {
+	let phsr = this.phaser
 	// everything is based off the window height, based on the assumpation that all screens it will be played on have width space to spare
 	let height = window.innerHeight
 	let width = window.innerHeight * WH_RATIO
@@ -39,28 +41,29 @@ InterPhaser.prototype.setLevel = function() {
 	// ================================================================
 	// PREPARING ASSETS
 	// ================================================================
-	let pObjects = {};
+	this.pObjects = {};
+	let pObjects = this.pObjects;
 
-	let background = this.add.image(width/2, height/2, this.levelConfig.background);
-	this.pObjects.background = background;
+	this.pObjects.background = phsr.add.image(width/2, height/2, this.levelConfig.background);
+	let background = this.pObjects.background;
 	background.setDisplaySize(width, height);
 
 	// it's important to center the background first and then the rest of the assets
-	Phaser.Display.Align.In.Center(background, this.add.zone(window.innerWidth / 2, window.innerHeight / 2, window.innerWidth, window.innerHeight));
+	Phaser.Display.Align.In.Center(background, phsr.add.zone(window.innerWidth / 2, window.innerHeight / 2, window.innerWidth, window.innerHeight));
 
-	for (let objectName in this.gameObjectsConfigs) {
-		if (!this.has(objectName)) { continue; }
-
+	let gameObjectsConfigs = this.getGameObjectsConfigs()
+	for (let objectName in gameObjectsConfigs) {
+		if (!this.hasObject(objectName)) { continue; }
 		pObjects[objectName] = this.setGameObject(gameObjectsConfigs[objectName]);
 	}
 
 	let multipleButtonsStackSize = 20;
 	for (let objectName in this.gameObjectsConfigsMultiple) {
-		if (this.levelConfig.objects.indexOf(objectName) === undefined) { continue; }
+		if (!this.hasObject(objectName)) { continue; }
 
 		pObjects[objectName] = [];
 		for (let i = 0; i < multipleButtonsStackSize; i++) {
-			let object = this.setGameObject(linksButtonConfig);
+			let object = this.setGameObject(this.gameObjectsConfigsMultiple[objectName]);
 			object.data.id = i;
 			pObjects[objectName].push(object);
 		}
@@ -81,7 +84,7 @@ InterPhaser.prototype.setGameObject = function(config) {
 	Phaser.Display.Align.In.Center(gameObject, this.pObjects.background);
 
 	if (config.data !== undefined) {
-		gameObject.data = data;
+		gameObject.data = config.data;
 		// This is a command object, we need a reference to itself for when we pass it to the stack
 		if (config.data.command !== undefined) {
 			gameObject.data.phaserObj = gameObject;
@@ -131,7 +134,7 @@ InterPhaser.prototype.setInteractions = function()
 	pOjs.player.x += width / BOARD_OFFSET_X
 	pOjs.player.y += height / BOARD_OFFSET_Y
 
-	if (this.has('vraagteken')) {
+	if (this.hasObject('vraagteken')) {
 		let vraagtekenCoords = this.levelConfig.goalPosition.split(',');
 		pOjs.vraagteken.x += width / BOARD_OFFSET_X;
 		pOjs.vraagteken.y += height / BOARD_OFFSET_Y;
@@ -283,7 +286,7 @@ InterPhaser.prototype.setInteractions = function()
 	});
 }
 
-InterPhaser.prototype.has = function(objectName) {
+InterPhaser.prototype.hasObject = function(objectName) {
 	return this.levelConfig.objects.indexOf(objectName) >= 0
 }
 
@@ -401,7 +404,8 @@ function renderRepeatPrompt(text) {
 	el.innerHTML = html;
 }
 
-InterPhaser.prototype.gameObjectsConfigs = function() {
+// Function because the levelcount sprite object depends on the level
+InterPhaser.prototype.getGameObjectsConfigs = function() {
 	return {
 		levelcount: {
 			offsetX: -30,
@@ -515,19 +519,21 @@ InterPhaser.prototype.gameObjectsConfigsMultiple = {
 	},
 }
 
-window.PhaserUtils = {};
+PhaserUtils = {};
 PhaserUtils.loadSprites = function(phaser, spriteArray) {
-	spriteArray.shift(commonSprites);
+	spriteArray.shift(PhaserUtils.commonSprites);
+	console.log(spriteArray);
 	for (let spriteID of spriteArray) {
-		let spriteLocation = sprites[spriteID];
+		let spriteLocation = PhaserUtils.sprites[spriteID];
 		if (spriteLocation !== undefined) {
+			spriteLocation = spriteLocation;
 			phaser.load.image(spriteID, spriteLocation);
 		} else {
 			console.error('Couldnt find sprite with ID', spriteID);
 		}
 	}
 }
-let commonSprites = [
+PhaserUtils.commonSprites = [
 	'0',
 	'1',
 	'2',
@@ -554,7 +560,7 @@ let commonSprites = [
 	'victory',
 	'victory-hover',
 ];
-let sprites = {
+PhaserUtils.sprites = {
 	// common
 	'0': 'assets/0.png',
 	'1': 'assets/1.png',

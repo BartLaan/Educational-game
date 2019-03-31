@@ -9,6 +9,7 @@ window.level2 = new Phaser.Class({
 
 	preload: function ()
 	{
+		console.log('hi');
 		let spriteArray = [
 			'background',
 			'draailinks',
@@ -25,6 +26,7 @@ window.level2 = new Phaser.Class({
 
 	create: function ()
 	{
+		console.log('hi2');
 		const gameboard = [
 			[0,0,0,0,0,0,0,2,0],
 			[0,0,0,0,0,1,1,1,0],
