@@ -349,7 +349,7 @@ InterPhaser.prototype.removeFromStack = function(object) {
 InterPhaser.prototype.updateStepcount = function() {
 	let stepCounter = this.pObjects.stepcount;
 	let lastStackObject = this.stackObjects.slice(-1)[0];
-	let commandTotal =  lastStackObject === undefined ? 0 : lastStackObject.data.stackIndex + 1;
+	let commandTotal = lastStackObject === undefined ? 0 : lastStackObject.data.stackIndex + 1;
 	let newTexture = commandTotal.toString();
 	stepCounter.setTexture(newTexture);
 }
