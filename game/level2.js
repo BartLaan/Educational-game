@@ -2,34 +2,33 @@ window.level2 = new Phaser.Class({
 
 	Extends: Phaser.Scene,
 
+	objects: COMMON_OBJECTS.concat([
+		'background2',
+		'draailinks',
+		'draairechts',
+		'opnieuw',
+		'stap',
+		'vraagteken',
+	]),
+
 	initialize: function level2 ()
 	{
+		console.log('initialize');
 		Phaser.Scene.call(this, { key: 'level2' });
 	},
 
 	preload: function ()
 	{
-		console.log('hi');
-		let spriteArray = [
-			'background',
-			'draailinks',
-			'draailinks-crnt',
-			'draailinks-hover',
-			'draairechts',
-			'draairechts-crnt',
-			'draairechts-hover',
-			'vraagteken',
-
-		];
-		PhaserUtils.loadSprites(this, spriteArray);
+		console.log('preload');
+		Utils.loadSprites(this);
 	},
 
 	create: function ()
 	{
-		console.log('hi2');
+		console.log('create');
 		const gameboard = [
-			[0,0,0,0,0,0,0,2,0],
-			[0,0,0,0,0,1,1,1,0],
+			[0,0,0,0,0,0,0,1,0],
+			[0,0,0,0,0,1,1,2,0],
 			[0,1,1,1,0,1,0,0,0],
 			[0,1,0,1,1,1,0,0,0],
 			[0,1,0,0,0,0,0,0,0],
@@ -37,33 +36,22 @@ window.level2 = new Phaser.Class({
 		];
 		const nodes = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			background: 'background',
-			goalPosition: '8,0',
+			background: 'background2',
+			goalPosition: '7,1',
 			initPosition: {
-				direction: 'east',
+				orientation: 'east',
 				nodeLocation: '0,5',
 			},
+			maxCommands: 19,
 			levelCount: 2,
 			levelName: 'level2',
 			nextLevelName: 'level3',
 			nodes: nodes,
-			objects: [
-				'draailinks',
-				'draairechts',
-				'levelcount',
-				'nine',
-				'one',
-				'open',
-				'opnieuw',
-				'player',
-				'slash',
-				'sluit',
-				'stap',
-				'vraagteken',
-			],
-			orientationType: 'cardinals',
-			spaceType: 'grid',
+			objects: this.objects,
+			orientationType: TYPE_ORIENTATION_CARDINALS,
+			spaceType: TYPE_SPACE_GRID,
 		}
-		let ossieGame = new OssieGame(levelConfig, this);
+
+		window.ossieGame = new OssieGame(levelConfig, this);
 	}
 });

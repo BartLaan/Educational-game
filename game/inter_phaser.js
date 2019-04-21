@@ -1,23 +1,9 @@
-PHASER_STACK_ADD = 'PHASER_STACK_ADD'
-PHASER_STACK_START = 'PHASER_STACK_START'
-PHASER_STACK_DELETE = 'PHASER_STACK_DELETE'
-PHASER_STACK_RESET = 'PHASER_STACK_RESET'
-WH_RATIO = 1.3333333333
-SCALING_FACTOR_DIV = 1024
-BOARD_STEPSIZE_RELATIVE_TO_HEIGHT = 9.9
-BOARD_OFFSET_X = 6.8
-BOARD_OFFSET_Y = -17
-DROP_ZONE_POS_X = -2.8
-DROP_ZONE_POS_Y = -35
-DROP_ZONE_WIDTH = 4
-DROP_ZONE_HEIGHT = 1.3
-
 function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.phaser = phaser;
 	this.levelConfig = levelConfig;
 	this.eventHandler = eventHandler;
 
-	this.levelConfig.objects = this.levelConfig.objects.concat(PhaserUtils.commonSprites);
+	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
 	this.setLevel();
 	this.setInteractions();
 };
@@ -25,91 +11,97 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 InterPhaser.prototype.setLevel = function() {
 	let phsr = this.phaser
 	// everything is based off the window height, based on the assumpation that all screens it will be played on have width space to spare
-	let height = window.innerHeight
-	let width = window.innerHeight * WH_RATIO
+	// let height = window.innerHeight
+	// let width = window.innerHeight * WH_RATIO
+	let height = 786
+	let width = 1024
 	let scalingfactor = width / SCALING_FACTOR_DIV
 	this.height = height
 	this.width = width
 	this.scalingfactor = scalingfactor
 
 	// this was done by trial and error, sorry bout that
-	this.stepsize_horizontal = height / BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
-	this.stepsize_vertical = height / BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
-	this.boardOffsetX = width / BOARD_OFFSET_X
-	this.boardOffsetY = height / BOARD_OFFSET_Y
+	this.stepsize_horizontal = height * BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
+	this.stepsize_vertical = height * BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
+	this.boardOffsetX = width * BOARD_OFFSET_X
+	this.boardOffsetY = height * BOARD_OFFSET_Y
 
 	// ================================================================
 	// PREPARING ASSETS
 	// ================================================================
 	this.pObjects = {};
 	let pObjects = this.pObjects;
+	this.stackObjects = [];
 
-	this.pObjects.background = phsr.add.image(width/2, height/2, this.levelConfig.background);
+	this.pObjects.background = phsr.add.image(0, 0, this.levelConfig.background).setOrigin(0, 0);
+	this.pObjects.background.name = 'background';
+	this.pObjects.background.setDisplaySize(width, height);
 	let background = this.pObjects.background;
-	background.setDisplaySize(width, height);
 
-	// it's important to center the background first and then the rest of the assets
-	Phaser.Display.Align.In.Center(background, phsr.add.zone(window.innerWidth / 2, window.innerHeight / 2, window.innerWidth, window.innerHeight));
-
-	let gameObjectsConfigs = this.getGameObjectsConfigs()
-	for (let objectName in gameObjectsConfigs) {
-		if (!this.hasObject(objectName)) { continue; }
-		pObjects[objectName] = this.setGameObject(gameObjectsConfigs[objectName]);
+	let maxCommands = this.levelConfig.maxCommands;
+	let maxCommandsStr = maxCommands.toString();
+	OBJECT_CONF.stepcount_total_pt1.spriteID = maxCommandsStr[0];
+	this.pObjects.stepcount_total_pt1 = this.setGameObject(OBJECT_CONF.stepcount_total_pt1, 'stepcount_total_pt1');
+	if (maxCommands > 9) {
+		OBJECT_CONF.stepcount_total_pt2.spriteID = maxCommandsStr[1];
+		this.pObjects.stepcount_total_pt2 = this.setGameObject(OBJECT_CONF.stepcount_total_pt2, 'stepcount_total_pt2');
 	}
 
-	let multipleButtonsStackSize = 20;
-	for (let objectName in this.gameObjectsConfigsMultiple) {
+	// Initialize all game objects
+	for (let objectName of INIT_OBJECTS) {
 		if (!this.hasObject(objectName)) { continue; }
+		let objConfig = OBJECT_CONF[objectName];
+		// normal objects
 
-		pObjects[objectName] = [];
-		for (let i = 0; i < multipleButtonsStackSize; i++) {
-			let object = this.setGameObject(this.gameObjectsConfigsMultiple[objectName]);
-			object.data.id = i;
-			pObjects[objectName].push(object);
+		if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
+			pObjects[objectName] = this.setGameObject(objConfig, objectName);
+			pObjects[objectName].name = objectName;
+
+		} else { // draggable commands can have multiple versions
+			pObjects[objectName] = {};
+			let objectRef = objectName + '-' + 0;
+			let object = this.setGameObject(objConfig, objectRef);
+			object.data.i = 0;
+			pObjects[objectName][0] = object;
 		}
 	}
+	console.log(pObjects);
 
-	let player = pObjects.player;
-	player.angle -= 20
-	// player.data = {"orientation": "right"}
-	// player.gridposition = {"x":0, "y":5}
-	// let victorypos = {"x":7, "y":1}
-
+	pObjects.player.setOrigin(0.5);
+	this.updateOssiePos(this.levelConfig.initPosition);
 }
 
-InterPhaser.prototype.setGameObject = function(config) {
+InterPhaser.prototype.setGameObject = function(config, id) {
 	let scaling = config.scaling * this.scalingfactor;
-	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID);
+	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID).setOrigin(0, 0);
+	gameObject.name = id.split('-')[0];
 	gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling);
-	Phaser.Display.Align.In.Center(gameObject, this.pObjects.background);
 
 	if (config.data !== undefined) {
-		gameObject.data = config.data;
+		gameObject.data = Utils.deepCopy(config.data);
 		// This is a command object, we need a reference to itself for when we pass it to the stack
 		if (config.data.command !== undefined) {
-			gameObject.data.phaserObj = gameObject;
+			gameObject.data.objectRef = id;
 		}
+	}
+	if (config.offsetX !== undefined) {
+		gameObject.x = config.offsetX * this.width;
+		gameObject.y = config.offsetY * this.height;
 	}
 	if (config.depth !== undefined) {
 		gameObject.setDepth(config.depth);
-	}
-	if (config.offsetX !== undefined) {
-		gameObject.x += this.width/config.offsetX;
-		gameObject.y += this.width/config.offsetY;
 	}
 	if (config.interactive === true || config.draggable === true) {
 		gameObject.setInteractive();
 	}
 	if (config.draggable === true) {
-		gameObject.setOrigin(0);
 		this.phaser.input.setDraggable(gameObject);
 	}
 
 	return gameObject;
 }
 
-InterPhaser.prototype.setInteractions = function()
-{
+InterPhaser.prototype.setInteractions = function() {
 	// ================================================================
 	// PREPARING DEFAULT GAME INTERACTIONS
 	// ================================================================
@@ -119,101 +111,76 @@ InterPhaser.prototype.setInteractions = function()
 
 	let height = this.height;
 	let width = this.width;
-	let zone = phsr.add.zone(0, 0, width / DROP_ZONE_WIDTH, height / DROP_ZONE_HEIGHT);
-	zone.setRectangleDropZone(width / DROP_ZONE_WIDTH, height / DROP_ZONE_HEIGHT);
-	Phaser.Display.Align.In.Center(zone, pOjs.background);
-	zone.x += width / DROP_ZONE_POS_X
-	zone.y += height / DROP_ZONE_POS_Y
-	pOjs.zone = zone;
 
-	//  Just a visual display of the drop zone
-	let graphics = phsr.add.graphics();
-	let commandPos = {"x": zone.x, "y": height / 10}
-	let commandStepDistance = height / 25
+	// this.renderDropZone();
+	this.stackPos = { "x": width * STACK_ZONE_POS_X, "y": height * STACK_ZONE_POS_Y };
 
-	pOjs.player.x += width / BOARD_OFFSET_X
-	pOjs.player.y += height / BOARD_OFFSET_Y
-
-	if (this.hasObject('vraagteken')) {
-		let vraagtekenCoords = this.levelConfig.goalPosition.split(',');
-		pOjs.vraagteken.x += width / BOARD_OFFSET_X;
-		pOjs.vraagteken.y += height / BOARD_OFFSET_Y;
-		pOjs.vraagteken.x += this.stepsize_horizontal * vraagtekenCoords[0];
-		pOjs.vraagteken.y -= this.stepsize_vertical * vraagtekenCoords[1];
+	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
+		if (this.hasObject('vraagteken')) {
+			let vraagtekenCoords = Utils.strToCoord(this.levelConfig.goalPosition);
+			pOjs.vraagteken.x += this.boardOffsetX;
+			pOjs.vraagteken.y += this.boardOffsetY;
+			pOjs.vraagteken.x += this.stepsize_horizontal * vraagtekenCoords.x;
+			pOjs.vraagteken.y += this.stepsize_vertical * vraagtekenCoords.y;
+		}
+	// ELSE ??
 	}
 
 	// ================================================================
 	// handle click events for different buttons
 	// ================================================================
-	let newDrag = false
-	let selectedObject = null
-	this.selectedObject = selectedObject;
+	this.newDrag = false
+	this.selectedObject = null;
 
 	phsr.input.on('dragstart', function (pointer, gameObject) {
-		this.children.bringToTop(gameObject);
-		newDrag = true;
-	}, this);
+		if (myself.running === true) { return }
+
+		myself.selectedObject = gameObject;
+		myself.newDrag = true;
+
+		// Drag/remove command from the command queue
+		if (myself.inDropZone(pointer)) {
+			myself.removeFromStack(gameObject);
+			return;
+		}
+
+		let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1;
+		// Dragging from original position, so create another one under the hood
+		if (canHaveMultiple && gameObject.data !== undefined && gameObject.data.stackIndex === undefined) {
+			let newObjectI = gameObject.data.i + 1;
+			let newObjectRef = gameObject.name + '-' + newObjectI.toString();
+			let newObject = myself.setGameObject(OBJECT_CONF[gameObject.name], newObjectRef);
+			newObject.data.i = newObjectI;
+			myself.pObjects[gameObject.name][newObjectI] = newObject;
+		}
+	});
 
 	phsr.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+		if (myself.running === true) { return }
+
 		gameObject.x = dragX;
 		gameObject.y = dragY;
-	});
-
-	phsr.input.on('dragenter', function (pointer, gameObject, dropZone) {
-		graphics.clear();
-	});
-
-	phsr.input.on('dragleave', function (pointer, gameObject, dropZone) {
-		graphics.clear();
-	});
-
-	phsr.input.on('drop', function (pointer, gameObject, dropZone) {
-		gameObject.x = commandPos.x;
-		gameObject.y = commandPos.y;
-		if(gameObject.data.command == "herhaal-x" && newDrag) {
-			toggleRepeatOverlay();
-			selectedObject = gameObject
-		} else if(gameObject.data.command == "herhaal" && newDrag) {
-			positionHerhaal(pointer, gameObject)
-		} else if (newDrag) {
-			gameObject.input.enabled = false;
-			this.eventHandler(PHASER_STACK_ADD, gameObject);
-			commandPos.y = commandPos.y + commandStepDistance
-			newDrag = false // fixes the bug where this function triggers all the time
+		if (myself.inDropZone(pointer)) {
+			myself.positionCommands(pointer);
 		}
 	});
 
-	// use separate function
 	phsr.input.on('dragend', function (pointer, gameObject, dropped) {
-		if (
-			gameObject.x > (zone.x - zone.input.hitArea.width / 2)
-			&& gameObject.x < (zone.x + zone.input.hitArea.width / 2)
-			&& gameObject.y > (zone.y - zone.input.hitArea.height / 2)
-			&& gameObject.y < (zone.y + zone.input.hitArea.height / 2)
-		) {
-			if (gameObject.data.command == "herhaal-x" && newDrag) {
-				// renderRepeatPrompt("")
-				toggleRepeatOverlay();
-				selectedObject = gameObject
-				// positionHerhaal(pointer, gameObject)
-			}else if (gameObject.data.command == "herhaal" && newDrag) {
-				positionHerhaal(pointer, gameObject)
-			} else if (newDrag) {
-				gameObject.x = commandPos.x;
-				gameObject.y = commandPos.y;
-				gameObject.input.enabled = false;
-				myself.eventHandler(PHASER_STACK_ADD, { stackItem: gameObject} );
-				commandPos.y = commandPos.y + commandStepDistance
-				newDrag = false
-			}
-		} else if (!dropped) {
-		// fix case for false negatives
-			gameObject.x = gameObject.input.dragStartX;
-			gameObject.y = gameObject.input.dragStartY;
+		if (myself.running === true) { return }
+		myself.clearHoverTexture(gameObject);
+
+		if (!pointer.isDown && myself.inDropZone(pointer)) {
+			return myself.dropObjectOnStack(pointer, gameObject);
 		}
-		graphics.clear();
-		// graphics.lineStyle(2, 0xffff00);
-		// graphics.strokeRect(zone.x - zone.input.hitArea.width / 2, zone.y - zone.input.hitArea.height / 2, zone.input.hitArea.width, zone.input.hitArea.height);
+		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
+			myself.pObjects[gameObject.name][gameObject.data.i] = undefined;
+			gameObject.visible = false;
+		} else {
+			let conf = OBJECT_CONF[gameObject.name];
+			gameObject.x = myself.width * conf.offsetX;
+			gameObject.y = myself.height * conf.offsetY;
+		}
+		myself.newDrag = false;
 	});
 
 	pOjs.uitvoeren.on('pointerdown', function (pointer) {
@@ -234,62 +201,174 @@ InterPhaser.prototype.setInteractions = function()
 	pOjs.opnieuw.on('pointerdown', function (pointer) {
 		console.log("restarting level")
 		myself.eventHandler(PHASER_STACK_RESET);
-		phsr.game.scene.stop(myself.levelConfig.levelName);
-		phsr.game.scene.start(myself.levelConfig.levelName);
+		window.game.scene.stop(myself.levelConfig.levelName);
+		window.game.scene.start(myself.levelConfig.levelName);
 	}, this);
-
-	pOjs.uitvoeren.on('pointerout', function (pointer) {
-		this.clearTint();
-	});
-
-	pOjs.uitvoeren.on('pointerup', function (pointer) {
-		this.clearTint();
-	});
-
-	pOjs.opnieuw.on('pointerover', function (event, gameObjects) {
-		this.setTexture("opnieuw-hover")
-	});
-	pOjs.opnieuw.on('pointerout', function (event, gameObjects) {
-		this.setTexture("opnieuw")
-	});
-
-	pOjs.uitvoeren.on('pointerover', function (event, gameObjects) {
-		this.setTexture("uitvoeren-hover")
-	});
-	pOjs.uitvoeren.on('pointerout', function (event, gameObjects) {
-		this.setTexture("uitvoeren")
-	});
 
 	// ================================================================
 	// PLAYER AND COMMAND MOVEMENT INTERACTIONS
 	// ================================================================
 
 	phsr.input.on('pointerover', function (event, gameObjectList) {
-		try {
-			console.log(gameObjectList[0])
-			// gameObjectList[0].setTint(0xff0000)
-			gameObjectList[0].setTexture(gameObjectList[0].texture.key + "-hover")
-		}
-		catch(err) {
-			console.log(err.message);
+		let object = gameObjectList[0];
+		if (object !== undefined) {
+			myself.setHoverTexture(object);
 		}
 	});
 
 	phsr.input.on('pointerout', function (event, gameObjectList) {
-		try {
-			// gameObjectList[0].clearTint();
-			gameObjectList[0].setTexture(gameObjectList[0].texture.key.slice(0,-6))
-		}
-		catch(err) {
-			console.log(err.message);
+		if (gameObjectList.length > 0) {
+			myself.clearHoverTexture(gameObjectList[0]);
 		}
 	});
+}
+
+InterPhaser.prototype.setHoverTexture = function(gameObject) {
+	let objConfig = OBJECT_CONF[gameObject.name];
+	if (objConfig === undefined || gameObject.texture.key.indexOf('-hover') !== -1) { return }
+
+	let hoverTexture = gameObject.texture.key + "-hover";
+
+	if (SPRITE_PATHS[hoverTexture] === undefined) { return }
+
+	gameObject.setTexture(hoverTexture);
+}
+
+InterPhaser.prototype.clearHoverTexture = function(gameObject) {
+	let objConfig = OBJECT_CONF[gameObject.name];
+	if (objConfig === undefined || objConfig.spriteID === undefined) { return }
+	let newTexture = gameObject.texture.key.replace('-hover', '');
+
+	gameObject.setTexture(newTexture);
+
+}
+//  Just a visual display of the drop zone
+InterPhaser.prototype.renderDropZone = function() {
+	if (this.graphics === undefined) {
+		this.graphics = this.phaser.add.graphics();
+		this.graphics.lineStyle(2, 0xffff00);
+	}
+	this.graphics.strokeRect(
+		this.width * STACK_ZONE_POS_X,
+		this.height * STACK_ZONE_POS_Y,
+		this.width * STACK_ZONE_WIDTH,
+		this.height * STACK_ZONE_HEIGHT
+	);
+}
+
+InterPhaser.prototype.inDropZone = function(location) {
+	return (
+		location.x > this.width * STACK_ZONE_POS_X
+		&& location.x < this.width * (STACK_ZONE_POS_X + STACK_ZONE_WIDTH)
+		&& location.y > this.height * STACK_ZONE_POS_Y
+		&& location.y < this.height * (STACK_ZONE_POS_Y + STACK_ZONE_HEIGHT)
+	);
+}
+
+InterPhaser.prototype.dropObjectOnStack = function(pointer, gameObject, extra) {
+	if (this.newDrag === false) { return; }
+
+	console.log('Drop object', gameObject);
+
+	// Add object to internal InterPhaser stack
+	if (this.stackIndex === undefined) {
+		this.stackObjects.push(gameObject);
+	} else {
+		this.stackObjects.splice(this.stackIndex, 0, gameObject);
+	}
+
+	// First input the amount of repeats for herhaal-x
+	if (gameObject.data.command === "for" && gameObject.data.counts === null ) {
+		toggleRepeatOverlay();
+		this.selectedObject = gameObject;
+		return;
+	}
+
+	let isBracketObject = BRACKET_OBJECTS.indexOf(gameObject.name) !== -1;
+	if (isBracketObject) {
+		this.insertBrackets(gameObject);
+		gameObject.input.enabled = false;
+		let bracketBottom = this.stackObjects[this.stackIndex + 2];
+		this.eventHandler(PHASER_STACK_ADD, { stackItem: bracketBottom, stackIndex: this.stackIndex });
+	}
+	this.eventHandler(PHASER_STACK_ADD, { stackItem: gameObject.data, stackIndex: this.stackIndex });
+
+	this.positionCommands();
+	this.newDrag = false // fixes the bug where this function triggers all the time
+	this.updateStepcount();
+}
+
+InterPhaser.prototype.positionCommands = function(pointer) {
+	this.stackIndex = undefined;
+	let bracketSpacing = STACK_BRACKET_SPACING * this.height;
+	let commandSpacing = STACK_COMMAND_SPACING * this.height;
+	let stackX = STACK_ZONE_POS_X * this.width;
+	let stackY = (STACK_ZONE_POS_Y * this.height) + commandSpacing;
+
+	for (let i in this.stackObjects) {
+		let object = this.stackObjects[i];
+
+		switch (object.name) {
+			case 'bracketSide':
+				object.x = stackX;
+				stackX += bracketSpacing;
+				break;
+			case 'bracketBottom':
+				stackX -= bracketSpacing
+			default:
+				object.x = stackX;
+		}
+		object.y = stackY;
+
+		let tryTempSpace = pointer !== undefined && (object.name !== 'bracketSide' || object.name !== 'bracketTop')
+		if (this.stackIndex === undefined && tryTempSpace && (pointer.y < object.y + (object.height / 2))) {
+			this.stackIndex = object.data.stackIndex;
+			object.y += commandSpacing;
+		}
+
+		// Bracket side doesn't take vertical space
+		if (object.name !== 'bracketSide') {
+			stackY = object.y + commandSpacing;
+		}
+	}
+}
+
+InterPhaser.prototype.removeFromStack = function(object) {
+	let objectIndex = this.stackObjects.indexOf(object);
+	if (objectIndex !== -1) {
+		this.stackObjects.splice(objectIndex, 1);
+		this.positionCommands();
+		if (object.data !== undefined && ['if', 'for'].indexOf(object.data.command) !== -1) {
+			this.clearBracketObject(object);
+		}
+		this.eventHandler(PHASER_STACK_DELETE, { stackIndex: object.data.stackIndex });
+	}
+	this.updateStepcount();
+}
+
+InterPhaser.prototype.updateStepcount = function() {
+	let stepCounter = this.pObjects.stepcount;
+	let lastStackObject = this.stackObjects.slice(-1)[0];
+	let commandTotal =  lastStackObject === undefined ? 0 : lastStackObject.data.stackIndex + 1;
+	let newTexture = commandTotal.toString();
+	stepCounter.setTexture(newTexture);
 }
 
 InterPhaser.prototype.hasObject = function(objectName) {
 	return this.levelConfig.objects.indexOf(objectName) >= 0
 }
 
+InterPhaser.prototype.fail = function() {
+	let loseImage = this.phaser.add.image(0, 0, 'fail');
+	Phaser.Display.Align.In.Center(loseImage, this.background);
+	loseImage.setInteractive();
+
+	let me = this;
+	loseImage.on('pointerdown', function (pointer) {
+		window.game.scene.stop(me.levelName);
+		window.game.scene.start(me.levelName);
+	});
+}
 /**
 * displays a victory image on screen when victory event is fired
 */
@@ -297,94 +376,96 @@ InterPhaser.prototype.win = function() {
 	let victoryimage = this.phaser.add.image(0, 0, 'victory');
 	Phaser.Display.Align.In.Center(victoryimage, this.background);
 	victoryimage.setDisplaySize(this.width/4, this.height/4)
-	victoryimage.setInteractive()
-	victoryimage.on('pointerdown', function (pointer) {
-		console.log("loading next level");
-		this.phaser.game.scene.stop(this.levelName);
-		this.phaser.game.scene.start(this.nextLevelName);
-	}, this);
+
+	let me = this;
+	this.setTimeout(function(){
+		// add buttons here;
+		victoryimage.setInteractive()
+		victoryimage.on('pointerdown', function (pointer) {
+			console.log("loading next level");
+			window.game.scene.stop(me.levelName);
+			window.game.scene.start(me.nextLevelName);
+		}, me);
+	}, VICTORY_TIMEOUT);
 }
 
 InterPhaser.prototype.updateOssiePos = function(ossiePos) {
-	let player = this.player
-	if (this.levelConfig.spaceType === 'grid') {
-		let ossieCoords = ossiePos.nodeLocation.split(',')
-		player.x = this.boardOffsetX + (this.stepsize_horizontal * ossieCoords[0])
-		player.y = this.boardOffsetY + (this.stepsize_vertical * ossieCoords[1])
+	let player = this.pObjects.player
+	playerConfig = OBJECT_CONF.player
+	player.x = playerConfig.offsetX * this.width;
+	player.y = playerConfig.offsetY * this.height;
+	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
+		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
+		player.x += this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
+		player.y += this.boardOffsetY + (this.stepsize_vertical * ossieCoords.y);
 	} else {
 		// ???
 	}
-	if (this.levelConfig.orientationType === 'cardinals') {
-		player.angle = Utils.cardinalToAngle(ossiePos.direction);
+	if (this.levelConfig.orientationType === TYPE_ORIENTATION_CARDINALS) {
+		player.angle = Utils.cardinalToAngle(ossiePos.orientation);
 	} else {
 		player.angle = ossiePos.direction;
 	}
 }
 
-InterPhaser.prototype.onCommandExecute = function(commandObject) {
+InterPhaser.prototype.onCommandExecute = function(commandID) {
+	this.executingCommand = true;
+	let [commandName, commandI] = commandID.split('-');
+	let isMultiple = OBJECTS_MULTIPLE.indexOf(commandName) !== -1;
+	let commandObject = isMultiple ? this.pObjects[commandName][commandI] : this.pObjects[commandName];
 	// clear color of previous command if applicable
 	if (this.activeCommand !== undefined) {
-		this.activeCommand.clearTint();
+		this.activeCommand.setTexture(OBJECT_CONF[this.activeCommand.name].spriteID);
 	}
 	this.activeCommand = commandObject;
 
 	// color the current command if it is not the repeat command
-	if (commandObject.data.command != "herhaal") {
-		commandObject.setTint(0xff0000)
+	if (BRACKET_OBJECTS.indexOf(commandObject.data.command) === -1) {
+		let crntTexture = OBJECT_CONF[commandObject.name].spriteID + '-crnt';
+		if (SPRITE_PATHS[crntTexture] !== undefined) {
+			commandObject.setTexture(crntTexture);
+		}
 	}
 }
+
 /**
 * Position the herhaal command and the corresponding bracket in the commandzone
 */
-InterPhaser.prototype.positionHerhaal = function(pointer, gameObject) {
-	// AAAAAAAAAAAAAAAAAAAAAAAH
-	return;
-	// snap to nearest step
-	let herhaalheight = this.height/10
-	let herhaalindex = 0
-	while (gameObject.y > herhaalheight && herhaalheight < this.commandPos.y) {
-		herhaalheight += commandStepDistance
-		herhaalindex += 1
+InterPhaser.prototype.insertBrackets = function(gameObject) {
+	for (let objectName of ['bracketBottom', 'bracketSide', 'bracketTop']) {
+		let objID = objectName + '-' + gameObject.name;
+		let object = this.setGameObject(OBJECT_CONF[objectName], objectName);
+		this.pObjects[objID] = object;
+		this.stackObjects.splice(this.stackIndex, 0, object);
+
+		console.log(object);
+		if (objectName === 'bracketBottom') {
+			object.data.blockRef = gameObject.data.stackIndex
+		}
 	}
-
-	// extra steps in case of another herhaal command being present
-	let extra_steps = 0
-	commandList.forEach(function(commandObject) {
-		if (commandObject.data.command == "herhaal-x") {
-			extra_steps += commandObject.data.range
-		}
-		if (commandObject.data.command == "herhaal") {
-			extra_steps += commandObject.data.range
-		}
-
-	});
-	herhaalindex += extra_steps
-	herhaalheight -= commandStepDistance
-	herhaalindex -= 1
-
-	gameObject.data.startindex = herhaalindex
-	gameObject.input.enabled = true
-	myself.input.setDraggable(gameObject)
-	gameObject.y = herhaalheight + commandStepDistance/6 //stap.height used for standard stepsize
-	gameObject.x = commandPos.x - width/8
-	commandList.splice(herhaalindex, 0, gameObject)
-
-	// add a bracket to the herhaal sprite, change this to be able to find the bracket.
-	let bracket = myself.add.sprite(0, 0, "bracket1")
-	bracket.setInteractive()
-	// gameObject.data.bracket = bracket
-	bracket.input.enabled = true;
-	Phaser.Display.Align.In.Center(bracket, background);
-	bracket.y = herhaalheight + commandStepDistance/2
-	bracket.x = commandPos.x
-	// position bracket underneat regular commands
-	bracket.setDepth(1)
 }
+
+InterPhaser.prototype.clearBracketObject = function(gameObject) {
+	let objectIndex = this.stackObjects.indexOf(gameObject);
+	let bracketItems = ['bracketBottom', 'bracketSide', 'bracketTop'];
+
+	for (let i=objectIndex+1; i < this.stackObjects.length; i) {
+		let object = this.stackObject[object];
+		if (object.data.bracketRef !== gameObject.data.stackIndex) { break; }
+
+		if (bracketItems.indexOf(object.name) !== -1) {
+			this.pObjects[objID].destroy();
+			this.pObjects[objID] = undefined;
+		}
+		this.stackObjects.splice(objectIndex, 1);
+	}
+}
+
 window.handleRepeat = function() {
 	console.log("herhalingen: ", document.repeatform.herhalingen.value)
 	toggleRepeatOverlay()
-	selectedObject.data.repeats = document.repeatform.herhalingen.value
-	positionHerhaal(null, selectedObject)
+	this.selectedObject.data.repeats = document.repeatform.herhalingen.value
+	insertBrackets(null, this.selectedObject)
 }
 // FUNCTIONS TO HANDLE INTERACTION WITH HTML
 // renderRepeatPrompt("")
@@ -402,233 +483,4 @@ function renderRepeatPrompt(text) {
 	// console.log(html)
 	html += "</ul>";
 	el.innerHTML = html;
-}
-
-// Function because the levelcount sprite object depends on the level
-InterPhaser.prototype.getGameObjectsConfigs = function() {
-	return {
-		levelcount: {
-			offsetX: -30,
-			offsetY: 6.4,
-			scaling: 1.1,
-			spriteID: this.levelConfig.levelCount.toString(),
-		},
-		nine: {
-			offsetX: -120,
-			offsetY: 6.4,
-			scaling: 1.1,
-			spriteID: '9',
-		},
-		one: {
-			offsetX: -15,
-			offsetY: 6.4,
-			scaling: 1.1,
-			spriteID: '1',
-		},
-		open: {
-			data: { command: 'open' },
-			depth: 2,
-			draggable: true,
-			offsetX: 5,
-			offsetY: 6.5,
-			scaling: 1,
-			spriteID: 'open',
-		},
-		opnieuw: {
-			interactive: true,
-			offsetX: -14,
-			offsetY: 3.2,
-			scaling: 0.95,
-			spriteID: 'opnieuw',
-		},
-		player: {
-			scaling: 0.15,
-			spriteID: 'ossie',
-		},
-		slash: {
-			offsetX: 20,
-			offsetY: 6.4,
-			scaling: 1.1,
-			spriteID: 'slash',
-		},
-		sluit: {
-			data: { command: 'sluit' },
-			draggable: true,
-			offsetX: 3.3,
-			offsetY: 6.5,
-			scaling: 1,
-			spriteID: 'sluit',
-		},
-		uitvoeren: {
-			interactive: true,
-			offsetX: -7.2,
-			offsetY: 6.4,
-			scaling: 1,
-			spriteID: 'uitvoeren',
-		},
-		vraagteken: {
-			scaling: 1.1,
-			spriteID: 'vraagteken',
-		},
-	}
-}
-
-InterPhaser.prototype.gameObjectsConfigsMultiple = {
-	herhaal: {
-		data: { command: "for", range: 1, startindex: 0, bracket: null, counts: 1},
-		draggable: true,
-		offsetX: 7,
-		offsetY: 3,
-		scaling: 1,
-		spriteID: 'herhaal-x',
-	},
-	herhaalx: {
-		data: { command: "for", range: 1, startindex: 0, bracket: null, counts: 1},
-		draggable: true,
-		offsetX: 4,
-		offsetY: 3,
-		scaling: 1,
-		spriteID: 'herhaal-x',
-	},
-	draailinks: {
-		data: { command: 'turnL' },
-		depth: 2,
-		draggable: true,
-		offsetX: 7,
-		offsetY: 3.7,
-		scaling: 1,
-		spriteID: 'draailinks',
-	},
-	draairechts: {
-		data: { command: 'turnR' },
-		depth: 2,
-		draggable: true,
-		offsetX: 3.8,
-		offsetY: 3.95,
-		scaling: 1,
-		spriteID: 'draaiRechts',
-	},
-	stap: {
-		data: { command: 'step' },
-		depth: 2,
-		draggable: true,
-		offsetX: 5.2,
-		offsetY: 4.5,
-		scaling: 1,
-		spriteID: 'stap',
-	},
-}
-
-PhaserUtils = {};
-PhaserUtils.loadSprites = function(phaser, spriteArray) {
-	spriteArray.shift(PhaserUtils.commonSprites);
-	console.log(spriteArray);
-	for (let spriteID of spriteArray) {
-		let spriteLocation = PhaserUtils.sprites[spriteID];
-		if (spriteLocation !== undefined) {
-			spriteLocation = spriteLocation;
-			phaser.load.image(spriteID, spriteLocation);
-		} else {
-			console.error('Couldnt find sprite with ID', spriteID);
-		}
-	}
-}
-PhaserUtils.commonSprites = [
-	'0',
-	'1',
-	'2',
-	'3',
-	'4',
-	'5',
-	'6',
-	'7',
-	'8',
-	'9',
-	'oeps',
-	'open',
-	'open-hover',
-	'opnieuw',
-	'opnieuw-hover',
-	'ossie',
-	'slash',
-	'sluit',
-	'sluit-hover',
-	'stap',
-	'stap-hover',
-	'uitvoeren',
-	'uitvoeren-hover',
-	'victory',
-	'victory-hover',
-];
-PhaserUtils.sprites = {
-	// common
-	'0': 'assets/0.png',
-	'1': 'assets/1.png',
-	'2': 'assets/2.png',
-	'3': 'assets/3.png',
-	'4': 'assets/4.png',
-	'5': 'assets/5.png',
-	'6': 'assets/6.png',
-	'7': 'assets/7.png',
-	'8': 'assets/8.png',
-	'9': 'assets/9.png',
-	'oeps': 'assets/oeps.jpg',
-	'open': 'assets/open.png',
-	'open-hover': 'assets/open-hover.png',
-	'opnieuw': 'assets/opnieuw.png',
-	'opnieuw-hover': 'assets/opnieuw-hover.png',
-	'ossie': 'assets/ossie.png',
-	'slash': 'assets/slash.png',
-	'sluit': 'assets/sluit.jpg',
-	'sluit-hover': 'assets/sluit-hover.png',
-	'stap': 'assets/stap.png',
-	'stap-hover': 'assets/stap-hover.png',
-	'uitvoeren': 'assets/uitvoeren.png',
-	'uitvoeren-hover': 'assets/uitvoeren-hover.png',
-	'victory': 'assets/placeholder_victory.png',
-	'victory-hover': 'assets/placeholder_victory-hover.png',
-
-	// level specific
-	'als': 'assets/als.png',
-	'anders': 'assets/anders.png',
-	'background': 'assets/achtergrond.jpg',
-	'background1': 'assets/1-achtergrond.jpg',
-	'background2': 'assets/2-achtergrond.jpg',
-	'background3': 'assets/3-achtergrond.jpg',
-	'background4': 'assets/4-achtergrond.jpg',
-	'background5': 'assets/5-achtergrond.jpg',
-	'background6': 'assets/6-achtergrond.jpg',
-	'background7': 'assets/7-achtergrond.jpg',
-	'background8': 'assets/8-achtergrond.jpg',
-	'background9': 'assets/9-achtergrond.jpg',
-	'background10': 'assets/10-achtergrond.jpg',
-	'bracket1': 'assets/nest-1.png',
-	'bracket2': 'assets/nest-2.png',
-	'bracket3': 'assets/nest-3.png',
-	'bracket4': 'assets/nest-4.png',
-	'bracket5': 'assets/nest-5.png',
-	'bracket6': 'assets/nest-6.png',
-	'draailinks': 'assets/draai-links.png',
-	'draailinks-crnt': 'assets/draai-links-crnt.png',
-	'draailinks-hover': 'assets/draai-links-hover.png',
-	'draai-graden': 'assets/draai-graden.png',
-	'draai-graden-hover': 'assets/draai-graden-hover.png',
-	'draairechts': 'assets/draai-rechts.png',
-	'draairechts-crnt': 'assets/draai-rechts-crnt.png',
-	'draairechts-hover': 'assets/draai-rechts-hover.png',
-	'graden': 'assets/draai-graden.png',
-	'herhaal': 'assets/herhaal.png',
-	'herhaal-hover': 'assets/herhaal-hover.png',
-	'herhaal-x': 'assets/herhaal-x.png',
-	'herhaal-x-hover': 'assets/herhaal-x-hover.png',
-	'herhaal-x-1': 'assets/herhaal-x-1.png',
-	'herhaal-x-2': 'assets/herhaal-x-2.png',
-	'herhaal-x-3': 'assets/herhaal-x-3.png',
-	'herhaal-x-4': 'assets/herhaal-x-4.png',
-	'herhaal-x-5': 'assets/herhaal-x-5.png',
-	'herhaal-x-6': 'assets/herhaal-x-6.png',
-	'herhaal-x-7': 'assets/herhaal-x-7.png',
-	'herhaal-x-8': 'assets/herhaal-x-8.png',
-	'herhaal-x-9': 'assets/herhaal-x-9.png',
-	'vraagteken': 'assets/vraagteken.png',
 }

@@ -3,16 +3,17 @@
 <head>
     <style src="ossie_style.css"></style>
     <!-- <script src="https://cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script> -->
+    <script src="constants.js"></script>
     <script src="phaser.min.js"></script>
     <script src="utils.js"></script>
     <script src="inter_phaser.js"></script>
     <script src="ossie_game.js"></script>
 </head>
-<body style="background-color:black;">
+<body style="background-color:white;">
     <div>
+    <script src="level1.js"></script>
     <script src="level2.js"></script>
     <!--
-    <script src="level1.js"></script>
     <script src="level3a.js"></script>
     <script src="level3b.js"></script>
     <script src="level3c.js"></script>
@@ -23,15 +24,14 @@
     var config = {
         type: Phaser.WEBGL,
         parent: 'phaser-example',
-        width: window.innerWidth * window.devicePixelRatio,
-        height: window.innerHeight * window.devicePixelRatio,
+        width: 1024,
+        height: 786,
         // scale: 'SHOW_ALL',
         // orientation: 'LANDSCAPE',
-        scene: [window.level2]
+        scene: [window.level1]
     };
 
     // make phaser game object
-    console.log(level2, window.level2);
     var game = new Phaser.Game(config);
     </script>
     <script>

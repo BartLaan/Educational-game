@@ -35,7 +35,7 @@ Utils.strToCoord = function(coordStr) {
 
 Utils.boardToNodes = function(board) {
 	let nodes = {};
-	console.log(board);
+
 	for (let y in board) {
 		y = parseInt(y, 10);
 		for (let x in board[y]) {
@@ -117,10 +117,45 @@ Utils.cardinalToAngle = function(cardinal) {
 // Turn the orientation clockwise if clockWise is true, otherwise counterclockwise. Should only be used with cardinals
 Utils.turnClock = function(orientation, clockWise) {
 	let cardinals = ['north', 'east', 'south', 'west'];
-	let shift = clockWise ? cardinals.length - 1 : 1; // 3 = -1 when doing modulo operation
+	let shift = clockWise ? 1 : cardinals.length - 1; // 3 = -1 when doing modulo operation
 
 	let orientationIdx = cardinals.indexOf(orientation);
-	let newOrientationIdx = (orientationIdx + shift) % (cardinals.length - 1);
+	console.log(shift);
+	let newOrientationIdx = (orientationIdx + shift) % (cardinals.length);
 
 	return cardinals[newOrientationIdx];
+}
+
+Utils.loadSprites = function(phaser) {
+	let spriteArray = [];
+	spriteArray = spriteArray.concat(COMMON_SPRITES);
+
+	for (let objName of phaser.objects) {
+		let objConfig = OBJECT_CONF[objName];
+		if (
+			objConfig !== undefined
+			&& objConfig.spriteID !== undefined
+			&& spriteArray.indexOf(objConfig.spriteID) === -1
+		) {
+			spriteArray.push(objConfig.spriteID);
+			if (objConfig.interactive === true || objConfig.draggable === true) {
+				spriteArray.push(objConfig.spriteID + "-hover");
+			}
+			if (objConfig.data !== undefined && objConfig.data.command !== undefined) {
+				spriteArray.push(objConfig.spriteID + "-crnt");
+				spriteArray.push(objConfig.spriteID + "-crnt-hover");
+			}
+		} else if (SPRITE_PATHS[objName] !== undefined && spriteArray.indexOf(objName) === -1) {
+			spriteArray.push(objName);
+		}
+	}
+
+	for (let spriteID of spriteArray) {
+		let spriteLocation = SPRITE_PATHS[spriteID];
+		if (spriteLocation !== undefined) {
+			phaser.load.image(spriteID, spriteLocation);
+		} else {
+			console.error('Couldnt find sprite with ID', spriteID);
+		}
+	}
 }
