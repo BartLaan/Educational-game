@@ -53,7 +53,7 @@ SPRITE_PATHS = {
 	'7': 'assets/integers/7.png',
 	'8': 'assets/integers/8.png',
 	'9': 'assets/integers/9.png',
-	'oeps': 'assets/popups/oeps.gif',
+	'fail': 'assets/popups/oeps.png',
 	'open': 'assets/commands/open.png',
 	'open-hover': 'assets/commands/open-hover.png',
 	'opnieuw': 'assets/buttons/opnieuw.png',
@@ -68,7 +68,7 @@ SPRITE_PATHS = {
 	'stap-hover': 'assets/commands/stap-hover.png',
 	'uitvoeren': 'assets/buttons/uitvoeren.png',
 	'uitvoeren-hover': 'assets/buttons/uitvoeren-hover.png',
-	'victory': 'assets/popups/goed-gedaan.gif',
+	'victory': 'assets/popups/goed-gedaan.png',
 
 	// level specific
 	'als-padvooruit': 'assets/commands/als-pad-vooruit.png',
@@ -131,7 +131,7 @@ COMMON_SPRITES = [
 	'7',
 	'8',
 	'9',
-	'oeps',
+	'fail',
 	'open',
 	'open-hover',
 	'opnieuw',
@@ -205,6 +205,14 @@ OBJECT_CONF = {
 		scaling: 1,
 		spriteID: 'draairechts',
 	},
+	failButton: {
+		depth: 4,
+		interactive: true,
+		offsetX: FAILBUTTON_X,
+		offsetY: FAILBUTTON_Y,
+		scaling:  ,
+		spriteID: ,
+	}
 	herhaal: {
 		data: { command: "for"},
 		draggable: true,

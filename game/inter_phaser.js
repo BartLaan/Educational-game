@@ -205,10 +205,6 @@ InterPhaser.prototype.setInteractions = function() {
 		window.game.scene.start(myself.levelConfig.levelName);
 	}, this);
 
-	// ================================================================
-	// PLAYER AND COMMAND MOVEMENT INTERACTIONS
-	// ================================================================
-
 	phsr.input.on('pointerover', function (event, gameObjectList) {
 		let object = gameObjectList[0];
 		if (object !== undefined) {
@@ -338,7 +334,7 @@ InterPhaser.prototype.removeFromStack = function(object) {
 	if (objectIndex !== -1) {
 		this.stackObjects.splice(objectIndex, 1);
 		this.positionCommands();
-		if (object.data !== undefined && ['if', 'for'].indexOf(object.data.command) !== -1) {
+		if (object.data !== undefined && BRACKET_OBJECTS.indexOf(object.name) !== -1) {
 			this.clearBracketObject(object);
 		}
 		this.eventHandler(PHASER_STACK_DELETE, { stackIndex: object.data.stackIndex });
@@ -360,8 +356,10 @@ InterPhaser.prototype.hasObject = function(objectName) {
 
 InterPhaser.prototype.fail = function() {
 	let loseImage = this.phaser.add.image(0, 0, 'fail');
-	Phaser.Display.Align.In.Center(loseImage, this.background);
+	console.log(loseImage, this.background);
+	Phaser.Display.Align.In.Center(loseImage, this.pObjects.background);
 	loseImage.setInteractive();
+	loseImage.setDepth(3);
 
 	let me = this;
 	loseImage.on('pointerdown', function (pointer) {
@@ -373,15 +371,15 @@ InterPhaser.prototype.fail = function() {
 * displays a victory image on screen when victory event is fired
 */
 InterPhaser.prototype.win = function() {
-	let victoryimage = this.phaser.add.image(0, 0, 'victory');
-	Phaser.Display.Align.In.Center(victoryimage, this.background);
-	victoryimage.setDisplaySize(this.width/4, this.height/4)
+	let victoryImage = this.phaser.add.image(0, 0, 'victory');
+	Phaser.Display.Align.In.Center(victoryImage, this.pObjects.background);
+	victoryImage.setDisplaySize(this.width/4, this.height/4)
 
 	let me = this;
 	this.setTimeout(function(){
 		// add buttons here;
-		victoryimage.setInteractive()
-		victoryimage.on('pointerdown', function (pointer) {
+		victoryImage.setInteractive()
+		victoryImage.on('pointerdown', function (pointer) {
 			console.log("loading next level");
 			window.game.scene.stop(me.levelName);
 			window.game.scene.start(me.nextLevelName);
@@ -394,6 +392,7 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	playerConfig = OBJECT_CONF.player
 	player.x = playerConfig.offsetX * this.width;
 	player.y = playerConfig.offsetY * this.height;
+
 	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
 		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
 		player.x += this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
