@@ -10,7 +10,6 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 
 InterPhaser.prototype.setLevel = function() {
 	let phsr = this.phaser
-	// everything is based off the window height, based on the assumpation that all screens it will be played on have width space to spare
 	// let height = window.innerHeight
 	// let width = window.innerHeight * WH_RATIO
 	let height = 786
@@ -20,7 +19,6 @@ InterPhaser.prototype.setLevel = function() {
 	this.width = width
 	this.scalingfactor = scalingfactor
 
-	// this was done by trial and error, sorry bout that
 	this.stepsize_horizontal = height * BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
 	this.stepsize_vertical = height * BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
 	this.boardOffsetX = width * BOARD_OFFSET_X
@@ -29,6 +27,8 @@ InterPhaser.prototype.setLevel = function() {
 	// ================================================================
 	// PREPARING ASSETS
 	// ================================================================
+
+	// Set static objects
 	this.pObjects = {};
 	let pObjects = this.pObjects;
 	this.stackObjects = [];
@@ -47,12 +47,17 @@ InterPhaser.prototype.setLevel = function() {
 		this.pObjects.stepcount_total_pt2 = this.setGameObject(OBJECT_CONF.stepcount_total_pt2, 'stepcount_total_pt2');
 	}
 
-	// Initialize all game objects
+	this.setDynamicObjects();
+}
+
+InterPhaser.prototype.setDynamicObjects = function() {
+	let pObjects = this.pObjects;
+
 	for (let objectName of INIT_OBJECTS) {
 		if (!this.hasObject(objectName)) { continue; }
 		let objConfig = OBJECT_CONF[objectName];
-		// normal objects
 
+		// normal objects
 		if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
 			pObjects[objectName] = this.setGameObject(objConfig, objectName);
 			pObjects[objectName].name = objectName;
@@ -65,7 +70,6 @@ InterPhaser.prototype.setLevel = function() {
 			pObjects[objectName][0] = object;
 		}
 	}
-	console.log(pObjects);
 
 	pObjects.player.setOrigin(0.5);
 	this.updateOssiePos(this.levelConfig.initPosition);
@@ -172,9 +176,11 @@ InterPhaser.prototype.setInteractions = function() {
 		if (!pointer.isDown && myself.inDropZone(pointer)) {
 			return myself.dropObjectOnStack(pointer, gameObject);
 		}
+		// Dropped outside of drop zone -> delete this object (except not really because .destroy() doesn't work)
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
 			myself.pObjects[gameObject.name][gameObject.data.i] = undefined;
 			gameObject.visible = false;
+			gameObject.draggable = false
 		} else {
 			let conf = OBJECT_CONF[gameObject.name];
 			gameObject.x = myself.width * conf.offsetX;
@@ -198,12 +204,7 @@ InterPhaser.prototype.setInteractions = function() {
 
 	// rewrite this function using restart and this. methods
 	// reloads the whole scene, should instead just reposition objects etc.
-	pOjs.opnieuw.on('pointerdown', function (pointer) {
-		console.log("restarting level")
-		myself.eventHandler(PHASER_STACK_RESET);
-		window.game.scene.stop(myself.levelConfig.levelName);
-		window.game.scene.start(myself.levelConfig.levelName);
-	}, this);
+	pOjs.opnieuw.on('pointerdown', this.resetLevel.bind(this));
 
 	phsr.input.on('pointerover', function (event, gameObjectList) {
 		let object = gameObjectList[0];
@@ -357,6 +358,11 @@ InterPhaser.prototype.hasObject = function(objectName) {
 InterPhaser.prototype.fail = function() {
 	let loseImage = this.phaser.add.image(0, 0, 'fail');
 	console.log(loseImage, this.background);
+	let confirmFail = this.setGameObject(OBJECT_CONF['okButton'], 'confirmFail');
+	this.pObjects['confirmFail'] = confirmFail;
+	confirmFail.on('pointerdown', this.resetLevel);
+	// confirmFail.alpha = 0
+
 	Phaser.Display.Align.In.Center(loseImage, this.pObjects.background);
 	loseImage.setInteractive();
 	loseImage.setDepth(3);
@@ -458,6 +464,28 @@ InterPhaser.prototype.clearBracketObject = function(gameObject) {
 		}
 		this.stackObjects.splice(objectIndex, 1);
 	}
+}
+
+InterPhaser.prototype.loadNextLevel = function() {
+
+}
+InterPhaser.prototype.resetLevel = function() {
+		console.log("restarting level")
+		this.eventHandler(PHASER_STACK_RESET);
+		// Lots of prior knowledge here: we are
+		for (let objectName in INIT_OBJECTS) {
+			if (this.pObjects[objectName] === undefined) { continue }
+
+			if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
+				this.pObjects[objectName].destroy();
+			} else {
+				for (let object of this.pObjects[objectName]) {
+					object.destroy();
+				}
+			}
+		}
+		window.game.scene.stop(this.levelConfig.levelName);
+		window.game.scene.start(this.levelConfig.levelName);
 }
 
 window.handleRepeat = function() {

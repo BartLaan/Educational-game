@@ -4,6 +4,8 @@ BOARD_OFFSET_X = 0.3
 BOARD_OFFSET_Y = 0.035
 COMMAND_AREA_X = 0.39
 COMMAND_AREA_Y = 0.76
+FAILBUTTON_X = 0.4
+FAILBUTTON_Y = 0.6
 SCALING_FACTOR_DIV = 1024
 STACK_BRACKET_SPACING = 0.03
 STACK_COMMAND_SPACING = 0.04
@@ -149,7 +151,7 @@ COMMON_SPRITES = [
 	'victory',
 ];
 
-// Only static objects
+// Initial configuration for objects
 OBJECT_CONF = {
 	als_padvooruit: {
 		data: { command: 'if', condition: 'CONDITIONAL_FORWARDFREE' },
@@ -205,14 +207,6 @@ OBJECT_CONF = {
 		scaling: 1,
 		spriteID: 'draairechts',
 	},
-	failButton: {
-		depth: 4,
-		interactive: true,
-		offsetX: FAILBUTTON_X,
-		offsetY: FAILBUTTON_Y,
-		scaling:  ,
-		spriteID: ,
-	}
 	herhaal: {
 		data: { command: "for"},
 		draggable: true,
@@ -228,6 +222,14 @@ OBJECT_CONF = {
 		offsetY: COMMAND_AREA_Y,
 		scaling: 1,
 		spriteID: 'herhaal-x',
+	},
+	okButton: {
+		depth: 4,
+		interactive: true,
+		offsetX: FAILBUTTON_X,
+		offsetY: FAILBUTTON_Y,
+		scaling: 1,
+		spriteID: 'uitvoeren',
 	},
 	open: {
 		data: { command: 'open' },
