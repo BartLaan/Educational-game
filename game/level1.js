@@ -4,6 +4,7 @@ window.level1 = new Phaser.Class({
 
 	objects: COMMON_OBJECTS.concat([
 		'background1',
+		'instruction1',
 		'levelcount',
 		'opnieuw',
 		'player',
@@ -43,6 +44,7 @@ window.level1 = new Phaser.Class({
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
+			instruction: 'instruction1',
 			maxCommands: 10,
 			levelName: 'level1',
 			nextLevelName: 'level2',

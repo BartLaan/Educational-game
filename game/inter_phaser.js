@@ -6,7 +6,22 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
 	this.setLevel();
 	this.setInteractions();
+	this.showIntro();
 };
+
+InterPhaser.prototype.showIntro = function() {
+	let introImage = this.phaser.add.image(0, 0, this.levelConfig.instruction);
+	Phaser.Display.Align.In.Center(introImage, this.pObjects.background);
+	introImage.setInteractive();
+	introImage.setDepth(3);
+
+	let me = this;
+	introImage.on('pointerdown', function(pointer) {
+		if (me.isOnConfirmButton(pointer)) {
+			introImage.destroy();
+		}
+	});
+}
 
 InterPhaser.prototype.setLevel = function() {
 	let phsr = this.phaser
@@ -66,10 +81,37 @@ InterPhaser.prototype.setDynamicObjects = function() {
 			pObjects[objectName] = {};
 			let objectRef = objectName + '-' + 0;
 			let object = this.setGameObject(objConfig, objectRef);
-			object.data.i = 0;
+			object.setData('i', 0);
 			pObjects[objectName][0] = object;
 		}
 	}
+
+	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
+		if (this.hasObject('vraagteken')) {
+			let vraagtekenCoords = Utils.strToCoord(this.levelConfig.goalPosition);
+			pObjects.vraagteken.x += this.boardOffsetX;
+			pObjects.vraagteken.y += this.boardOffsetY;
+			pObjects.vraagteken.x += this.stepsize_horizontal * vraagtekenCoords.x;
+			pObjects.vraagteken.y += this.stepsize_vertical * vraagtekenCoords.y;
+		}
+	// ELSE ??
+	}
+
+	let me = this;
+	pObjects.uitvoeren.on('pointerdown', function (pointer) {
+		this.setTint(0xff0000);
+		me.eventHandler(PHASER_STACK_START);
+	});
+
+	pObjects.uitvoeren.on('pointerout', function (pointer) {
+		this.clearTint();
+	});
+
+	pObjects.uitvoeren.on('pointerup', function (pointer) {
+		this.clearTint();
+	});
+
+	pObjects.opnieuw.on('pointerdown', this.resetLevel.bind(this));
 
 	pObjects.player.setOrigin(0.5);
 	this.updateOssiePos(this.levelConfig.initPosition);
@@ -82,10 +124,12 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 	gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling);
 
 	if (config.data !== undefined) {
-		gameObject.data = Utils.deepCopy(config.data);
+		for (let key in config.data) {
+			gameObject.setData(key, config.data[key])
+		}
 		// This is a command object, we need a reference to itself for when we pass it to the stack
 		if (config.data.command !== undefined) {
-			gameObject.data.objectRef = id;
+			gameObject.setData('command', id);
 		}
 	}
 	if (config.offsetX !== undefined) {
@@ -105,6 +149,32 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 	return gameObject;
 }
 
+InterPhaser.prototype.loadNextLevel = function() {
+
+}
+InterPhaser.prototype.resetLevel = function() {
+	console.log("restarting level")
+	this.eventHandler(PHASER_STACK_RESET);
+	// Lots of prior knowledge here: we are
+	for (let objectName of INIT_OBJECTS) {
+		console.log('resetting object', objectName);
+		console.log(this.pObjects[objectName])
+		if (this.pObjects[objectName] === undefined) { continue }
+		if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
+			this.pObjects[objectName].destroy();
+		} else {
+			for (let objectKey in this.pObjects[objectName]) {
+				let object = this.pObjects[objectName][objectKey];
+				object.destroy();
+			}
+		}
+	}
+	this.setDynamicObjects();
+	this.setInteractions();
+	// window.game.scene.stop(this.levelConfig.levelName);
+	// window.game.scene.start(this.levelConfig.levelName);
+}
+
 InterPhaser.prototype.setInteractions = function() {
 	// ================================================================
 	// PREPARING DEFAULT GAME INTERACTIONS
@@ -118,17 +188,6 @@ InterPhaser.prototype.setInteractions = function() {
 
 	// this.renderDropZone();
 	this.stackPos = { "x": width * STACK_ZONE_POS_X, "y": height * STACK_ZONE_POS_Y };
-
-	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
-		if (this.hasObject('vraagteken')) {
-			let vraagtekenCoords = Utils.strToCoord(this.levelConfig.goalPosition);
-			pOjs.vraagteken.x += this.boardOffsetX;
-			pOjs.vraagteken.y += this.boardOffsetY;
-			pOjs.vraagteken.x += this.stepsize_horizontal * vraagtekenCoords.x;
-			pOjs.vraagteken.y += this.stepsize_vertical * vraagtekenCoords.y;
-		}
-	// ELSE ??
-	}
 
 	// ================================================================
 	// handle click events for different buttons
@@ -150,11 +209,11 @@ InterPhaser.prototype.setInteractions = function() {
 
 		let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1;
 		// Dragging from original position, so create another one under the hood
-		if (canHaveMultiple && gameObject.data !== undefined && gameObject.data.stackIndex === undefined) {
-			let newObjectI = gameObject.data.i + 1;
+		if (canHaveMultiple && gameObject.getData('stackIndex') === undefined) {
+			let newObjectI = gameObject.getData('i') + 1;
 			let newObjectRef = gameObject.name + '-' + newObjectI.toString();
 			let newObject = myself.setGameObject(OBJECT_CONF[gameObject.name], newObjectRef);
-			newObject.data.i = newObjectI;
+			newObject.setData('i', newObjectI);
 			myself.pObjects[gameObject.name][newObjectI] = newObject;
 		}
 	});
@@ -178,9 +237,8 @@ InterPhaser.prototype.setInteractions = function() {
 		}
 		// Dropped outside of drop zone -> delete this object (except not really because .destroy() doesn't work)
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
-			myself.pObjects[gameObject.name][gameObject.data.i] = undefined;
-			gameObject.visible = false;
-			gameObject.draggable = false
+			myself.pObjects[gameObject.name][gameObject.getData('i')] = undefined;
+			gameObject.destroy();
 		} else {
 			let conf = OBJECT_CONF[gameObject.name];
 			gameObject.x = myself.width * conf.offsetX;
@@ -188,23 +246,6 @@ InterPhaser.prototype.setInteractions = function() {
 		}
 		myself.newDrag = false;
 	});
-
-	pOjs.uitvoeren.on('pointerdown', function (pointer) {
-		this.setTint(0xff0000);
-		myself.eventHandler(PHASER_STACK_START);
-	});
-
-	pOjs.uitvoeren.on('pointerout', function (pointer) {
-		this.clearTint();
-	});
-
-	pOjs.uitvoeren.on('pointerup', function (pointer) {
-		this.clearTint();
-	});
-
-	// rewrite this function using restart and this. methods
-	// reloads the whole scene, should instead just reposition objects etc.
-	pOjs.opnieuw.on('pointerdown', this.resetLevel.bind(this));
 
 	phsr.input.on('pointerover', function (event, gameObjectList) {
 		let object = gameObjectList[0];
@@ -275,7 +316,7 @@ InterPhaser.prototype.dropObjectOnStack = function(pointer, gameObject, extra) {
 	}
 
 	// First input the amount of repeats for herhaal-x
-	if (gameObject.data.command === "for" && gameObject.data.counts === null ) {
+	if (gameObject.getData('command') === "for" && gameObject.getData('counts') === null ) {
 		toggleRepeatOverlay();
 		this.selectedObject = gameObject;
 		return;
@@ -288,7 +329,9 @@ InterPhaser.prototype.dropObjectOnStack = function(pointer, gameObject, extra) {
 		let bracketBottom = this.stackObjects[this.stackIndex + 2];
 		this.eventHandler(PHASER_STACK_ADD, { stackItem: bracketBottom, stackIndex: this.stackIndex });
 	}
-	this.eventHandler(PHASER_STACK_ADD, { stackItem: gameObject.data, stackIndex: this.stackIndex });
+
+	console.log('heeeere', gameObject, gameObject.getData('command'));
+	this.eventHandler(PHASER_STACK_ADD, { stackItem: gameObject.data.values, stackIndex: this.stackIndex });
 
 	this.positionCommands();
 	this.newDrag = false // fixes the bug where this function triggers all the time
@@ -319,7 +362,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 
 		let tryTempSpace = pointer !== undefined && (object.name !== 'bracketSide' || object.name !== 'bracketTop')
 		if (this.stackIndex === undefined && tryTempSpace && (pointer.y < object.y + (object.height / 2))) {
-			this.stackIndex = object.data.stackIndex;
+			this.stackIndex = object.getData('stackIndex');
 			object.y += commandSpacing;
 		}
 
@@ -335,10 +378,10 @@ InterPhaser.prototype.removeFromStack = function(object) {
 	if (objectIndex !== -1) {
 		this.stackObjects.splice(objectIndex, 1);
 		this.positionCommands();
-		if (object.data !== undefined && BRACKET_OBJECTS.indexOf(object.name) !== -1) {
+		if (BRACKET_OBJECTS.indexOf(object.name) !== -1) {
 			this.clearBracketObject(object);
 		}
-		this.eventHandler(PHASER_STACK_DELETE, { stackIndex: object.data.stackIndex });
+		this.eventHandler(PHASER_STACK_DELETE, { stackIndex: object.getData('stackIndex') });
 	}
 	this.updateStepcount();
 }
@@ -346,7 +389,7 @@ InterPhaser.prototype.removeFromStack = function(object) {
 InterPhaser.prototype.updateStepcount = function() {
 	let stepCounter = this.pObjects.stepcount;
 	let lastStackObject = this.stackObjects.slice(-1)[0];
-	let commandTotal = lastStackObject === undefined ? 0 : lastStackObject.data.stackIndex + 1;
+	let commandTotal = lastStackObject === undefined ? 0 : lastStackObject.getData('stackIndex') + 1;
 	let newTexture = commandTotal.toString();
 	stepCounter.setTexture(newTexture);
 }
@@ -357,20 +400,15 @@ InterPhaser.prototype.hasObject = function(objectName) {
 
 InterPhaser.prototype.fail = function() {
 	let loseImage = this.phaser.add.image(0, 0, 'fail');
-	console.log(loseImage, this.background);
-	let confirmFail = this.setGameObject(OBJECT_CONF['okButton'], 'confirmFail');
-	this.pObjects['confirmFail'] = confirmFail;
-	confirmFail.on('pointerdown', this.resetLevel);
-	// confirmFail.alpha = 0
-
 	Phaser.Display.Align.In.Center(loseImage, this.pObjects.background);
 	loseImage.setInteractive();
 	loseImage.setDepth(3);
 
 	let me = this;
-	loseImage.on('pointerdown', function (pointer) {
-		window.game.scene.stop(me.levelName);
-		window.game.scene.start(me.levelName);
+	introImage.on('pointerdown', function(pointer) {
+		if (me.isOnConfirmButton(pointer)) {
+			introImage.destroy();
+		}
 	});
 }
 /**
@@ -384,11 +422,13 @@ InterPhaser.prototype.win = function() {
 	let me = this;
 	this.setTimeout(function(){
 		// add buttons here;
-		victoryImage.setInteractive()
+		victoryImage.setInteractive();
 		victoryImage.on('pointerdown', function (pointer) {
-			console.log("loading next level");
-			window.game.scene.stop(me.levelName);
-			window.game.scene.start(me.nextLevelName);
+			if (me.isOnConfirmButton(pointer)) {
+				console.log("loading next level");
+				window.game.scene.stop(me.levelName);
+				window.game.scene.start(me.nextLevelName);
+			}
 		}, me);
 	}, VICTORY_TIMEOUT);
 }
@@ -413,6 +453,16 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	}
 }
 
+InterPhaser.prototype.isOnConfirmButton = function(pointer) {
+	let confirmRangeMinX = this.width * CONFIRM_POS_X;
+	let confirmRangeMinY = this.width * CONFIRM_POS_Y;
+	return (
+		pointer.x >= confirmRangeMinX
+		&& pointer.x <= this.width * CONFIRM_WIDTH + confirmRangeMinX
+		&& pointer.y >= confirmRangeMinY
+		&& pointer.y <= this.width * CONFIRM_HEIGHT + confirmRangeMinY
+	);
+}
 InterPhaser.prototype.onCommandExecute = function(commandID) {
 	this.executingCommand = true;
 	let [commandName, commandI] = commandID.split('-');
@@ -425,7 +475,7 @@ InterPhaser.prototype.onCommandExecute = function(commandID) {
 	this.activeCommand = commandObject;
 
 	// color the current command if it is not the repeat command
-	if (BRACKET_OBJECTS.indexOf(commandObject.data.command) === -1) {
+	if (BRACKET_OBJECTS.indexOf(commandObject.getData('command')) === -1) {
 		let crntTexture = OBJECT_CONF[commandObject.name].spriteID + '-crnt';
 		if (SPRITE_PATHS[crntTexture] !== undefined) {
 			commandObject.setTexture(crntTexture);
@@ -445,7 +495,7 @@ InterPhaser.prototype.insertBrackets = function(gameObject) {
 
 		console.log(object);
 		if (objectName === 'bracketBottom') {
-			object.data.blockRef = gameObject.data.stackIndex
+			object.setData('blockRef', gameObject.getData('stackIndex'));
 		}
 	}
 }
@@ -456,7 +506,7 @@ InterPhaser.prototype.clearBracketObject = function(gameObject) {
 
 	for (let i=objectIndex+1; i < this.stackObjects.length; i) {
 		let object = this.stackObject[object];
-		if (object.data.bracketRef !== gameObject.data.stackIndex) { break; }
+		if (object.getData('bracketRef') !== gameObject.getData('stackIndex')) { break; }
 
 		if (bracketItems.indexOf(object.name) !== -1) {
 			this.pObjects[objID].destroy();
@@ -466,32 +516,10 @@ InterPhaser.prototype.clearBracketObject = function(gameObject) {
 	}
 }
 
-InterPhaser.prototype.loadNextLevel = function() {
-
-}
-InterPhaser.prototype.resetLevel = function() {
-		console.log("restarting level")
-		this.eventHandler(PHASER_STACK_RESET);
-		// Lots of prior knowledge here: we are
-		for (let objectName in INIT_OBJECTS) {
-			if (this.pObjects[objectName] === undefined) { continue }
-
-			if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
-				this.pObjects[objectName].destroy();
-			} else {
-				for (let object of this.pObjects[objectName]) {
-					object.destroy();
-				}
-			}
-		}
-		window.game.scene.stop(this.levelConfig.levelName);
-		window.game.scene.start(this.levelConfig.levelName);
-}
-
 window.handleRepeat = function() {
 	console.log("herhalingen: ", document.repeatform.herhalingen.value)
 	toggleRepeatOverlay()
-	this.selectedObject.data.repeats = document.repeatform.herhalingen.value
+	this.selectedObject.setData('repeats', document.repeatform.herhalingen.value);
 	insertBrackets(null, this.selectedObject)
 }
 // FUNCTIONS TO HANDLE INTERACTION WITH HTML

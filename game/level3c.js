@@ -46,6 +46,7 @@ window.level1 = new Phaser.Class({
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
+			instruction: 'instruction3c',
 			maxCommands: 10,
 			levelName: 'level3c',
 			nextLevelName: 'level4',

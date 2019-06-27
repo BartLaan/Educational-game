@@ -140,7 +140,7 @@ OssieGame.prototype.updateIndicesInner = function(stack, counter) {
 		// updates the indices of every item to their array index + the passed counter
 		object.stackIndex = counter;
 		if (object.do !== undefined) {
-			counter = this.updateStackIndices(object.do, counter);
+			counter = this.updateStackIndices(object.getData('do'), counter);
 		}
 		counter += 1
 	}
