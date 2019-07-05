@@ -1,4 +1,4 @@
-window.level2 = new Phaser.Class({
+Level2 = new Phaser.Class({
 	Extends: Phaser.Scene,
 
 	objects: COMMON_OBJECTS.concat([

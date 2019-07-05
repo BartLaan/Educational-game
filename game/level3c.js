@@ -1,4 +1,4 @@
-window.level1 = new Phaser.Class({
+Level3c = new Phaser.Class({
 
 	Extends: Phaser.Scene,
 
