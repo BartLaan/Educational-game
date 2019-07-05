@@ -5,10 +5,9 @@ function OssieGame(levelConfig, phaser) {
 	this.checkLevelConfig(levelConfig);
 	this.nodes = levelConfig.nodes;
 	this.initPosition = levelConfig.initPosition;
-	this.ossiePos = levelConfig.initPosition;
+	this.ossiePos = Utils.deepCopy(levelConfig.initPosition);
 	this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this));
 	console.log(this.interPhaser);
-	this.stack = [];
 };
 
 OssieGame.prototype.checkLevelConfig = function(levelConfig) {
@@ -36,30 +35,27 @@ OssieGame.prototype.phaserHandler = function(eventCode, data) {
 		case PHASER_STACK_RESET:
 			clearTimeout(this.timer);
 			this.resetOssie();
-			this.clearStack();
 			break;
 		case PHASER_STACK_START:
+			this.stack = data.stack;
 			this.gameStart();
-			break;
-		case PHASER_STACK_DELETE:
-			this.deleteStackItem(data.stackIndex);
-			this.updateStackIndices();
-			break;
-		case PHASER_STACK_ADD:
-			this.addToStack(data.stackIndex, data.stackItem);
-			this.updateStackIndices();
 			break;
 		default:
 	}
 }
 
 OssieGame.prototype.eventHandler = function(eventCode, data) {
+	console.log('OSSIE EVENT: eventCode=' + eventCode + '; data=', data);
 	switch (eventCode) {
 		case STACK_EXECUTE_COMMAND:
 			this.interPhaser.onCommandExecute(data);
 			break;
 		case STACK_FAIL:
-			this.interPhaser.fail();
+		case STACK_OPEN_END:
+			setTimeout(function(){
+				this.interPhaser.fail();
+				this.resetOssie();
+			}.bind(this), 800);
 			break;
 		case STACK_OSSIEPOS_CHANGE:
 			this.interPhaser.updateOssiePos(this.getPosition());
@@ -127,75 +123,75 @@ OssieGame.prototype.allowedCommands = Object.keys(OssieGame.prototype.commandSpe
 OssieGame.prototype.timing = 500;
 OssieGame.prototype.secretLimit = 20;
 
-// Update the indices of stack items
-OssieGame.prototype.updateStackIndices = function() {
-	this.updateIndicesInner(this.stack, 0);
-}
-// Recursive inner loop to update stack indices.
-// Essentially numbers the commands how they appear chronologically
-OssieGame.prototype.updateIndicesInner = function(stack, counter) {
-	for (let i in stack) {
-		let object = stack[i];
+// // Update the indices of stack items
+// OssieGame.prototype.updateStackIndices = function() {
+// 	this.updateIndicesInner(this.stack, 0);
+// }
+// // Recursive inner loop to update stack indices.
+// // Essentially numbers the commands how they appear chronologically
+// OssieGame.prototype.updateIndicesInner = function(stack, counter) {
+// 	for (let i in stack) {
+// 		let object = stack[i];
+//
+// 		// updates the indices of every item to their array index + the passed counter
+// 		object.setData('stackIndex', counter);
+// 		if (object.do !== undefined) {
+// 			counter = this.updateStackIndices(object.do, counter);
+// 		}
+// 		counter += 1
+// 	}
+// 	return counter
+// }
+//
+// OssieGame.prototype.addToStack = function(stackIndex, stackItem, stack) {
+// 	if (stackIndex === undefined) {
+// 		return this.stack.push(stackItem);
+// 	}
+// 	if (stack === undefined) {
+// 		stack = this.stack;
+// 	}
+//
+// 	for (let i in stack) {
+// 		let object = stack[i];
+// 		if (object.stackIndex === stackIndex) {
+// 			// Weird check to ensure the stackItem gets placed in the right .do
+// 			if (object.commandID === 'blockend') {
+// 				stack[i-1].do.push(stackItem);
+// 			} else {
+// 				stack.splice(i, 0, stackItem);
+// 			}
+// 			return true;
+// 		}
+// 		if (object.do !== undefined) {
+// 			if (this.addToStack(stackIndex, stackItem, object.do)) {
+// 				return true;
+// 			}
+// 		}
+// 	}
+// 	return false;
+// }
 
-		// updates the indices of every item to their array index + the passed counter
-		object.stackIndex = counter;
-		if (object.do !== undefined) {
-			counter = this.updateStackIndices(object.getData('do'), counter);
-		}
-		counter += 1
-	}
-	return counter
-}
-
-OssieGame.prototype.addToStack = function(stackIndex, stackItem, stack) {
-	if (stackIndex === undefined) {
-		return this.stack.push(stackItem);
-	}
-	if (stack === undefined) {
-		stack = this.stack;
-	}
-
-	for (let i in stack) {
-		let object = stack[i];
-		if (object.stackIndex === stackIndex) {
-			// Weird check to ensure the stackItem gets placed in the right .do
-			if (object.command === 'blockend') {
-				stack[i-1].do.push(stackItem);
-			} else {
-				stack.splice(i, 0, stackItem);
-			}
-			return true;
-		}
-		if (object.do !== undefined) {
-			if (this.addToStack(stackIndex, stackItem, object.do)) {
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-OssieGame.prototype.deleteStackItem = function(stackIndex, stack) {
-	if (stack === undefined) {
-		stack = this.stack;
-	}
-
-	for (let i in stack) {
-		let object = stack[i];
-		if (object.stackIndex === stackIndex) {
-			stack.splice(i, 1);
-			this.updateStackIndices();
-			return true;;
-		}
-
-		if (object.do !== undefined) {
-			if (this.deleteStackItem(stackIndex, object.do)) {
-				return true;
-			}
-		}
-	}
-	return false;
-}
+// OssieGame.prototype.deleteStackItem = function(stackIndex, stack) {
+// 	if (stack === undefined) {
+// 		stack = this.stack;
+// 	}
+//
+// 	for (let i in stack) {
+// 		let object = stack[i];
+// 		if (object.stackIndex === stackIndex) {
+// 			stack.splice(i, 1);
+// 			this.updateStackIndices();
+// 			return true;;
+// 		}
+//
+// 		if (object.do !== undefined) {
+// 			if (this.deleteStackItem(stackIndex, object.do)) {
+// 				return true;
+// 			}
+// 		}
+// 	}
+// 	return false;
+// }
 
 OssieGame.prototype.getStackItem = function(stackIndex, stack) {
 	if (stack === undefined) {
@@ -221,12 +217,8 @@ OssieGame.prototype.getPosition = function() {
 	return this.ossiePos;
 }
 
-// not used
-OssieGame.prototype.clearStack = function() {
-	this.stack = [];
-}
 OssieGame.prototype.resetOssie = function() {
-	this.ossiePos = this.initPosition;
+	this.ossiePos = Utils.deepCopy(this.initPosition);
 	this.eventHandler(STACK_OSSIEPOS_CHANGE);
 }
 
@@ -282,7 +274,7 @@ OssieGame.prototype.conditional = function(conditionalCode) {
 
 OssieGame.prototype.gameStart = function() {
 	let stackToExecute = Utils.deepCopy(this.stack);
-	if (stackToExecute.shift().command !== 'open') {
+	if (stackToExecute.shift().commandID !== 'open') {
 		return this.eventHandler(STACK_FORGOTOPEN);
 	}
 
@@ -319,18 +311,18 @@ OssieGame.prototype.stackExecute = function(stack, callbackStacks) {
 // Execute a stack item. Returns true if player enters win condition
 OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 	let stackItem = stack[0];
-	this.debugStackItem(stackItem);
+	// this.debugStackItem(stackItem);
 
 	this.eventHandler(STACK_EXECUTE_COMMAND, stackItem.objectRef);
 	// For loops prepend the current stack to callbackStacks and call stackExecute with the for stack:
 	// stackExecute(forStack, [currentStack, ...callbackStacks])
 	// Everytime this happens, the counter of the forloop updates and when it reaches 0, we continue
 	// with the currentStack
-	if (stackItem.command !== "for") {
+	if (stackItem.commandID !== "for") {
 		stack.shift();
 	}
 
-	switch (stackItem.command) {
+	switch (stackItem.commandID) {
 		case "if":
 			callbackStacks.unshift(stack);
 			if (stackItem.condition(this)) {
@@ -346,13 +338,17 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			break;
 
 		case "for":
-			stackItem.counts -= 1;
+			if (stackItem.counter === undefined) {
+				stackItem.setData('counter', 'counts');
+			}
+			stackItem.setData('counter', stackItem.counter - 1);
 			if (stackItem.counts == 0) {
+
 				stack.shift();
 			}
 			callbackStacks.unshift(stack);
 
-			let forStack = Utils.deepCopy(stackItem.do);
+			let forStack = stackItem.do; // deep copy?
 			return this.executeStackItem(forStack, callbackStacks);
 
 		case "step":
@@ -374,29 +370,29 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			return this.gameEnd(true);
 
 		default:
-			console.log('skip command', stackItem.command);
+			console.log('skip command', stackItem.commandID);
 	}
 
 	return this.stackExecute(stack, callbackStacks);
 }
 
 OssieGame.prototype.debugStackItem = function(stackItem) {
-	console.log('Executing stack item: ', stackItem.command);
-	if (stackItem.command === undefined) {
+	console.log('Executing stack item: ', stackItem.commandID);
+	if (stackItem.commandID === undefined) {
 		console.error('Stack error: No action name');
 		return false;
 	}
-	if (this.commandSpecs[stackItem.command] === undefined) {
-		console.error('Stack error: Unrecognized action name "' + stackItem.command + '"');
+	if (this.commandSpecs[stackItem.commandID] === undefined) {
+		console.error('Stack error: Unrecognized action name "' + stackItem.commandID + '"');
 		return false;
 	}
-	for (let requirement of this.commandSpecs[stackItem.command].required) {
+	for (let requirement of this.commandSpecs[stackItem.commandID].required) {
 		if (stackItem[requirement] === undefined) {
-			console.error('Stack error: action "' + stackItem.command + '" missing required property "' + requirement + '"');
+			console.error('Stack error: action "' + stackItem.commandID + '" missing required property "' + requirement + '"');
 			return false;
 		}
 	}
-	if (this.allowedCommands.indexOf(stackItem.command) == -1) {
-		console.error('Stack contains unallowed item "' + stackItem.commandt + '"');
+	if (this.allowedCommands.indexOf(stackItem.commandID) == -1) {
+		console.error('Stack contains unallowed item "' + stackItem.commandID + '"');
 	}
 }

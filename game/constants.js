@@ -10,6 +10,8 @@ COMMAND_AREA_X = 0.39
 COMMAND_AREA_Y = 0.76
 FAILBUTTON_X = 0.4
 FAILBUTTON_Y = 0.6
+LEVEL_NEXT_X = 0.74
+LEVEL_AGAIN_X = 0.25
 SCALING_FACTOR_DIV = 1024
 STACK_BRACKET_SPACING = 0.03
 STACK_COMMAND_SPACING = 0.04
@@ -22,6 +24,7 @@ STEP_COUNT_DISPLAY_Y = 0.934
 STEP_COUNT_SPACING = 0.023;
 VICTORY_TIMEOUT = 1200 // ms
 WH_RATIO = 1.3333333333
+WINBUTTON_Y = 0.88
 
 // EVENTS
 CONDITIONAL_FORWARDFREE = 'CONDITIONAL_FORWARDFREE'
@@ -60,10 +63,12 @@ SPRITE_PATHS = {
 	'8': 								'assets/integers/8.png',
 	'9': 								'assets/integers/9.png',
 	'fail': 							'assets/popups/oeps.png',
+	'nextlevel': 				'assets/buttons/volgende-opdracht.png',
 	'open': 							'assets/commands/open.png',
 	'open-hover': 					'assets/commands/open-hover.png',
 	'opnieuw': 						'assets/buttons/opnieuw.png',
 	'opnieuw-hover': 				'assets/buttons/opnieuw-hover.png',
+	'playagain': 				'assets/buttons/opnieuw-spelen.png',
 	'ossie': 						'assets/ossie.png',
 	'slash': 						'assets/slash.png',
 	'sluit': 						'assets/commands/sluit.png',
@@ -78,8 +83,8 @@ SPRITE_PATHS = {
 
 	// level specific
 	'als-padvooruit': 			'assets/commands/als-pad-vooruit.png',
-	'als_padlinks': 				'assets/commands/als-pad-links.png',
-	'als_padrechts': 				'assets/commands/als-pad-rechts.png',
+	'als-padlinks': 				'assets/commands/als-pad-links.png',
+	'als-padrechts': 				'assets/commands/als-pad-rechts.png',
 	'anders': 						'assets/commands/anders.png',
 	'background1':					'assets/backgrounds/1.jpg',
 	'background2':					'assets/backgrounds/2.jpg',
@@ -146,22 +151,15 @@ SPRITE_PATHS = {
 	'vraagteken':					'assets/vraagteken.png',
 }
 COMMON_SPRITES = [
-	'0',
-	'1',
-	'2',
-	'3',
-	'4',
-	'5',
-	'6',
-	'7',
-	'8',
-	'9',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'fail',
+	'nextlevel',
 	'open',
 	'open-hover',
 	'opnieuw',
 	'opnieuw-hover',
 	'ossie',
+	'playagain',
 	'slash',
 	'sluit',
 	'sluit-hover',
@@ -177,27 +175,27 @@ COMMON_SPRITES = [
 // Initial configuration for objects
 OBJECT_CONF = {
 	als_padvooruit: {
-		data: { command: 'if', condition: 'CONDITIONAL_FORWARDFREE' },
+		command: { commandID: 'if', condition: 'CONDITIONAL_FORWARDFREE' },
 		draggable: true,
 		spriteID: 'als-padvooruit',
 	},
 	als_padlinks: {
-		data: { command: 'if', condition: 'CONDITIONAL_LEFTFREE' },
+		command: { commandID: 'if', condition: 'CONDITIONAL_LEFTFREE' },
 		draggable: true,
 		spriteID: 'als-padlinks',
 	},
 	als_padrechts: {
-		data: { command: 'if', condition: 'CONDITIONAL_RIGHTFREE' },
+		command: { commandID: 'if', condition: 'CONDITIONAL_RIGHTFREE' },
 		draggable: true,
 		spriteID: 'als-padrechts',
 	},
 	anders: {
-		data: { command: 'if' },
+		command: { commandID: 'if' },
 		draggable: true,
 		spriteID: 'anders',
 	},
 	bracketBottom: {
-		data: { command: 'blockend' },
+		command: { commandID: 'blockend' },
 		depth: 1,
 		scaling: 1,
 		spriteID: 'bracket-bottom',
@@ -213,7 +211,7 @@ OBJECT_CONF = {
 		spriteID: 'bracket-top',
 	},
 	draailinks: {
-		data: { command: 'turnL' },
+		command: { commandID: 'turnL' },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.19,
@@ -222,7 +220,7 @@ OBJECT_CONF = {
 		spriteID: 'draailinks',
 	},
 	draairechts: {
-		data: { command: 'turnR' },
+		command: { commandID: 'turnR' },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.32,
@@ -231,7 +229,7 @@ OBJECT_CONF = {
 		spriteID: 'draairechts',
 	},
 	herhaal: {
-		data: { command: "for"},
+		command: { commandID: "for"},
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
 		offsetY: COMMAND_AREA_Y,
@@ -239,7 +237,7 @@ OBJECT_CONF = {
 		spriteID: 'herhaal-x',
 	},
 	herhaalx: {
-		data: { command: "for", counts: null },
+		command: { commandID: "for", counts: null },
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
 		offsetY: COMMAND_AREA_Y,
@@ -255,7 +253,7 @@ OBJECT_CONF = {
 		spriteID: 'uitvoeren',
 	},
 	open: {
-		data: { command: 'open' },
+		command: { commandID: 'open' },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
@@ -278,7 +276,7 @@ OBJECT_CONF = {
 		spriteID: 'ossie',
 	},
 	sluit: {
-		data: { command: 'close' },
+		command: { commandID: 'close' },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
@@ -287,7 +285,7 @@ OBJECT_CONF = {
 		spriteID: 'sluit',
 	},
 	stap: {
-		data: { command: 'step' },
+		command: { commandID: 'step' },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.13,

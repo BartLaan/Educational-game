@@ -141,7 +141,7 @@ Utils.loadSprites = function(phaser) {
 			if (objConfig.interactive === true || objConfig.draggable === true) {
 				spriteArray.push(objConfig.spriteID + "-hover");
 			}
-			if (objConfig.data !== undefined && objConfig.data.command !== undefined) {
+			if (objConfig.data !== undefined && objConfig.data.commandID !== undefined) {
 				spriteArray.push(objConfig.spriteID + "-crnt");
 				spriteArray.push(objConfig.spriteID + "-crnt-hover");
 			}

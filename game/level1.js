@@ -34,7 +34,7 @@ window.level1 = new Phaser.Class({
 			[0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,1],
-			[1,1,1,1,1,1,1,1,1]
+			[1,1,1,1,1,1,1,2,1]
 		];
 		const nodes = Utils.boardToNodes(gameboard);
 		const levelConfig = {
