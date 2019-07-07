@@ -10,7 +10,8 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 };
 
 InterPhaser.prototype.showIntro = function() {
-	let introImage = this.phaser.add.image(0, 0, this.levelConfig.instruction);
+	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
+	let introImage = this.phaser.add.image(0, 0, instructionName);
 	Phaser.Display.Align.In.Center(introImage, this.pObjects.background);
 	introImage.setInteractive();
 	introImage.setDepth(3);
@@ -48,10 +49,10 @@ InterPhaser.prototype.setLevel = function() {
 	let pObjects = this.pObjects;
 	this.stackObjects = [];
 
-	this.pObjects.background = phsr.add.image(0, 0, this.levelConfig.background).setOrigin(0, 0);
+	let backgroundName = 'background' + this.levelConfig.levelName.replace(/[A-Za-z]/g, '');
+	this.pObjects.background = phsr.add.image(0, 0, backgroundName).setOrigin(0, 0);
 	this.pObjects.background.name = 'background';
 	this.pObjects.background.setDisplaySize(width, height);
-	let background = this.pObjects.background;
 
 	let maxCommands = this.levelConfig.maxCommands;
 	let maxCommandsStr = maxCommands.toString();
@@ -151,9 +152,6 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 	return gameObject;
 }
 
-InterPhaser.prototype.loadNextLevel = function() {
-
-}
 InterPhaser.prototype.resetLevel = function() {
 	console.log("restarting level")
 	this.eventHandler(PHASER_STACK_RESET);
@@ -530,8 +528,11 @@ InterPhaser.prototype.win = function() {
 		nextButton.setDepth(4);
 		nextButton.on('pointerdown', function (pointer) {
 			window.game.scene.stop(me.levelConfig.levelName);
-			console.log('starting level:', me.levelConfig.nextLevelName, level2);
-			window.game.scene.start(me.levelConfig.nextLevelName);
+			let nextLevel = LEVELS[LEVELS.indexOf(me.levelConfig.levelName) + 1];
+			if (nextLevel !== undefined) {
+				console.log('starting level:', nextLevel);
+				window.game.scene.start(nextLevel);
+			}
 		}, me);
 
 		let againButton = me.phaser.add.image(me.width * LEVEL_AGAIN_X, me.height * WINBUTTON_Y, 'playagain')

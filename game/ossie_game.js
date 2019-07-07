@@ -12,11 +12,9 @@ function OssieGame(levelConfig, phaser) {
 
 OssieGame.prototype.checkLevelConfig = function(levelConfig) {
 	let required = [
-		'background', // Sprite ID of background to use
 		'goalPosition', // Node reference of the goal
 		'initPosition', // Object with the initial node (reference) of player and the direction they are facing
 		'levelName', // Phaser level ID for current level
-		'nextLevelName', // Phaser level ID for next level
 		'nodes', // Representation of the world that player can move in. See Utils to get better idea
 		'objects', // list of phaser gameObjects to load. See InterPhaser.gameObjectsConfigs
 		'orientationType', // cardinals or angles, see type specs in constants.js

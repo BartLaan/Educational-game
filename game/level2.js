@@ -3,11 +3,9 @@ Level2 = new Phaser.Class({
 
 	objects: COMMON_OBJECTS.concat([
 		'background2',
+		'instruction2',
 		'draailinks',
 		'draairechts',
-		'opnieuw',
-		'stap',
-		'vraagteken',
 	]),
 
 	initialize: function level2 ()
@@ -35,17 +33,14 @@ Level2 = new Phaser.Class({
 		];
 		const nodes = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			background: 'background2',
 			goalPosition: '7,1',
 			initPosition: {
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			instruction: 'instruction2',
 			maxCommands: 19,
 			levelCount: 2,
 			levelName: 'level2',
-			nextLevelName: 'level3',
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,

@@ -5,17 +5,14 @@ Level1 = new Phaser.Class({
 	objects: COMMON_OBJECTS.concat([
 		'background1',
 		'instruction1',
-		'levelcount',
 		'opnieuw',
 		'player',
 		'slash',
 		'stap',
-		'vraagteken',
 	]),
 
 	initialize: function level1 ()
 	{
-		console.log('initialize');
 		Phaser.Scene.call(this, { key: 'level1' });
 	},
 
@@ -38,16 +35,13 @@ Level1 = new Phaser.Class({
 		];
 		const nodes = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			background: 'background1',
 			goalPosition: '7,5',
 			initPosition: {
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			instruction: 'instruction1',
 			maxCommands: 10,
 			levelName: 'level1',
-			nextLevelName: 'level2',
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,

@@ -7,12 +7,11 @@ Level3c = new Phaser.Class({
 		'draailinks',
 		'draairechts',
 		'herhaalx',
-		'levelcount',
+		'instruction3c',
 		'opnieuw',
 		'player',
 		'slash',
 		'stap',
-		'vraagteken',
 	]),
 
 	initialize: function level3c ()
@@ -40,16 +39,13 @@ Level3c = new Phaser.Class({
 		];
 		const nodes = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			background: 'background3',
 			goalPosition: '4,1',
 			initPosition: {
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			instruction: 'instruction3c',
 			maxCommands: 10,
 			levelName: 'level3c',
-			nextLevelName: 'level4',
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,
