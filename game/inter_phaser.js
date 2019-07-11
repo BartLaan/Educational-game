@@ -8,6 +8,7 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.setInteractions();
 	this.showIntro();
 };
+InterPhaser.prototype.debug = true;
 
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
@@ -55,12 +56,23 @@ InterPhaser.prototype.setLevel = function() {
 	this.pObjects.background.setDisplaySize(width, height);
 
 	let maxCommands = this.levelConfig.maxCommands;
-	let maxCommandsStr = maxCommands.toString();
-	OBJECT_CONF.stepcount_total_pt1.spriteID = maxCommandsStr[0];
-	this.pObjects.stepcount_total_pt1 = this.setGameObject(OBJECT_CONF.stepcount_total_pt1, 'stepcount_total_pt1');
-	if (maxCommands > 9) {
-		OBJECT_CONF.stepcount_total_pt2.spriteID = maxCommandsStr[1];
-		this.pObjects.stepcount_total_pt2 = this.setGameObject(OBJECT_CONF.stepcount_total_pt2, 'stepcount_total_pt2');
+	OBJECT_CONF.stepcount_total.spriteID = maxCommands.toString();
+	this.pObjects.stepcount_total = this.setGameObject(OBJECT_CONF.stepcount_total, 'stepcount_total');
+
+	if (this.debug) {
+		console.log('debug');
+		let me = this;
+		let nextButton = me.phaser.add.image(me.width * LEVEL_NEXT_X, me.height * WINBUTTON_Y, 'nextlevel')
+		nextButton.setInteractive();
+		nextButton.setDepth(4);
+		nextButton.on('pointerdown', function (pointer) {
+			window.game.scene.stop(me.levelConfig.levelName);
+			let nextLevel = LEVELS[LEVELS.indexOf(me.levelConfig.levelName) + 1];
+			if (nextLevel !== undefined) {
+				console.log('starting level:', nextLevel);
+				window.game.scene.start(nextLevel);
+			}
+		}, me);
 	}
 
 	this.setDynamicObjects();
@@ -205,6 +217,7 @@ InterPhaser.prototype.setInteractions = function() {
 	let newDrag = false
 	this.selectedObject = null;
 
+	let fastClickTimeout = null;
 	let fastClick = false;
 	phsr.input.on('gameobjectdown', function(pointer, gameObject) {
 		if (myself.isRunning === true) { return; }
@@ -212,12 +225,13 @@ InterPhaser.prototype.setInteractions = function() {
 		if (gameObject.getData('commandID') === undefined || myself.stackObjects.indexOf(gameObject) > -1) { return }
 
 		fastClick = true;
-		setTimeout(function() {
+		clearTimeout(fastClickTimeout);
+		fastClickTimeout = setTimeout(function() {
 			fastClick = false;
 		}, 300);
 	});
 	phsr.input.on('gameobjectup', function(pointer, gameObject) {
-		if (fastClick) {
+		if (fastClick && !myself.maxedOut) {
 			myself.stackIndex = undefined;
 			if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
 				myself.duplicateObject(gameObject);
@@ -262,7 +276,7 @@ InterPhaser.prototype.setInteractions = function() {
 		if (myself.running === true) { return }
 		myself.clearHoverTexture(gameObject);
 
-		if (!pointer.isDown && myself.inDropZone(pointer) && newDrag === true) {
+		if (!pointer.isDown && !myself.maxedOut &&  myself.inDropZone(pointer) && newDrag === true) {
 			newDrag = false;
 			return myself.dropObjectOnStack(gameObject);
 		}
@@ -485,10 +499,12 @@ InterPhaser.prototype.updateStepcount = function() {
 	let lastStackObject = this.stackObjects.slice(-1)[0];
 	let commandTotal = this.stackObjects.reduce(function(counter, stackObject) {
 		return stackObject.getData('commandID') !== undefined ? counter + 1 : counter;
-	}, 0)
+	}, 0);
 
 	let newTexture = commandTotal.toString();
 	stepCounter.setTexture(newTexture);
+
+	this.maxedOut = commandTotal >= this.levelConfig.maxCommands;
 }
 
 InterPhaser.prototype.hasObject = function(objectName) {

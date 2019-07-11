@@ -18,9 +18,9 @@ STACK_ZONE_POS_X = 0.035
 STACK_ZONE_POS_Y = 0.042
 STACK_ZONE_WIDTH = 0.25
 STACK_ZONE_HEIGHT = 0.83
-STEP_COUNT_DISPLAY_X = 0.02
-STEP_COUNT_DISPLAY_Y = 0.934
-STEP_COUNT_SPACING = 0.023;
+STEP_COUNT_DISPLAY_X = 0.024
+STEP_COUNT_DISPLAY_Y = 0.929;
+STEP_COUNT_SPACING = 0.016;
 VICTORY_TIMEOUT = 1200 // ms
 WINBUTTON_Y = 0.88
 
@@ -154,24 +154,19 @@ OBJECT_CONF = {
 		interactive: true,
 		offsetX: STEP_COUNT_DISPLAY_X,
 		offsetY: STEP_COUNT_DISPLAY_Y,
-		scaling: 1.1,
+		scaling: 0.9,
 		spriteID: '0',
 	},
 	stepcount_slash: {
-		offsetX: STEP_COUNT_DISPLAY_X + STEP_COUNT_SPACING,
+		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 2) + 0.005,
 		offsetY: STEP_COUNT_DISPLAY_Y,
-		scaling: 1.1,
+		scaling: 0.9,
 		spriteID: 'slash',
 	},
-	stepcount_total_pt1: {
-		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 2),
-		offsetY: STEP_COUNT_DISPLAY_Y,
-		scaling: 1.1,
-	},
-	stepcount_total_pt2: {
+	stepcount_total: {
 		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 3),
 		offsetY: STEP_COUNT_DISPLAY_Y,
-		scaling: 1.1,
+		scaling: 0.9,
 	},
 	uitvoeren: {
 		interactive: true,
