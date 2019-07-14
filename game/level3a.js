@@ -1,29 +1,16 @@
 Level3a = new Phaser.Class({
-
 	Extends: Phaser.Scene,
 
+	levelName: 'level3a',
+
 	objects: COMMON_OBJECTS.concat([
-		'background3',
-		'draailinks',
-		'draairechts',
-		'instruction3a',
-		'levelcount',
-		'opnieuw',
-		'slash',
-		'stap',
+		'turnleft',
+		'turnright',
 	]),
 
-	initialize: function level3a ()
-	{
-		console.log('initialize');
-		Phaser.Scene.call(this, { key: 'level3a' });
-	},
+	initialize: function() { Utils.initializeLevel.bind(this)() },
 
-	preload: function ()
-	{
-		console.log('preload');
-		Utils.loadSprites(this);
-	},
+	preload: function() { Utils.preloadLevel(this) },
 
 	create: function ()
 	{
@@ -44,7 +31,7 @@ Level3a = new Phaser.Class({
 				nodeLocation: '0,5',
 			},
 			maxCommands: 10,
-			levelName: 'level3a',
+			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,

@@ -1,59 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style src="ossie_style.css"></style>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script> -->
-    <script src="constants.js"></script>
-    <script src="paths.js"></script>
-    <script src="ph_config.js"></script>
-    <script src="phaser.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="inter_phaser.js"></script>
-    <script src="ossie_game.js"></script>
+	<style src="ossie_style.css"></style>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script> -->
+	<script src="phaser.min.js"></script>
+	<script src="paths.js"></script>
+	<script src="ph_config.js"></script>
+	<script src="constants.js"></script>
+	<script src="utils.js"></script>
+	<script src="inter_phaser.js"></script>
+	<script src="ossie_game.js"></script>
 </head>
 <body style="background-color:white;">
-    <div>
-    <script src="level1.js"></script>
-    <script src="level2.js"></script>
-    <script src="level3a.js"></script>
-    <script src="level3b.js"></script>
-    <script src="level3c.js"></script>
-    <!--
-    <script src="level4.js"></script>
--->
+	<div>
+	<script src="level1.js"></script>
+	<script src="level2.js"></script>
+	<script src="level3a.js"></script>
+	<script src="level3b.js"></script>
+	<script src="level3c.js"></script>
+	<script src="level4.js"></script>
 
-    <script>
-    var config = {
-        type: Phaser.WEBGL,
-        parent: 'phaser-example',
-        width: 1024,
-        height: 786,
-        // scale: 'SHOW_ALL',
-        // orientation: 'LANDSCAPE',
-        scene: [
-            Level1,
-            Level2,
-            Level3a,
-            Level3b,
-            Level3c,
-            // level4,
-            // level6,
-            // level7,
-            // level8,
-            // level9,
-            // level10
-        ]
-    };
+	<script>
+	var config = {
+		type: Phaser.WEBGL,
+		parent: 'phaser-example',
+		width: 1024,
+		height: 786,
+		// scale: 'SHOW_ALL',
+		// orientation: 'LANDSCAPE',
+		scene: [
+			Level1,
+			Level2,
+			Level3a,
+			Level3b,
+			Level3c,
+			Level4,
+			// Level6,
+			// Level7,
+			// Level8,
+			// Level9,
+			// Level10
+		]
+	};
 
-    // make phaser game object
-    var game = new Phaser.Game(config);
-    </script>
-    <script>
-    </script>
-    </div>
-    <div id="repeatOverlay">
-        <div id="promptContent">
-        </div>
-    </div>
+	// make phaser game object
+	var game = new Phaser.Game(config);
+
+	window.debug = true;
+	window.selectLevel = function() {
+		let levelName = window.prompt("Select level:");
+		let nextLevel = 'level' + levelName;
+		if (LEVELS.indexOf(nextLevel) !== undefined) {
+			console.log('Starting level "' + nextLevel + '"');
+			window.game.scene.stop('level1');
+			setTimeout(function() {
+				window.game.scene.start(nextLevel);
+			}, 100)
+		} else {
+			console.log('Could not find level "' + nextLevel + '"');
+		}
+	}
+	</script>
+	<script>
+	</script>
+	</div>
+	<div id="repeatOverlay">
+		<div id="promptContent">
+		</div>
+	</div>
 </body>
 </html>

@@ -1,24 +1,16 @@
 Level2 = new Phaser.Class({
 	Extends: Phaser.Scene,
 
+	levelName: 'level2',
+
 	objects: COMMON_OBJECTS.concat([
-		'background2',
-		'instruction2',
-		'draailinks',
-		'draairechts',
+		'turnleft',
+		'turnright',
 	]),
 
-	initialize: function level2 ()
-	{
-		console.log('initialize');
-		Phaser.Scene.call(this, { key: 'level2' });
-	},
+	initialize: function() { Utils.initializeLevel.bind(this)() },
 
-	preload: function ()
-	{
-		console.log('preload');
-		Utils.loadSprites(this);
-	},
+	preload: function() { Utils.preloadLevel(this) },
 
 	create: function ()
 	{
@@ -40,7 +32,7 @@ Level2 = new Phaser.Class({
 			},
 			maxCommands: 19,
 			levelCount: 2,
-			levelName: 'level2',
+			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,

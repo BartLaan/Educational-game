@@ -1,30 +1,23 @@
 Level1 = new Phaser.Class({
-
 	Extends: Phaser.Scene,
 
-	objects: COMMON_OBJECTS.concat([
-		'background1',
-		'instruction1',
-		'opnieuw',
-		'player',
-		'slash',
-		'stap',
-	]),
+	levelName: 'level1',
 
-	initialize: function level1 ()
-	{
-		Phaser.Scene.call(this, { key: 'level1' });
-	},
+	objects: COMMON_OBJECTS,
+
+	initialize: function() { Utils.initializeLevel.bind(this)() },
 
 	preload: function ()
 	{
-		console.log('preload');
+		if (window.debug) {
+			window.selectLevel();
+			return;
+		}
 		Utils.loadSprites(this);
 	},
 
 	create: function ()
 	{
-		console.log('create');
 		const gameboard = [
 			[0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0],
@@ -41,7 +34,7 @@ Level1 = new Phaser.Class({
 				nodeLocation: '0,5',
 			},
 			maxCommands: 10,
-			levelName: 'level1',
+			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,

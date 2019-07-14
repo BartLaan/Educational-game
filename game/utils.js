@@ -1,6 +1,8 @@
 Utils = {};
 
 Utils.deepCopy = function(object) {
+	if (object === null) { return null }
+
 	let result = {};
 	// array
 	if (object.length !== undefined) {
@@ -120,15 +122,24 @@ Utils.turnClock = function(orientation, clockWise) {
 	let shift = clockWise ? 1 : cardinals.length - 1; // 3 = -1 when doing modulo operation
 
 	let orientationIdx = cardinals.indexOf(orientation);
-	console.log(shift);
 	let newOrientationIdx = (orientationIdx + shift) % (cardinals.length);
 
 	return cardinals[newOrientationIdx];
 }
 
+Utils.isBracketObject = function(object) {
+	return object.getData !== undefined && BRACKET_OBJECTS.indexOf(object.getData('commandID')) > -1;
+}
+
+// load sprites
 Utils.loadSprites = function(phaser) {
 	let spriteArray = [];
+	let sprite404 = [];
 	spriteArray = spriteArray.concat(COMMON_SPRITES);
+
+	let levelID = phaser.levelName.replace('level', '');
+	spriteArray.push('instruction' + levelID);
+	spriteArray.push('background' + levelID.replace(/a|b|c/g, ''));
 
 	for (let objName of phaser.objects) {
 		let objConfig = OBJECT_CONF[objName];
@@ -146,17 +157,36 @@ Utils.loadSprites = function(phaser) {
 				spriteArray.push(objConfig.spriteID + "-crnt");
 				spriteArray.push(objConfig.spriteID + "-crnt-hover");
 			}
+
+			// Brackets
+			if (
+				objConfig.command && Utils.isBracketObject(objConfig.command.commandID) > -1
+				&& spriteArray.indexOf('bracket-bottom') === -1
+			) {
+				spriteArray = spriteArray.concat('bracket-bottom', 'bracket-middle', 'bracket-top');
+			}
+
 		} else if (SPRITE_PATHS[objName] !== undefined && spriteArray.indexOf(objName) === -1) {
 			spriteArray.push(objName);
 		}
 	}
 
+	let missingSprites = [];
 	for (let spriteID of spriteArray) {
 		let spriteLocation = SPRITE_PATHS[spriteID];
 		if (spriteLocation !== undefined) {
 			phaser.load.image(spriteID, spriteLocation);
 		} else {
-			console.error('Couldnt find sprite with ID', spriteID);
+			missingSprites.push(spriteID);
 		}
 	}
+	console.log('Could not find sprites with the following IDs:\n ', missingSprites.join('\n  '));
+}
+
+Utils.preloadLevel = function(phaser) {
+	Utils.loadSprites(phaser);
+}
+
+Utils.initializeLevel = function() {
+	Phaser.Scene.call(this, { key: this.levelName });
 }

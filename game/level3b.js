@@ -1,40 +1,23 @@
 Level3b = new Phaser.Class({
-
 	Extends: Phaser.Scene,
 
+	levelName: 'level3b',
+
 	objects: COMMON_OBJECTS.concat([
-		'background3',
-		'draailinks',
-		'draairechts',
-		'herhaal',
-		'bracketSide',
-		'bracketBottom',
-		'bracketTop',
-		'instruction3b',
-		'levelcount',
-		'opnieuw',
-		'slash',
-		'stap',
+		'for',
+		'turnleft',
+		'turnright',
 	]),
 
-	initialize: function level3b ()
-	{
-		console.log('initialize');
-		Phaser.Scene.call(this, { key: 'level3b' });
-	},
+	initialize: function() { Utils.initializeLevel.bind(this)() },
 
-	preload: function ()
-	{
-		console.log('preload');
-		Utils.loadSprites(this);
-	},
+	preload: function() { Utils.preloadLevel(this) },
 
 	create: function ()
 	{
-		console.log('create');
 		const gameboard = [
 			[0,0,0,0,1,1,0,0,0],
-			[0,0,0,1,1,0,0,0,0],
+			[0,0,0,1,2,0,0,0,0],
 			[0,0,1,1,0,0,0,0,0],
 			[0,1,1,0,0,0,0,0,0],
 			[1,1,0,0,0,0,0,0,0],
@@ -48,7 +31,7 @@ Level3b = new Phaser.Class({
 				nodeLocation: '0,5',
 			},
 			maxCommands: 10,
-			levelName: 'level3b',
+			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
 			orientationType: TYPE_ORIENTATION_CARDINALS,
@@ -56,5 +39,31 @@ Level3b = new Phaser.Class({
 		}
 
 		window.ossieGame = new OssieGame(levelConfig, this);
+
+		let interPhaser = window.ossieGame.interPhaser;
+		let forCounter = 0;
+		let goal = false;
+		// Special handling of this level so we transition upon goal condition, namely:
+		// player is past question mark and had more than 7 for-loops
+		interPhaser.onCommandExecute = function(objectRef) {
+			InterPhaser.prototype.onCommandExecute.bind(interPhaser)(objectRef);
+			if (objectRef.indexOf('step') > -1, window.ossieGame.isOnGoal()) {
+				goal = true;
+			}
+
+			if (objectRef.indexOf('for') > -1) {
+				forCounter += 1;
+				if (goal && forCounter > 7) {
+					window.ossieGame.phaserHandler(PHASER_STACK_RESET);
+					window.game.scene.stop('level3b');
+					window.game.scene.start('level3c');
+				}
+			}
+		}
+		interPhaser.fail = function() {
+			InterPhaser.prototype.fail.bind(interPhaser)();
+			goal = false;
+			forCounter = 0;
+		}
 	}
 });

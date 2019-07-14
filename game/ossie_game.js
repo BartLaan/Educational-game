@@ -1,13 +1,14 @@
 // Constructor for OssieGame instance. See OssieGame.checkLevelConfig for details on levelConfig.
 // Overriding of certain prototype properties is intented.
 function OssieGame(levelConfig, phaser) {
-	console.log(this);
 	this.checkLevelConfig(levelConfig);
 	this.nodes = levelConfig.nodes;
 	this.initPosition = levelConfig.initPosition;
 	this.ossiePos = Utils.deepCopy(levelConfig.initPosition);
 	this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this));
-	console.log(this.interPhaser);
+	if (window.debug) {
+		console.log(this, this.interPhaser);
+	}
 };
 
 OssieGame.prototype.checkLevelConfig = function(levelConfig) {
@@ -66,7 +67,6 @@ OssieGame.prototype.eventHandler = function(eventCode, data) {
 		case STACK_WIN:
 			this.interPhaser.win();
 			break;
-
 		default:
 	}
 }
@@ -118,78 +118,8 @@ OssieGame.prototype.commandSpecs = {
 
 // FEEL FREE TO OVERRIDE
 OssieGame.prototype.allowedCommands = Object.keys(OssieGame.prototype.commandSpecs);
-OssieGame.prototype.timing = 500;
-OssieGame.prototype.secretLimit = 20;
-
-// // Update the indices of stack items
-// OssieGame.prototype.updateStackIndices = function() {
-// 	this.updateIndicesInner(this.stack, 0);
-// }
-// // Recursive inner loop to update stack indices.
-// // Essentially numbers the commands how they appear chronologically
-// OssieGame.prototype.updateIndicesInner = function(stack, counter) {
-// 	for (let i in stack) {
-// 		let object = stack[i];
-//
-// 		// updates the indices of every item to their array index + the passed counter
-// 		object.setData('stackIndex', counter);
-// 		if (object.do !== undefined) {
-// 			counter = this.updateStackIndices(object.do, counter);
-// 		}
-// 		counter += 1
-// 	}
-// 	return counter
-// }
-//
-// OssieGame.prototype.addToStack = function(stackIndex, stackItem, stack) {
-// 	if (stackIndex === undefined) {
-// 		return this.stack.push(stackItem);
-// 	}
-// 	if (stack === undefined) {
-// 		stack = this.stack;
-// 	}
-//
-// 	for (let i in stack) {
-// 		let object = stack[i];
-// 		if (object.stackIndex === stackIndex) {
-// 			// Weird check to ensure the stackItem gets placed in the right .do
-// 			if (object.commandID === 'blockend') {
-// 				stack[i-1].do.push(stackItem);
-// 			} else {
-// 				stack.splice(i, 0, stackItem);
-// 			}
-// 			return true;
-// 		}
-// 		if (object.do !== undefined) {
-// 			if (this.addToStack(stackIndex, stackItem, object.do)) {
-// 				return true;
-// 			}
-// 		}
-// 	}
-// 	return false;
-// }
-
-// OssieGame.prototype.deleteStackItem = function(stackIndex, stack) {
-// 	if (stack === undefined) {
-// 		stack = this.stack;
-// 	}
-//
-// 	for (let i in stack) {
-// 		let object = stack[i];
-// 		if (object.stackIndex === stackIndex) {
-// 			stack.splice(i, 1);
-// 			this.updateStackIndices();
-// 			return true;;
-// 		}
-//
-// 		if (object.do !== undefined) {
-// 			if (this.deleteStackItem(stackIndex, object.do)) {
-// 				return true;
-// 			}
-// 		}
-// 	}
-// 	return false;
-// }
+OssieGame.prototype.timing = 300;
+OssieGame.prototype.secretLimit = 10;
 
 OssieGame.prototype.getStackItem = function(stackIndex, stack) {
 	if (stack === undefined) {
@@ -265,9 +195,15 @@ OssieGame.prototype.conditional = function(conditionalCode) {
 			return this.pathExistsTo('left');
 		case CONDITIONAL_RIGHTFREE:
 			return this.pathExistsTo('right');
+		case CONDITIONAL_ONGOAL:
+			return this.isOnGoal();
 		default:
 			return true;
 	}
+}
+
+OssieGame.prototype.isOnGoal = function() {
+	return this.nodes[this.ossiePos.nodeLocation].goal === true
 }
 
 OssieGame.prototype.gameStart = function() {
@@ -280,9 +216,11 @@ OssieGame.prototype.gameStart = function() {
 }
 
 OssieGame.prototype.gameEnd = function(proper) {
-	if (proper && this.nodes[this.ossiePos.nodeLocation].goal){
+	if (proper && this.isOnGoal()) {
 		this.eventHandler(STACK_WIN);
-		console.log('won');
+		if (window.debug) {
+			console.log('won');
+		}
 		return;
 	} else if (proper) {
 		this.eventHandler(STACK_FAIL);
@@ -322,31 +260,33 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 
 	switch (stackItem.commandID) {
 		case "if":
-			callbackStacks.unshift(stack);
-			if (stackItem.condition(this)) {
+			if (this.conditional(stackItem.condition)) {
+				callbackStacks.unshift(stack);
 				return this.stackExecute(stackItem.do, callbackStacks);
 			}
 			break;
 
 		case "else":
 			let ifObject = this.getStackItem(stackItem.blockRef);
-			if (ifObject.condition(this) === false) {
+			if (this.conditional(ifObject.condition) === false) {
+				callbackStacks.unshift(stack);
 				return this.stackExecute(stackItem.do, callbackStacks);
 			}
 			break;
 
 		case "for":
-			if (stackItem.counter === undefined) {
-				stackItem.setData('counter', 'counts');
+			if (stackItem.counts === undefined && stackItem.counter === undefined) {
+				stackItem.counter = this.secretLimit;
+			} else if (stackItem.counter === undefined) {
+				stackItem.counter = stackItem.counts;
 			}
-			stackItem.setData('counter', stackItem.counter - 1);
-			if (stackItem.counts == 0) {
-
+			stackItem.counter -= 1;
+			if (stackItem.counter == 0) {
 				stack.shift();
 			}
 			callbackStacks.unshift(stack);
 
-			let forStack = stackItem.do; // deep copy?
+			let forStack = Utils.deepCopy(stackItem.do);
 			return this.executeStackItem(forStack, callbackStacks);
 
 		case "step":
