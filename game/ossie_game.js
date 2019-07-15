@@ -67,6 +67,9 @@ OssieGame.prototype.eventHandler = function(eventCode, data) {
 		case STACK_WIN:
 			this.interPhaser.win();
 			break;
+		case STACK_FORGOTOPEN:
+			this.interPhaser.fail();
+			break;
 		default:
 	}
 }

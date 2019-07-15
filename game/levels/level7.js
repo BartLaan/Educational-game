@@ -1,12 +1,14 @@
-Level4 = new Phaser.Class({
+Level7 = new Phaser.Class({
 	Extends: Phaser.Scene,
 
-	levelName: 'level4',
+	levelName: 'level7',
 
 	objects: COMMON_OBJECTS.concat([
+		'if_padlinks',
+		'if_padrechts',
+		'forQM',
 		'forX',
-		'turnleft',
-		'turnright',
+		'turnDegrees',
 	]),
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
@@ -16,25 +18,25 @@ Level4 = new Phaser.Class({
 	create: function ()
 	{
 		const gameboard = [
-			[0,0,0,0,0,0,1,1,1],
-			[0,0,0,0,1,1,1,0,1],
-			[0,0,0,0,1,0,0,0,1],
-			[0,0,1,1,1,0,0,0,2],
+			[1,1,1,1,1,1,1,1,1],
 			[0,0,1,0,0,0,0,0,1],
-			[1,1,1,0,0,0,0,0,0],
+			[0,0,1,0,0,0,2,0,1],
+			[0,0,1,1,1,1,1,0,1],
+			[0,0,0,0,0,0,0,0,1],
+			[1,1,1,1,1,1,1,1,1],
 		];
-		const nodes = Utils.boardToNodes(gameboard);
+		const nodes = Utils.boardToNodes(gameboard, TYPE_ORIENTATION_DEGREES);
 		const levelConfig = {
-			goalPosition: '8,3',
+			goalPosition: '6,2',
 			initPosition: {
-				orientation: 'east',
+				orientation: '90',
 				nodeLocation: '0,5',
 			},
-			maxCommands: 19,
+			maxCommands: 6,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
-			orientationType: TYPE_ORIENTATION_CARDINALS,
+			orientationType: TYPE_ORIENTATION_DEGREES,
 			spaceType: TYPE_SPACE_GRID,
 		}
 

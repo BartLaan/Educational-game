@@ -1,12 +1,11 @@
-Level4 = new Phaser.Class({
+Level5 = new Phaser.Class({
 	Extends: Phaser.Scene,
 
-	levelName: 'level4',
+	levelName: 'level5',
 
 	objects: COMMON_OBJECTS.concat([
 		'forX',
-		'turnleft',
-		'turnright',
+		'turnDegrees',
 	]),
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
@@ -23,18 +22,18 @@ Level4 = new Phaser.Class({
 			[0,0,1,0,0,0,0,0,1],
 			[1,1,1,0,0,0,0,0,0],
 		];
-		const nodes = Utils.boardToNodes(gameboard);
+		const nodes = Utils.boardToNodes(gameboard, TYPE_ORIENTATION_DEGREES);
 		const levelConfig = {
 			goalPosition: '8,3',
 			initPosition: {
-				orientation: 'east',
+				orientation: '90',
 				nodeLocation: '0,5',
 			},
-			maxCommands: 19,
+			maxCommands: 10,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
-			orientationType: TYPE_ORIENTATION_CARDINALS,
+			orientationType: TYPE_ORIENTATION_DEGREES,
 			spaceType: TYPE_SPACE_GRID,
 		}
 

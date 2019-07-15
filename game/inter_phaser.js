@@ -376,7 +376,7 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	}
 
 	// Add object to internal InterPhaser stack
-	this.stackIndex = this.stackIndex || this.stackObjects.length;
+	this.stackIndex = this.stackIndex !== undefined ? this.stackIndex : this.stackObjects.length;
 	this.stackObjects.splice(this.stackIndex, 0, gameObject);
 
 	let isBracketObject = Utils.isBracketObject(gameObject);
