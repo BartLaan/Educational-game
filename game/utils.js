@@ -35,7 +35,30 @@ Utils.strToCoord = function(coordStr) {
 	}
 }
 
-Utils.boardToNodes = function(board) {
+Utils.cardinalName = function(orientationCode, orientationType) {
+	let useDegrees = orientationType === TYPE_ORIENTATION_DEGREES;
+	switch (orientationCode) {
+		case 'n':
+			return useDegrees ? 0 : 'north';
+		case 'ne':
+			return 45;
+		case 'e':
+			return useDegrees ? 90 : 'east';
+		case 'se':
+			return 135;
+		case 's':
+			return useDegrees ? 180 : 'south';
+		case 'sw':
+			return 225;
+		case 'w':
+			return useDegrees ? 270 : 'west';
+		case 'nw':
+			return 315;
+	}
+}
+
+Utils.boardToNodes = function(board, orientationType) {
+	let useDegrees = orientationType === TYPE_ORIENTATION_DEGREES;
 	let nodes = {};
 
 	for (let y in board) {
@@ -48,20 +71,36 @@ Utils.boardToNodes = function(board) {
 			let nodeName = Utils.coordToStr(x, y);
 			let node = {};
 
-			if (y > 0 && board[y - 1][x] != 0) {
-				node.north = Utils.coordToStr(x, y - 1);
-			}
-			if (y + 1 < board.length && board[y + 1][x] != 0) {
-				node.south = Utils.coordToStr(x, y + 1);
-			}
-			if (x > 0 && board[y][x - 1] != 0) {
-				node.west = Utils.coordToStr(x - 1, y);
-			}
-			if (x + 1 < board[y].length && board[y][x + 1] != 0) {
-				node.east = Utils.coordToStr(x + 1, y);
-			}
 			if (board[y][x] == 2) {
 				node.goal = true;
+			}
+			if (y > 0 && board[y - 1][x] != 0) {
+				node[Utils.cardinalName('n', orientationType)] = Utils.coordToStr(x, y - 1);
+			}
+			if (y + 1 < board.length && board[y + 1][x] != 0) {
+				node[Utils.cardinalName('s', orientationType)] = Utils.coordToStr(x, y + 1);
+			}
+			if (x > 0 && board[y][x - 1] != 0) {
+				node[Utils.cardinalName('w', orientationType)] = Utils.coordToStr(x - 1, y);
+			}
+			if (x + 1 < board[y].length && board[y][x + 1] != 0) {
+				node[Utils.cardinalName('e', orientationType)] = Utils.coordToStr(x + 1, y);
+			}
+
+			if (useDegrees) { // FIX
+				if (x > 0 && y > 0 && board[y - 1][x] != 0) {
+					node[Utils.cardinalName('ne', orientationType)] = Utils.coordToStr(x, y - 1);
+				}
+				if (y + 1 < board.length && board[y + 1][x] != 0) {
+					node[Utils.cardinalName('sw', orientationType)] = Utils.coordToStr(x, y + 1);
+				}
+				if (x > 0 && board[y][x - 1] != 0) {
+					node[Utils.cardinalName('nw', orientationType)] = Utils.coordToStr(x - 1, y);
+				}
+				if (x + 1 < board[y].length && board[y][x + 1] != 0) {
+					node[Utils.cardinalName('se', orientationType)] = Utils.coordToStr(x + 1, y);
+				}
+
 			}
 
 			nodes[nodeName] = node;
