@@ -19,6 +19,8 @@ STACK_WIN = 'STACK_WIN'
 
 // PSEUDOTYPES
 TYPE_ORIENTATION_CARDINALS = 'TYPE_ORIENTATION_CARDINALS'
+TYPE_ORIENTATION_DEGREES = 'TYPE_ORIENTATION_DEGREES'
+TYPE_SPACE_FREE = 'TYPE_SPACE_FREE'
 TYPE_SPACE_GRID = 'TYPE_SPACE_GRID'
 
 COMMON_SPRITES = [
@@ -70,9 +72,14 @@ COMMON_OBJECTS = [
 INIT_OBJECTS = [
 	'backButton',
 	'close',
+	'else',
 	'execute',
 	'for',
-	'forX',
+	'for_till',
+	'for_x',
+	'if_padlinks',
+	'if_padrechts',
+	'if_padvooruit',
 	'open',
 	'player',
 	'reset',
@@ -80,19 +87,21 @@ INIT_OBJECTS = [
 	'step',
 	'stepcount',
 	'stepcount_slash',
+	'turndegrees',
 	'turnleft',
 	'turnright',
 ];
 OBJECTS_MULTIPLE = [
+	'else',
+	'for',
+	'for_till',
+	'for_x',
 	'if_padlinks',
 	'if_padrechts',
 	'if_padvooruit',
-	'else',
+	'turndegrees',
 	'turnleft',
 	'turnright',
-	'turndegrees',
-	'for',
-	'forX',
 	'step',
 ];
 LEVELS = [

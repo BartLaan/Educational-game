@@ -8,8 +8,8 @@ Level9 = new Phaser.Class({
 		'if_padrechts',
 		'if_padvooruit',
 		'else',
-		'forQM',
-		'forX',
+		'for_till',
+		'for_x',
 		'turnDegrees',
 	]),
 

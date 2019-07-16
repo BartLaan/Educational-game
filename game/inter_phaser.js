@@ -155,6 +155,7 @@ InterPhaser.prototype.resetLevel = function() {
 	this.activeCommand = undefined;
 	this.stackIndex = undefined;
 	this.running = false;
+	this.maxedOut = false;
 
 	// Lots of prior knowledge here: we are
 	for (let objectName of INIT_OBJECTS) {
@@ -279,6 +280,7 @@ InterPhaser.prototype.setInteractions = function() {
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
 			myself.objects[gameObject.name][gameObject.getData('i')] = undefined;
 			gameObject.destroy();
+			myself.positionCommands();
 		} else {
 			let conf = OBJECT_CONF[gameObject.name];
 			gameObject.x = myself.width * conf.offsetX;
@@ -367,12 +369,15 @@ InterPhaser.prototype.inDropZone = function(location) {
 InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	console.log('Drop object', gameObject, 'stackIndex:', this.stackIndex, 'stackObjects', this.stackObjects);
 
-	// First input the amount of repeats for for-x
-	if (gameObject.getData('commandID') === "for" && gameObject.getData('command').counts === null ) {
-		let result = this.askCounts();
+	// First input the amount for commands that require it
+	let askForX = gameObject.name === "for_x";
+	let askDegrees = gameObject.getData('commandID') === "turnDegrees";
+	if (askForX || askDegrees) {
+		let result = this.askCounts(askForX ? 'Hoe vaak herhalen?' : 'Hoeveel graden?');
 		if (result === false) { return } // user cancelled input
 
-		gameObject.getData('command').counts = result // DEBUG: may need to set counts else somehow
+		let key = askForX ? 'counts' : 'degrees';
+		gameObject.getData('command')[key] = result;
 	}
 
 	// Add object to internal InterPhaser stack
@@ -385,20 +390,21 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	}
 
 	this.positionCommands();
-	// this.newDrag = false // fixes the bug where this function triggers all the time
 	this.updateStepcount();
 }
 
-InterPhaser.prototype.askCounts = function(wrongInput) {
-	let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n Hoe vaak herhalen?' : 'Hoe vaak herhalen?'
+InterPhaser.prototype.askCounts = function(msg, wrongInput) {
+	let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg;
 	let result = window.prompt(question, 'Voer een getal in');
+	if (result === false) { return false; }
+
 	let counts = parseInt(result, 10);
 	if (counts > 0) {
 		return counts;
 	} else if (result === null) {
-		this.askCounts(false);
+		this.askCounts(msg, false);
 	}
-	this.askCounts(true)
+	this.askCounts(msg, true)
 }
 
 InterPhaser.prototype.positionCommands = function(pointer) {
@@ -407,8 +413,9 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 	let bracketTopOffset = STACK_BRACKET_OFFSET * this.height;
 	let bracketSpacing = STACK_BRACKET_SPACING * this.height;
 	let commandSpacing = STACK_COMMAND_SPACING * this.height;
+	let avgCommandSize = STACK_AVG_CMD_SIZE * this.height;
 	let stackX = STACK_ZONE_POS_X * this.width;
-	let stackY = (STACK_ZONE_POS_Y * this.height) + commandSpacing;
+	let stackY = (STACK_ZONE_POS_Y * this.height) + avgCommandSize;
 
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
@@ -417,12 +424,11 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		if (object.name === 'bracketBottom') {
 			var bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')];
 			let heightDiff = stackY - bracketSide.y;
-			if (heightDiff < commandSpacing) {
-				object.y += commandSpacing;
+			if (heightDiff < avgCommandSize) {
+				object.y += avgCommandSize;
 			}
-			stackX -= bracketIndent;
 		}
-		if (object.name === 'close') {
+		if (object.name === 'bracketBottom' || object.name === 'close') {
 			stackX -= bracketIndent;
 		}
 		object.x = stackX;
@@ -431,7 +437,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		let tryTempSpace = this.stackIndex === undefined && pointer !== undefined && !bracketSideOrTop;
 		if (tryTempSpace && (pointer.y < object.y + (object.height / 2))) {
 			this.stackIndex = parseInt(i, 10); // WHY THE FFFFFFFF IS THIS A STRING???
-			object.y += commandSpacing;
+			object.y += avgCommandSize;
 		}
 
 		switch (object.name) {
@@ -453,15 +459,14 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				stackY = object.y + bracketSpacing;
 				break;
 			case 'for':
-				stackY = (object.y + commandSpacing) - 0.002 * this.height;
-				break;
-			case 'forX':
-				stackY = (object.y + commandSpacing) + 0.027 * this.height;
+			case 'for_x':
+			case 'for_till':
+				stackY = (object.y + object.height) - 0.002 * this.height;
 				break;
 			case 'open':
 				stackX += bracketIndent;
 			default:
-				stackY = object.y + commandSpacing;
+				stackY = object.y + object.height + commandSpacing;
 		}
 	}
 }
@@ -643,7 +648,7 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	if (this.levelConfig.orientationType === TYPE_ORIENTATION_CARDINALS) {
 		player.angle = Utils.cardinalToAngle(ossiePos.orientation);
 	} else {
-		player.angle = ossiePos.direction;
+		player.angle = ossiePos.orientation - 90;
 	}
 }
 

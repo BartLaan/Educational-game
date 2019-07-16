@@ -6,8 +6,8 @@ Level8 = new Phaser.Class({
 	objects: COMMON_OBJECTS.concat([
 		'if_padlinks',
 		'if_padrechts',
-		'forQM',
-		'forX',
+		'for_till',
+		'for_x',
 		'turnDegrees',
 	]),
 

@@ -8,9 +8,9 @@ Level10 = new Phaser.Class({
 		'if_padrechts',
 		'if_padvooruit',
 		'else',
-		'forQM',
-		'forX',
-		'turnDegrees',
+		'for_till',
+		'for_x',
+		'turndegrees',
 	]),
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },

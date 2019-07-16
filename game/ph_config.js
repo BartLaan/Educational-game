@@ -11,10 +11,11 @@ COMMAND_AREA_Y = 0.76
 FAILBUTTON_X = 0.4
 FAILBUTTON_Y = 0.6
 HOVER_SCALING = 1.05;
+STACK_AVG_CMD_SIZE = 0.04
 STACK_BRACKET_INDENT = 0.02
 STACK_BRACKET_OFFSET = 0.009
 STACK_BRACKET_SPACING = 0.02
-STACK_COMMAND_SPACING = 0.04
+STACK_COMMAND_SPACING = 0.004
 STACK_ZONE_POS_X = 0.035
 STACK_ZONE_POS_Y = 0.042
 STACK_ZONE_WIDTH = 0.25
@@ -69,8 +70,11 @@ OBJECT_CONF = {
 		spriteID: 'close',
 	},
 	else: {
-		command: { commandID: 'if' },
+		command: { commandID: 'else' },
+		depth: 2,
 		draggable: true,
+		offsetX: COMMAND_AREA_X + 0.12,
+		offsetY: COMMAND_AREA_Y + 0.096,
 		spriteID: 'else',
 	},
 	execute: {
@@ -87,28 +91,45 @@ OBJECT_CONF = {
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'for',
 	},
-	forX: {
+	for_till: {
+		command: { commandID: 'for', autoStop: true },
+		depth: 2,
+		draggable: true,
+		offsetX: COMMAND_AREA_X + 0.465,
+		offsetY: COMMAND_AREA_Y + 0.063,
+		spriteID: 'for-till',
+	},
+	for_x: {
 		command: { commandID: "for", counts: null },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.46,
-		offsetY: COMMAND_AREA_Y,
+		offsetX: COMMAND_AREA_X + 0.465,
+		offsetY: COMMAND_AREA_Y - 0.01,
 		spriteID: 'for-x',
 	},
-	if_padvooruit: {
-		command: { commandID: 'if', condition: 'CONDITIONAL_FORWARDFREE' },
-		draggable: true,
-		spriteID: 'if-padvooruit',
-	},
 	if_padlinks: {
-		command: { commandID: 'if', condition: 'CONDITIONAL_LEFTFREE' },
+		command: { commandID: "if", condition: CONDITIONAL_LEFTFREE },
+		depth: 2,
 		draggable: true,
+		offsetX: COMMAND_AREA_X + 0.12,
+		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padlinks',
 	},
 	if_padrechts: {
-		command: { commandID: 'if', condition: 'CONDITIONAL_RIGHTFREE' },
+		command: { commandID: "if", condition: CONDITIONAL_RIGHTFREE },
+		depth: 2,
 		draggable: true,
+		offsetX: COMMAND_AREA_X + 0.23,
+		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padrechts',
+	},
+	if_padvooruit: {
+		command: { commandID: "if", condition: CONDITIONAL_FORWARDFREE },
+		depth: 2,
+		draggable: true,
+		offsetX: COMMAND_AREA_X + 0.34,
+		offsetY: COMMAND_AREA_Y + 0.048,
+		spriteID: 'if-padvooruit',
 	},
 	nextButton: {
 		depth: 4,
@@ -155,7 +176,7 @@ OBJECT_CONF = {
 		command: { commandID: 'step' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.13,
+		offsetX: COMMAND_AREA_X + 0.12,
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'step',
 	},
@@ -176,6 +197,14 @@ OBJECT_CONF = {
 		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 3),
 		offsetY: STEP_COUNT_DISPLAY_Y,
 		scaling: 0.9,
+	},
+	turndegrees: {
+		command: { commandID: 'turnDegrees' },
+		depth: 2,
+		draggable: true,
+		offsetX: COMMAND_AREA_X + 0.19,
+		offsetY: COMMAND_AREA_Y,
+		spriteID: 'turndegrees',
 	},
 	turnleft: {
 		command: { commandID: 'turnL' },

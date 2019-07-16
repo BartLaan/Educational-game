@@ -4,7 +4,7 @@ Level3c = new Phaser.Class({
 	levelName: 'level3c',
 
 	objects: COMMON_OBJECTS.concat([
-		'forX',
+		'for_x',
 		'turnleft',
 		'turnright',
 	]),

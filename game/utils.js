@@ -70,35 +70,39 @@ Utils.boardToNodes = function(board, orientationType) {
 			}
 			let nodeName = Utils.coordToStr(x, y);
 			let node = {};
+			let xMin = x > 0;
+			let yMin = y > 0;
+			let xPlus = x + 1 < board[y].length;
+			let yPlus = y + 1 < board.length;
 
 			if (board[y][x] == 2) {
 				node.goal = true;
 			}
-			if (y > 0 && board[y - 1][x] != 0) {
+			if (yMin && board[y - 1][x] != 0) {
 				node[Utils.cardinalName('n', orientationType)] = Utils.coordToStr(x, y - 1);
 			}
-			if (y + 1 < board.length && board[y + 1][x] != 0) {
-				node[Utils.cardinalName('s', orientationType)] = Utils.coordToStr(x, y + 1);
-			}
-			if (x > 0 && board[y][x - 1] != 0) {
-				node[Utils.cardinalName('w', orientationType)] = Utils.coordToStr(x - 1, y);
-			}
-			if (x + 1 < board[y].length && board[y][x + 1] != 0) {
+			if (xPlus && board[y][x + 1] != 0) {
 				node[Utils.cardinalName('e', orientationType)] = Utils.coordToStr(x + 1, y);
 			}
+			if (yPlus && board[y + 1][x] != 0) {
+				node[Utils.cardinalName('s', orientationType)] = Utils.coordToStr(x, y + 1);
+			}
+			if (xMin && board[y][x - 1] != 0) {
+				node[Utils.cardinalName('w', orientationType)] = Utils.coordToStr(x - 1, y);
+			}
 
-			if (useDegrees) { // FIX
-				if (x > 0 && y > 0 && board[y - 1][x] != 0) {
-					node[Utils.cardinalName('ne', orientationType)] = Utils.coordToStr(x, y - 1);
+			if (useDegrees) {
+				if (xPlus && yMin && board[y - 1][x + 1] != 0) {
+					node[Utils.cardinalName('ne', orientationType)] = Utils.coordToStr(x + 1, y - 1);
 				}
-				if (y + 1 < board.length && board[y + 1][x] != 0) {
-					node[Utils.cardinalName('sw', orientationType)] = Utils.coordToStr(x, y + 1);
+				if (xPlus && yPlus && board[y + 1][x + 1] != 0) {
+					node[Utils.cardinalName('se', orientationType)] = Utils.coordToStr(x + 1, y + 1);
 				}
-				if (x > 0 && board[y][x - 1] != 0) {
-					node[Utils.cardinalName('nw', orientationType)] = Utils.coordToStr(x - 1, y);
+				if (xMin && yPlus && board[y + 1][x - 1] != 0) {
+					node[Utils.cardinalName('sw', orientationType)] = Utils.coordToStr(x - 1, y + 1);
 				}
-				if (x + 1 < board[y].length && board[y][x + 1] != 0) {
-					node[Utils.cardinalName('se', orientationType)] = Utils.coordToStr(x + 1, y);
+				if (xMin && yMin && board[y - 1][x - 1] != 0) {
+					node[Utils.cardinalName('nw', orientationType)] = Utils.coordToStr(x - 1, y - 1);
 				}
 
 			}
@@ -157,6 +161,9 @@ Utils.cardinalToAngle = function(cardinal) {
 
 // Turn the orientation clockwise if clockWise is true, otherwise counterclockwise. Should only be used with cardinals
 Utils.turnClock = function(orientation, clockWise) {
+	if (typeof orientation === 'number') {
+		return orientation + (clockWise ? 90 : -90)
+	}
 	let cardinals = ['north', 'east', 'south', 'west'];
 	let shift = clockWise ? 1 : cardinals.length - 1; // 3 = -1 when doing modulo operation
 

@@ -4,6 +4,7 @@ function OssieGame(levelConfig, phaser) {
 	this.checkLevelConfig(levelConfig);
 	this.nodes = levelConfig.nodes;
 	this.initPosition = levelConfig.initPosition;
+	this.orientationType = levelConfig.orientationType;
 	this.ossiePos = Utils.deepCopy(levelConfig.initPosition);
 	this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this));
 	if (window.debug) {
@@ -97,6 +98,7 @@ OssieGame.prototype.commandSpecs = {
 			'do' // Stack to execute repeatedly
 		],
 		optional: [
+			'autoStop' // Stop when goal is reached
 			'counts' // Maximum amount of iterations of "do" stack
 		],
 	},
@@ -130,7 +132,7 @@ OssieGame.prototype.getStackItem = function(stackIndex, stack) {
 	}
 	for (let object of stack) {
 		if (object.stackIndex === stackIndex) {
-			return foundObject;
+			return object;
 		}
 
 		if (object.do !== undefined) {
@@ -186,7 +188,7 @@ OssieGame.prototype.turnR = function() {
 }
 
 OssieGame.prototype.turnDegrees = function(degrees) {
-	if (typeof degrees != 'number') { return console.error('I want a number here, not a string or degrees') }
+	if (typeof degrees != 'number') { return console.error('I want a number here, not a string') }
 	this.ossiePos.orientation = this.ossiePos.orientation + degrees;
 }
 
@@ -271,6 +273,7 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 
 		case "else":
 			let ifObject = this.getStackItem(stackItem.blockRef);
+			console.log('found ifobject for else:', ifObject);
 			if (this.conditional(ifObject.condition) === false) {
 				callbackStacks.unshift(stack);
 				return this.stackExecute(stackItem.do, callbackStacks);
@@ -278,6 +281,12 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			break;
 
 		case "for":
+			if (stackItem.autoStop) {
+				if (this.isOnGoal()) {
+					stack.shift();
+					return executeStackItem(stack, callbackStacks);
+				}
+			}
 			if (stackItem.counts === undefined && stackItem.counter === undefined) {
 				stackItem.counter = this.secretLimit;
 			} else if (stackItem.counter === undefined) {
@@ -303,7 +312,7 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			this.turnR();
 			break;
 
-		case "turn":
+		case "turnDegrees":
 			this.turnDegrees(stackItem.degrees);
 			break;
 
