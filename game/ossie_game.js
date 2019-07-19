@@ -98,8 +98,8 @@ OssieGame.prototype.commandSpecs = {
 			'do' // Stack to execute repeatedly
 		],
 		optional: [
-			'autoStop' // Stop when goal is reached
-			'counts' // Maximum amount of iterations of "do" stack
+			'autoStop', // Stop when goal is reached
+			'counts', // Maximum amount of iterations of "do" stack
 		],
 	},
 	blockend: {
@@ -243,10 +243,12 @@ OssieGame.prototype.stackExecute = function(stack, callbackStacks) {
 		return this.gameEnd(false);
 	}
 
+	// Don't freeze game for bracket objects
+	let timing = ['if', 'else', 'for'].indexOf(newStack[0].commandID) > -1 ? 0 : this.timing;
 	let me = this;
 	this.timer = setTimeout(function(){
 		me.executeStackItem(newStack, callbackStacks);
-	}, this.timing)
+	}, timing);
 }
 
 // Execute a stack item. Returns true if player enters win condition
@@ -299,7 +301,7 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			callbackStacks.unshift(stack);
 
 			let forStack = Utils.deepCopy(stackItem.do);
-			return this.executeStackItem(forStack, callbackStacks);
+			return this.stackExecute(forStack, callbackStacks);
 
 		case "step":
 			this.step();

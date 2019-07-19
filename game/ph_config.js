@@ -1,28 +1,29 @@
 // SIZES
-BOARD_STEPSIZE_RELATIVE_TO_HEIGHT = 0.101
-BOARD_OFFSET_X = 0.3
-BOARD_OFFSET_Y = 0.035
-CONFIRM_POS_X = 0.25
-CONFIRM_POS_Y = 0.615
-CONFIRM_WIDTH = 0.13
-CONFIRM_HEIGHT = 0.08
-COMMAND_AREA_X = 0.38
-COMMAND_AREA_Y = 0.76
+BOARD_STEPSIZE_X = 0.0776
+BOARD_STEPSIZE_Y = 0.1044
+BOARD_OFFSET_X = 0.33
+BOARD_OFFSET_Y = 0.072
+CONFIRM_POS_X = 0.4
+CONFIRM_POS_Y = 0.74
+COMMAND_AREA_X = 0.43
+COMMAND_AREA_Y = 0.78
 FAILBUTTON_X = 0.4
 FAILBUTTON_Y = 0.6
 HOVER_SCALING = 1.05;
+NUM_SPACING = 0.015;
+NUM_SCALING = 0.6;
 STACK_AVG_CMD_SIZE = 0.04
-STACK_BRACKET_INDENT = 0.02
-STACK_BRACKET_OFFSET = 0.009
+STACK_BRACKET_INDENT = 0.027
+STACK_BRACKET_OFFSET = 0.01
 STACK_BRACKET_SPACING = 0.02
 STACK_COMMAND_SPACING = 0.004
-STACK_ZONE_POS_X = 0.035
-STACK_ZONE_POS_Y = 0.042
+STACK_ZONE_POS_X = 0.047
+STACK_ZONE_POS_Y = 0.065
 STACK_ZONE_WIDTH = 0.25
 STACK_ZONE_HEIGHT = 0.83
-STEP_COUNT_DISPLAY_X = 0.024
-STEP_COUNT_DISPLAY_Y = 0.929;
-STEP_COUNT_SPACING = 0.016;
+STEP_COUNT_DISPLAY_X = 0.039
+STEP_COUNT_DISPLAY_Y = 0.958;
+STEP_COUNT_SPACING = 0.019;
 VICTORY_TIMEOUT = 1200 // ms
 WINBUTTON_Y = 0.88
 
@@ -43,8 +44,8 @@ OBJECT_CONF = {
 	backButton: {
 		depth: 2,
 		interactive: true,
-		offsetX: 0.95,
-		offsetY: 0.735,
+		offsetX: 0.97,
+		offsetY: 0.825,
 		spriteID: 'backbutton',
 	},
 	bracketBottom: {
@@ -65,7 +66,7 @@ OBJECT_CONF = {
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
-		offsetY: COMMAND_AREA_Y + 0.085,
+		offsetY: COMMAND_AREA_Y + 0.077,
 		scaling: 0.9,
 		spriteID: 'close',
 	},
@@ -73,14 +74,14 @@ OBJECT_CONF = {
 		command: { commandID: 'else' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.12,
+		offsetX: COMMAND_AREA_X + 0.114,
 		offsetY: COMMAND_AREA_Y + 0.096,
 		spriteID: 'else',
 	},
 	execute: {
 		interactive: true,
-		offsetX: 0.135,
-		offsetY: 0.89,
+		offsetX: 0.218,
+		offsetY: 0.937,
 		spriteID: 'execute',
 	},
 	for: {
@@ -96,22 +97,24 @@ OBJECT_CONF = {
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.465,
-		offsetY: COMMAND_AREA_Y + 0.063,
+		offsetY: COMMAND_AREA_Y + 0.082,
 		spriteID: 'for-till',
 	},
 	for_x: {
 		command: { commandID: "for", counts: null },
 		depth: 2,
 		draggable: true,
+		numOffsetX: 0.018,
+		numOffsetY: 0.019,
 		offsetX: COMMAND_AREA_X + 0.465,
-		offsetY: COMMAND_AREA_Y - 0.01,
+		offsetY: COMMAND_AREA_Y,
 		spriteID: 'for-x',
 	},
 	if_padlinks: {
 		command: { commandID: "if", condition: CONDITIONAL_LEFTFREE },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.12,
+		offsetX: COMMAND_AREA_X + 0.125,
 		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padlinks',
 	},
@@ -119,7 +122,7 @@ OBJECT_CONF = {
 		command: { commandID: "if", condition: CONDITIONAL_RIGHTFREE },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.23,
+		offsetX: COMMAND_AREA_X + 0.235,
 		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padrechts',
 	},
@@ -127,7 +130,7 @@ OBJECT_CONF = {
 		command: { commandID: "if", condition: CONDITIONAL_FORWARDFREE },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.34,
+		offsetX: COMMAND_AREA_X + 0.35,
 		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padvooruit',
 	},
@@ -150,22 +153,20 @@ OBJECT_CONF = {
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
-		offsetY: COMMAND_AREA_Y + 0.02,
+		offsetY: COMMAND_AREA_Y + 0.018,
 		scaling: 0.9,
 		spriteID: 'open',
 	},
 	reset: {
 		interactive: true,
-		offsetX: 0.33,
-		offsetY: 0.68,
+		offsetX: 0.38,
+		offsetY: 0.74,
 		scaling: 0.95,
 		spriteID: 'reset',
 	},
 	player: {
 		depth: 3,
 		scaling: 0.13,
-		offsetX: 0.03,
-		offsetY: 0.05,
 		spriteID: 'ossie',
 	},
 	questionmark: {
@@ -176,7 +177,7 @@ OBJECT_CONF = {
 		command: { commandID: 'step' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.12,
+		offsetX: COMMAND_AREA_X + 0.1,
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'step',
 	},
@@ -188,7 +189,7 @@ OBJECT_CONF = {
 		spriteID: '0',
 	},
 	stepcount_slash: {
-		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 2) + 0.005,
+		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 2) -0.005,
 		offsetY: STEP_COUNT_DISPLAY_Y,
 		scaling: 0.9,
 		spriteID: 'slash',
@@ -199,10 +200,12 @@ OBJECT_CONF = {
 		scaling: 0.9,
 	},
 	turndegrees: {
-		command: { commandID: 'turnDegrees' },
+		command: { commandID: 'turnDegrees', degrees: null },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.19,
+		numOffsetX: 0.04,
+		numOffsetY: 0,
+		offsetX: COMMAND_AREA_X + 0.22,
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'turndegrees',
 	},
@@ -210,7 +213,7 @@ OBJECT_CONF = {
 		command: { commandID: 'turnL' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.19,
+		offsetX: COMMAND_AREA_X + 0.2,
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'turnleft',
 	},
@@ -218,7 +221,7 @@ OBJECT_CONF = {
 		command: { commandID: 'turnR' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.32,
+		offsetX: COMMAND_AREA_X + 0.335,
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'turnright',
 	},

@@ -104,6 +104,10 @@ OBJECTS_MULTIPLE = [
 	'turnright',
 	'step',
 ];
+OBJECTS_NUMBERCOMMAND = [
+	'for_x',
+	'turndegrees',
+];
 LEVELS = [
 	'level1',
 	'level2',

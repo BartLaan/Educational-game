@@ -161,8 +161,9 @@ Utils.cardinalToAngle = function(cardinal) {
 
 // Turn the orientation clockwise if clockWise is true, otherwise counterclockwise. Should only be used with cardinals
 Utils.turnClock = function(orientation, clockWise) {
-	if (typeof orientation === 'number') {
-		return orientation + (clockWise ? 90 : -90)
+	let degrees = parseInt(orientation, 10);
+	if (degrees) {
+		return degrees + (clockWise ? 90 : -90)
 	}
 	let cardinals = ['north', 'east', 'south', 'west'];
 	let shift = clockWise ? 1 : cardinals.length - 1; // 3 = -1 when doing modulo operation

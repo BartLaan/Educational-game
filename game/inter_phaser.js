@@ -21,6 +21,7 @@ InterPhaser.prototype.showIntro = function() {
 
 	okButton.on('pointerdown', function() {
 		introImage.destroy();
+		okButton.destroy();
 	});
 }
 
@@ -35,8 +36,8 @@ InterPhaser.prototype.setLevel = function() {
 	this.width = width
 	this.scalingfactor = scalingfactor
 
-	this.stepsize_horizontal = height * BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
-	this.stepsize_vertical = height * BOARD_STEPSIZE_RELATIVE_TO_HEIGHT
+	this.stepsize_horizontal = width * BOARD_STEPSIZE_X
+	this.stepsize_vertical = height * BOARD_STEPSIZE_Y
 	this.boardOffsetX = width * BOARD_OFFSET_X
 	this.boardOffsetY = height * BOARD_OFFSET_Y
 
@@ -113,17 +114,29 @@ InterPhaser.prototype.setDynamicObjects = function() {
 
 	objects.reset.on('pointerdown', this.resetLevel.bind(this));
 
-	objects.player.setOrigin(0.5);
+	objects.backButton.on('pointerdown', this.showIntro.bind(this));
+
 	this.updateOssiePos(this.levelConfig.initPosition);
 }
 
 InterPhaser.prototype.setGameObject = function(config, id) {
 	let scaling = (config.scaling || 1) * this.scalingfactor;
-	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID).setOrigin(0, 0);
-	gameObject.setData('objectRef', id);
-	gameObject.name = id.split('-')[0];
+	let objectName = id.split('-')[0];
 
+	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID);
 	gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling);
+
+	// we need to draw numbers for the amount of repeats for forX and degrees for turnDegrees
+	if (objectName === 'for_x' || objectName === 'turndegrees') {
+		// SO this is a bit weird, we're replacing the gameObject with a container containing the gameObject.
+		// This is so that we can treat the container like an object, so it will take the number with it when dragging
+		let container = this.phaser.add.container(0, 0, [gameObject]);
+		container.setSize(gameObject.width, gameObject.height);
+		gameObject = container;
+	}
+	gameObject.setData('objectRef', id);
+	gameObject.name = objectName;
+
 
 	if (config.command !== undefined) {
 		let commandObject = Utils.deepCopy(config.command);
@@ -232,6 +245,13 @@ InterPhaser.prototype.setInteractions = function() {
 			if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
 				myself.duplicateObject(gameObject);
 			}
+			let command = gameObject.getData('command');
+			if (command && command.degrees !== undefined) {
+				command.degrees = null;
+			}
+			if (command && command.counts !== undefined) {
+				command.counts = null;
+			}
 			myself.dropObjectOnStack(gameObject);
 			fastClick = false;
 			newDrag = false;
@@ -312,10 +332,11 @@ InterPhaser.prototype.duplicateObject = function(gameObject) {
 }
 
 InterPhaser.prototype.setHoverTexture = function(gameObject) {
+	if (gameObject.scene === undefined) { return }
 	let objConfig = OBJECT_CONF[gameObject.name];
 	if (objConfig === undefined || gameObject.getData('hover')) { return }
 
-	let hoverTexture = gameObject.texture.key + "-hover";
+	let hoverTexture = gameObject.texture ? gameObject.texture.key + "-hover" : '';
 
 	gameObject.setData('hover', true);
 	if (SPRITE_PATHS[hoverTexture] === undefined) {
@@ -332,7 +353,7 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 	if (objConfig === undefined || !gameObject.getData('hover')) { return }
 
 	gameObject.setData('hover', false);
-	if (gameObject.texture.key.indexOf('hover') === -1) {
+	if (!gameObject.texture || gameObject.texture.key.indexOf('hover') === -1) {
 		let newScale = objConfig.scaling ? objConfig.scaling : (1 / HOVER_SCALING);
 		gameObject.setScale(newScale);
 		return;
@@ -350,10 +371,16 @@ InterPhaser.prototype.renderDropZone = function() {
 		this.graphics.lineStyle(2, 0xffff00);
 	}
 	this.graphics.strokeRect(
-		this.width * STACK_ZONE_POS_X,
-		this.height * STACK_ZONE_POS_Y,
-		this.width * STACK_ZONE_WIDTH,
-		this.height * STACK_ZONE_HEIGHT
+		this.width * BOARD_OFFSET_X,
+		this.height * BOARD_OFFSET_Y,
+		this.width * BOARD_STEPSIZE_X * 8,
+		this.height * BOARD_STEPSIZE_Y * 5
+	);
+	this.graphics.strokeRect(
+		this.width * BOARD_OFFSET_X,
+		this.height * BOARD_OFFSET_Y,
+		this.width * BOARD_STEPSIZE_X,
+		this.height * BOARD_STEPSIZE_Y
 	);
 }
 
@@ -370,14 +397,21 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	console.log('Drop object', gameObject, 'stackIndex:', this.stackIndex, 'stackObjects', this.stackObjects);
 
 	// First input the amount for commands that require it
-	let askForX = gameObject.name === "for_x";
-	let askDegrees = gameObject.getData('commandID') === "turnDegrees";
+	let command = gameObject.getData('command');
+	let askForX = command.counts === null;
+	let askDegrees = command.degrees === null;
 	if (askForX || askDegrees) {
 		let result = this.askCounts(askForX ? 'Hoe vaak herhalen?' : 'Hoeveel graden?');
-		if (result === false) { return } // user cancelled input
+		if (result === false) {
+			// user cancelled input
+			delete this.objects[command.objectRef];
+			gameObject.destroy();
+			return this.positionCommands();
+		}
 
 		let key = askForX ? 'counts' : 'degrees';
-		gameObject.getData('command')[key] = result;
+		command[key] = result;
+		this.renderNumber(gameObject, result);
 	}
 
 	// Add object to internal InterPhaser stack
@@ -396,7 +430,7 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 InterPhaser.prototype.askCounts = function(msg, wrongInput) {
 	let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg;
 	let result = window.prompt(question, 'Voer een getal in');
-	if (result === false) { return false; }
+	if (result === null) { return false; }
 
 	let counts = parseInt(result, 10);
 	if (counts > 0) {
@@ -420,10 +454,10 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
 
-		object.y = stackY;
+		object.y = object.name === 'bracketSide' ? stackY : stackY + object.height / 2;
 		if (object.name === 'bracketBottom') {
 			var bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')];
-			let heightDiff = stackY - bracketSide.y;
+			let heightDiff = object.y - bracketSide.y;
 			if (heightDiff < avgCommandSize) {
 				object.y += avgCommandSize;
 			}
@@ -431,18 +465,18 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		if (object.name === 'bracketBottom' || object.name === 'close') {
 			stackX -= bracketIndent;
 		}
-		object.x = stackX;
+		object.x = stackX + (object.width / 2);
 
 		let bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop';
 		let tryTempSpace = this.stackIndex === undefined && pointer !== undefined && !bracketSideOrTop;
-		if (tryTempSpace && (pointer.y < object.y + (object.height / 2))) {
+		if (tryTempSpace && pointer.y < object.y) {
 			this.stackIndex = parseInt(i, 10); // WHY THE FFFFFFFF IS THIS A STRING???
 			object.y += avgCommandSize;
 		}
 
 		switch (object.name) {
 			case 'bracketTop':
-				stackY = object.y + bracketTopOffset;
+				stackY = stackY + bracketTopOffset;
 				break;
 			case 'bracketSide':
 				stackX += bracketIndent;
@@ -450,23 +484,24 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				break;
 			case 'bracketBottom':
 				// Scaling of bracket side
-				heightDiff = (object.height + object.y) - bracketSide.y;
-				let newScale = 1 / (bracketSide.height / heightDiff);
+				heightDiff = (object.y + object.height / 2) - bracketSide.y;
+				let newScale = heightDiff / bracketSide.height;
 				bracketSide.scaleY = Math.max(0.2, newScale);
-				bracketSide.scaleX = Math.max(0.5, Math.min(newScale, 0.8));
-				bracketSide.x = bracketSide.x - Math.min(10, -2 + 10 * newScale);
+				bracketSide.scaleX = Math.max(0.5, Math.min(0.8, newScale));
+				bracketSide.x = bracketSide.x - Math.min(10, 13 * newScale);
+				bracketSide.y += heightDiff / 2;
 
-				stackY = object.y + bracketSpacing;
+				stackY = object.y + object.height / 2 + bracketSpacing;
 				break;
 			case 'for':
 			case 'for_x':
 			case 'for_till':
-				stackY = (object.y + object.height) - 0.002 * this.height;
+				stackY = (object.y + object.height / 2) - 0.002 * this.height;
 				break;
 			case 'open':
 				stackX += bracketIndent;
 			default:
-				stackY = object.y + object.height + commandSpacing;
+				stackY = object.y + (object.height / 2) + commandSpacing;
 		}
 	}
 }
@@ -596,7 +631,7 @@ InterPhaser.prototype.fail = function() {
 	okButton.on('pointerdown', function(pointer) {
 		loseImage.destroy();
 		okButton.destroy();
-		if (me.activeCommand !== undefined) {
+		if (me.activeCommand !== undefined && !Utils.isBracketObject(me.activeCommand)) {
 			me.activeCommand.setTexture(OBJECT_CONF[me.activeCommand.name].spriteID);
 		}
 	});
@@ -635,13 +670,11 @@ InterPhaser.prototype.win = function() {
 InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	let player = this.objects.player
 	playerConfig = OBJECT_CONF.player
-	player.x = playerConfig.offsetX * this.width;
-	player.y = playerConfig.offsetY * this.height;
 
 	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
 		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
-		player.x += this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
-		player.y += this.boardOffsetY + (this.stepsize_vertical * ossieCoords.y);
+		player.x = this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
+		player.y = this.boardOffsetY + (this.stepsize_vertical * ossieCoords.y);
 	} else {
 		// ???
 	}
@@ -652,23 +685,13 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	}
 }
 
-InterPhaser.prototype.isOnConfirmButton = function(pointer) {
-	let confirmRangeMinX = this.width * CONFIRM_POS_X;
-	let confirmRangeMinY = this.width * CONFIRM_POS_Y;
-	return (
-		pointer.x >= confirmRangeMinX
-		&& pointer.x <= this.width * CONFIRM_WIDTH + confirmRangeMinX
-		&& pointer.y >= confirmRangeMinY
-		&& pointer.y <= this.width * CONFIRM_HEIGHT + confirmRangeMinY
-	);
-}
 InterPhaser.prototype.onCommandExecute = function(commandID) {
 	this.executingCommand = true;
 	let [commandName, commandI] = commandID.split('-');
 	let isMultiple = OBJECTS_MULTIPLE.indexOf(commandName) !== -1;
 	let commandObject = isMultiple ? this.objects[commandName][commandI] : this.objects[commandName];
 	// clear color of previous command if applicable
-	if (this.activeCommand !== undefined) {
+	if (this.activeCommand !== undefined && !Utils.isBracketObject(this.activeCommand)) {
 		this.activeCommand.setTexture(OBJECT_CONF[this.activeCommand.name].spriteID);
 	}
 	this.activeCommand = commandObject;
@@ -678,6 +701,36 @@ InterPhaser.prototype.onCommandExecute = function(commandID) {
 		let crntTexture = OBJECT_CONF[commandObject.name].spriteID + '-crnt';
 		if (SPRITE_PATHS[crntTexture] !== undefined) {
 			commandObject.setTexture(crntTexture);
+		}
+	}
+}
+
+InterPhaser.prototype.renderNumber = function(object, num) {
+	console.log(object, num);
+	object.each(function(sprite) {
+		if (sprite.name.indexOf('number') > -1) {
+			object.remove(sprite, true, true);
+		}
+	})
+	let config = OBJECT_CONF[object.name];
+	let numX = config.numOffsetX * this.width;
+	let numY = config.numOffsetY * this.height;
+	let numSpacing = NUM_SPACING * this.width;
+	// get array of decreasing order of magnitude (123 > ['3','2','1'])
+	let numParts = num.toString().split('').reverse();
+	let number1 = this.phaser.add.sprite(numX, numY, numParts[0]).setScale(NUM_SCALING);
+	number1.name = 'number1'
+	object.add(number1);
+
+	if (num > 9) {
+		let number2 = this.phaser.add.sprite(numX - numSpacing, numY, numParts[1]).setScale(NUM_SCALING);
+		number2.name = 'number2'
+		object.add(number2);
+		if (num > 99) {
+			let number3 = this.phaser.add.sprite(numX - (2 * numSpacing), numY, numParts[2]);
+			number3.setScale(NUM_SCALING);
+			number3.name = 'number3'
+			object.add(number3);
 		}
 	}
 }
