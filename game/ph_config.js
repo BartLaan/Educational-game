@@ -9,7 +9,7 @@ COMMAND_AREA_X = 0.43
 COMMAND_AREA_Y = 0.78
 FAILBUTTON_X = 0.4
 FAILBUTTON_Y = 0.6
-HOVER_SCALING = 1.05;
+HOVER_SCALING = 1.04;
 NUM_SPACING = 0.015;
 NUM_SCALING = 0.6;
 STACK_AVG_CMD_SIZE = 0.04
@@ -17,16 +17,18 @@ STACK_BRACKET_INDENT = 0.027
 STACK_BRACKET_OFFSET = 0.01
 STACK_BRACKET_SPACING = 0.02
 STACK_COMMAND_SPACING = 0.004
-STACK_ZONE_POS_X = 0.047
-STACK_ZONE_POS_Y = 0.065
-STACK_ZONE_WIDTH = 0.25
+STACK_ZONE_POS_X = 0.045
+STACK_ZONE_POS_Y = 0.062
 STACK_ZONE_HEIGHT = 0.83
+STACK_ZONE_WIDTH = 0.25
 STEP_COUNT_DISPLAY_X = 0.039
 STEP_COUNT_DISPLAY_Y = 0.958;
 STEP_COUNT_SPACING = 0.019;
 VICTORY_TIMEOUT = 1200 // ms
 WINBUTTON_Y = 0.88
 
+BASE_SIZE_X = 1024;
+BASE_SIZE_Y = 768;
 // etc
 SCALING_FACTOR_DIV = 1024
 WH_RATIO = 1.3333333333
@@ -80,7 +82,7 @@ OBJECT_CONF = {
 	},
 	execute: {
 		interactive: true,
-		offsetX: 0.218,
+		offsetX: 0.213,
 		offsetY: 0.937,
 		spriteID: 'execute',
 	},
@@ -114,7 +116,7 @@ OBJECT_CONF = {
 		command: { commandID: "if", condition: CONDITIONAL_LEFTFREE },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.125,
+		offsetX: COMMAND_AREA_X + 0.124,
 		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padlinks',
 	},
@@ -157,13 +159,6 @@ OBJECT_CONF = {
 		scaling: 0.9,
 		spriteID: 'open',
 	},
-	reset: {
-		interactive: true,
-		offsetX: 0.38,
-		offsetY: 0.74,
-		scaling: 0.95,
-		spriteID: 'reset',
-	},
 	player: {
 		depth: 3,
 		scaling: 0.13,
@@ -172,6 +167,13 @@ OBJECT_CONF = {
 	questionmark: {
 		scaling: 1.1,
 		spriteID: 'questionmark',
+	},
+	reset: {
+		interactive: true,
+		offsetX: 0.375,
+		offsetY: 0.735,
+		scaling: 0.95,
+		spriteID: 'reset',
 	},
 	step: {
 		command: { commandID: 'step' },
@@ -205,7 +207,7 @@ OBJECT_CONF = {
 		draggable: true,
 		numOffsetX: 0.04,
 		numOffsetY: 0,
-		offsetX: COMMAND_AREA_X + 0.22,
+		offsetX: COMMAND_AREA_X + 0.21,
 		offsetY: COMMAND_AREA_Y,
 		spriteID: 'turndegrees',
 	},

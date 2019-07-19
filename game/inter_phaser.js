@@ -14,15 +14,7 @@ InterPhaser.prototype.debug = true;
 
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
-	let introImage = this.phaser.add.image(0, 0, instructionName);
-	Phaser.Display.Align.In.Center(introImage, this.objects.background);
-	introImage.setDepth(3);
-	let okButton = this.setGameObject(OBJECT_CONF['okButton'], 'okButton');
-
-	okButton.on('pointerdown', function() {
-		introImage.destroy();
-		okButton.destroy();
-	});
+	this.showModal(instructionName);
 }
 
 InterPhaser.prototype.setLevel = function() {
@@ -430,13 +422,11 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 InterPhaser.prototype.askCounts = function(msg, wrongInput) {
 	let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg;
 	let result = window.prompt(question, 'Voer een getal in');
-	if (result === null) { return false; }
+	if (result === null) { return false; } // Cancel
 
 	let counts = parseInt(result, 10);
-	if (counts > 0) {
+	if (!isNaN(counts)) {
 		return counts;
-	} else if (result === null) {
-		this.askCounts(msg, false);
 	}
 	this.askCounts(msg, true)
 }
@@ -632,7 +622,7 @@ InterPhaser.prototype.fail = function() {
 		loseImage.destroy();
 		okButton.destroy();
 		if (me.activeCommand !== undefined && !Utils.isBracketObject(me.activeCommand)) {
-			me.activeCommand.setTexture(OBJECT_CONF[me.activeCommand.name].spriteID);
+			me.activeCommand.setTexture(me.activeCommand.texture.key.replace('-crnt', ''));
 		}
 	});
 }
@@ -640,30 +630,36 @@ InterPhaser.prototype.fail = function() {
 * displays a victory image on screen when victory event is fired
 */
 InterPhaser.prototype.win = function() {
-	let victoryImage = this.phaser.add.image(0, 0, 'victory');
-	Phaser.Display.Align.In.Center(victoryImage, this.objects.background);
-	victoryImage.setDepth(3);
+	let image = document.getElementById('fullscreenGif');
+	image.style.display = 'block';
+	image.setAttribute('src', SPRITE_PATHS['victory']);
+	let nextButton = document.getElementById('nextButton');
+	let prevButton = document.getElementById('prevButton');
 
 	let me = this;
-	setTimeout(function(){
-		// add buttons here;
-		let nextButton = me.setGameObject(OBJECT_CONF['nextButton'], 'nextButton');
-		nextButton.on('pointerdown', function (pointer) {
-			window.game.scene.stop(me.levelConfig.levelName);
-			let nextLevel = LEVELS[LEVELS.indexOf(me.levelConfig.levelName) + 1];
-			if (nextLevel !== undefined) {
-				console.log('starting level:', nextLevel);
-				window.game.scene.start(nextLevel);
-			}
-		}, me);
+	setTimeout(function() {
+		nextButton.style.display = 'block';
+		prevButton.style.display = 'block';
 
-		let againButton = me.setGameObject(OBJECT_CONF['againButton'], 'againButton');
-		againButton.on('pointerdown', function () {
-			victoryImage.destroy();
-			nextButton.destroy();
-			againButton.destroy();
+		let onClick = function(e) {
+			image.style.display = 'none';
+			nextButton.style.display = 'none';
+			prevButton.style.display = 'none';
+			nextButton.removeEventListener(onClick);
+			prevButton.removeEventListener(onClick);
+			window.game.scene.stop(me.levelConfig.levelName);
+
+			let btnName = e.target.id;
+			if (btnName === 'nextButton') {
+				let nextLevel = LEVELS[LEVELS.indexOf(me.levelConfig.levelName) + 1];
+				if (nextLevel !== undefined) {
+					return window.game.scene.start(nextLevel);
+				}
+			}
 			me.resetLevel();
-		});
+		}
+		nextButton.addEventListener('click', onClick);
+		prevButton.addEventListener('click', onClick);
 	}, VICTORY_TIMEOUT);
 }
 
@@ -676,7 +672,10 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 		player.x = this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
 		player.y = this.boardOffsetY + (this.stepsize_vertical * ossieCoords.y);
 	} else {
-		// ???
+		let coordX = ossieCoords.x * (this.width / BASE_SIZE_X);
+		let coordY = ossieCoords.y * (this.height / BASE_SIZE_Y);
+		player.x = this.boardOffsetX + coordX;
+		player.y = this.boardOffsetY + coordY;
 	}
 	if (this.levelConfig.orientationType === TYPE_ORIENTATION_CARDINALS) {
 		player.angle = Utils.cardinalToAngle(ossiePos.orientation);
@@ -686,27 +685,29 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 }
 
 InterPhaser.prototype.onCommandExecute = function(commandID) {
-	this.executingCommand = true;
 	let [commandName, commandI] = commandID.split('-');
 	let isMultiple = OBJECTS_MULTIPLE.indexOf(commandName) !== -1;
 	let commandObject = isMultiple ? this.objects[commandName][commandI] : this.objects[commandName];
-	// clear color of previous command if applicable
+
+	// Reset texture of previous activeCommand
 	if (this.activeCommand !== undefined && !Utils.isBracketObject(this.activeCommand)) {
-		this.activeCommand.setTexture(OBJECT_CONF[this.activeCommand.name].spriteID);
+		let sprite = this.activeCommand.add !== undefined ? this.activeCommand.getAt(0) : this.activeCommand;
+		sprite.setTexture(OBJECT_CONF[this.activeCommand.name].spriteID);
 	}
+
 	this.activeCommand = commandObject;
 
-	// color the current command if it is not the repeat command
-	if (Utils.isBracketObject(commandObject)) {
-		let crntTexture = OBJECT_CONF[commandObject.name].spriteID + '-crnt';
+	// Show custom "current" sprite if applicable
+	if (!Utils.isBracketObject(commandObject)) {
+		let sprite = commandObject.add !== undefined ? commandObject.getAt(0) : commandObject;
+		let crntTexture = sprite.texture.key + '-crnt';
 		if (SPRITE_PATHS[crntTexture] !== undefined) {
-			commandObject.setTexture(crntTexture);
+			sprite.setTexture(crntTexture);
 		}
 	}
 }
 
 InterPhaser.prototype.renderNumber = function(object, num) {
-	console.log(object, num);
 	object.each(function(sprite) {
 		if (sprite.name.indexOf('number') > -1) {
 			object.remove(sprite, true, true);
@@ -716,23 +717,33 @@ InterPhaser.prototype.renderNumber = function(object, num) {
 	let numX = config.numOffsetX * this.width;
 	let numY = config.numOffsetY * this.height;
 	let numSpacing = NUM_SPACING * this.width;
-	// get array of decreasing order of magnitude (123 > ['3','2','1'])
+	// get array of decreasing order of magnitude (-123 > ['3','2','1','-'])
 	let numParts = num.toString().split('').reverse();
-	let number1 = this.phaser.add.sprite(numX, numY, numParts[0]).setScale(NUM_SCALING);
-	number1.name = 'number1'
-	object.add(number1);
-
-	if (num > 9) {
-		let number2 = this.phaser.add.sprite(numX - numSpacing, numY, numParts[1]).setScale(NUM_SCALING);
-		number2.name = 'number2'
-		object.add(number2);
-		if (num > 99) {
-			let number3 = this.phaser.add.sprite(numX - (2 * numSpacing), numY, numParts[2]);
-			number3.setScale(NUM_SCALING);
-			number3.name = 'number3'
-			object.add(number3);
-		}
+	for (let numI in numParts) {
+		let numberObj = this.phaser.add.sprite(numX - (numSpacing * numI), numY, numParts[numI]).setScale(NUM_SCALING);
+		numberObj.name = 'number' + numI;
+		object.add(numberObj);
 	}
+}
+
+InterPhaser.prototype.showModal = function(modalKey, timeout) {
+	if (timeout === undefined) { timeout = 0; }
+
+	let image = document.getElementById('fullscreenGif');
+	image.style.display = 'block';
+	image.setAttribute('src', SPRITE_PATHS[modalKey]);
+	let okButton = document.getElementById('okButton');
+
+	setTimeout(function() {
+		okButton.style.display = 'block';
+
+		let onClick = function() {
+			image.style.display = 'none';
+			okButton.style.display = 'none';
+			okButton.removeEventListener(onClick);
+		}
+		okButton.addEventListener('click', onClick);
+	}, timeout)
 }
 
 window.handleRepeat = function() {

@@ -231,10 +231,8 @@ OssieGame.prototype.gameEnd = function(proper) {
 		this.eventHandler(STACK_FAIL);
 	}
 	this.eventHandler(STACK_OPEN_END);
-	// this.reset();
 }
 
-//
 OssieGame.prototype.stackExecute = function(stack, callbackStacks) {
 	// console.log('Stack execute:', stack.length, callbackStacks.length);
 	let newStack = stack.length > 0 ? stack : callbackStacks.shift();

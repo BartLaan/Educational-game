@@ -3,6 +3,42 @@ body {
 	font-family: 'Verdana', Helvetica, Arial, sans-serif !important;
 }
 
+img,
+.modalButton {
+	display: none;
+	position: fixed;
+}
+
+.modalButton {
+	background-size: cover;
+}
+#okButton {
+	background-image: url('/assets/buttons/ok.png');
+	left: 0.4vw;
+	top: 0.74vh;
+}
+#okButton:hover {
+	background-image: url('/assets/buttons/ok-hover.png');
+}
+
+#nextButton {
+	background-image: url('/assets/buttons/volgende-opdracht.png');
+	left: 0.74vw;
+	top: 0.88vh;
+}
+#nextButton:hover {
+	/* background-image: url('/assets/buttons/volgende-opdracht-hover.png'); */
+}
+
+#prevButton {
+	background-image: url('/assets/buttons/opnieuw-spelen.png');
+	left: 0.25vw;
+	top: 0.88vh;
+}
+#prevButton:hover {
+	/* background-image: url('/assets/buttons/opnieuw-spelen-hover.png'); */
+}
+
 #repeatOverlay {
 	visibility: hidden;
 	position: absolute;

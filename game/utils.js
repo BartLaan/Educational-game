@@ -175,7 +175,10 @@ Utils.turnClock = function(orientation, clockWise) {
 }
 
 Utils.isBracketObject = function(object) {
-	return object.getData !== undefined && BRACKET_OBJECTS.indexOf(object.getData('commandID')) > -1;
+	if (typeof object !== 'string') {
+		return object.getData !== undefined && BRACKET_OBJECTS.indexOf(object.getData('commandID')) > -1;
+	}
+	return BRACKET_OBJECTS.indexOf(object) > -1;
 }
 
 // load sprites
@@ -200,14 +203,17 @@ Utils.loadSprites = function(phaser) {
 			if (objConfig.interactive === true || objConfig.draggable === true) {
 				spriteArray.push(objConfig.spriteID + "-hover");
 			}
-			if (objConfig.command !== undefined && objConfig.command.commandID !== undefined) {
+			if (
+				objConfig.command !== undefined && objConfig.command.commandID !== undefined
+				&& !Utils.isBracketObject(objConfig.command.commandID)
+			) {
 				spriteArray.push(objConfig.spriteID + "-crnt");
 				spriteArray.push(objConfig.spriteID + "-crnt-hover");
 			}
 
 			// Brackets
 			if (
-				objConfig.command && Utils.isBracketObject(objConfig.command.commandID) > -1
+				objConfig.command && Utils.isBracketObject(objConfig.command.commandID)
 				&& spriteArray.indexOf('bracket-bottom') === -1
 			) {
 				spriteArray = spriteArray.concat('bracket-bottom', 'bracket-middle', 'bracket-top');
@@ -223,11 +229,13 @@ Utils.loadSprites = function(phaser) {
 		let spriteLocation = SPRITE_PATHS[spriteID];
 		if (spriteLocation !== undefined) {
 			phaser.load.image(spriteID, spriteLocation);
-		} else {
+		} else if (spriteID.indexOf('hover') === -1) {
 			missingSprites.push(spriteID);
 		}
 	}
-	console.log('Could not find sprites with the following IDs:\n ', missingSprites.join('\n  '));
+	if (missingSprites.length) {
+		console.error('Could not find sprites with the following IDs:\n ', missingSprites.join('\n  '));
+	}
 }
 
 Utils.preloadLevel = function(phaser) {
