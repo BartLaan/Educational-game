@@ -17,20 +17,20 @@ Level2 = new Phaser.Class({
 		console.log('create');
 		const gameboard = [
 			[0,0,0,0,0,0,0,1,1],
-			[0,0,0,0,0,1,1,2,0],
+			[0,0,0,0,0,1,2,1,0],
 			[0,1,1,1,0,1,0,0,0],
 			[0,1,0,1,1,1,0,0,0],
 			[0,1,0,0,0,0,0,0,0],
 			[1,1,0,0,0,0,0,0,0]
 		];
-		const nodes = Utils.boardToNodes(gameboard);
+		const [nodes, goalPosition] = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			goalPosition: '7,1',
+			goalPosition: goalPosition,
 			initPosition: {
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			maxCommands: 19,
+			maxCommands: 18,
 			levelCount: 2,
 			levelName: this.levelName,
 			nodes: nodes,

@@ -1,7 +1,8 @@
 // Constructor for OssieGame instance. See OssieGame.checkLevelConfig for details on levelConfig.
-// Overriding of certain prototype properties is intented.
 function OssieGame(levelConfig, phaser) {
-	this.checkLevelConfig(levelConfig);
+	if (window.debug) {
+		this.checkLevelConfig(levelConfig);
+	}
 	this.nodes = levelConfig.nodes;
 	this.initPosition = levelConfig.initPosition;
 	this.orientationType = levelConfig.orientationType;
@@ -45,7 +46,7 @@ OssieGame.prototype.phaserHandler = function(eventCode, data) {
 }
 
 OssieGame.prototype.eventHandler = function(eventCode, data) {
-	console.log('OSSIE EVENT: eventCode=' + eventCode + '; data=', data);
+	// console.log('OSSIE EVENT: eventCode=' + eventCode + '; data=', data);
 	switch (eventCode) {
 		case STACK_EXECUTE_COMMAND:
 			this.interPhaser.onCommandExecute(data);
@@ -121,11 +122,6 @@ OssieGame.prototype.commandSpecs = {
 	}
 }
 
-// FEEL FREE TO OVERRIDE
-OssieGame.prototype.allowedCommands = Object.keys(OssieGame.prototype.commandSpecs);
-OssieGame.prototype.timing = 300;
-OssieGame.prototype.secretLimit = 10;
-
 OssieGame.prototype.getStackItem = function(stackIndex, stack) {
 	if (stack === undefined) {
 		stack = this.stack;
@@ -189,7 +185,7 @@ OssieGame.prototype.turnR = function() {
 
 OssieGame.prototype.turnDegrees = function(degrees) {
 	if (typeof degrees != 'number') { return console.error('I want a number here, not a string') }
-	this.ossiePos.orientation = this.ossiePos.orientation + degrees;
+	this.ossiePos.orientation = Utils.turnDegrees(this.ossiePos.orientation, degrees);
 }
 
 OssieGame.prototype.conditional = function(conditionalCode) {
@@ -209,6 +205,31 @@ OssieGame.prototype.conditional = function(conditionalCode) {
 
 OssieGame.prototype.isOnGoal = function() {
 	return this.nodes[this.ossiePos.nodeLocation].goal === true
+}
+
+OssieGame.prototype.executeFor = function(stackItem, stack, callbackStacks) {
+	if (stackItem.autoStop) {
+		if (this.isOnGoal()) {
+			stack.shift();
+			return this.stackExecute(stack, callbackStacks);
+		}
+	} else {
+		// Level3b
+		if (stackItem.counts === undefined && stackItem.counter === undefined) {
+			stackItem.counter = this.secretLimit;
+		} else if (stackItem.counter === undefined) {
+			stackItem.counter = stackItem.counts;
+		}
+		stackItem.counter -= 1;
+		if (stackItem.counter <= 0) {
+			stack.shift();
+		}
+	}
+	callbackStacks.unshift(stack);
+
+	let forStack = Utils.deepCopy(stackItem.do);
+	return this.stackExecute(forStack, callbackStacks);
+
 }
 
 OssieGame.prototype.gameStart = function() {
@@ -234,18 +255,22 @@ OssieGame.prototype.gameEnd = function(proper) {
 }
 
 OssieGame.prototype.stackExecute = function(stack, callbackStacks) {
-	// console.log('Stack execute:', stack.length, callbackStacks.length);
-	let newStack = stack.length > 0 ? stack : callbackStacks.shift();
-
-	if (newStack === undefined || newStack.length == 0) {
+	// No commands left
+	if (stack.length === 0 && callbackStacks.length === 0) {
 		return this.gameEnd(false);
 	}
+	// Stack exhausted, continue with callbackStacks
+	if (stack.length === 0) {
+		let newStack = callbackStacks.shift();
+		return this.stackExecute(newStack, callbackStacks);
+	}
 
-	// Don't freeze game for bracket objects
-	let timing = ['if', 'else', 'for'].indexOf(newStack[0].commandID) > -1 ? 0 : this.timing;
+
+	// Freeze game so player can see what's happening, but only for actions that change position
+	let timing = Utils.isBracketObject(stack[0].commandID) ? 0 : COMMAND_TIMING;
 	let me = this;
 	this.timer = setTimeout(function(){
-		me.executeStackItem(newStack, callbackStacks);
+		me.executeStackItem(stack, callbackStacks);
 	}, timing);
 }
 
@@ -253,6 +278,7 @@ OssieGame.prototype.stackExecute = function(stack, callbackStacks) {
 OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 	let stackItem = stack[0];
 	// this.debugStackItem(stackItem);
+	console.log('executing command:', stackItem.commandID, this.ossiePos);
 
 	this.eventHandler(STACK_EXECUTE_COMMAND, stackItem.objectRef);
 	// For loops prepend the current stack to callbackStacks and call stackExecute with the for stack:
@@ -266,6 +292,7 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 	switch (stackItem.commandID) {
 		case "if":
 			if (this.conditional(stackItem.condition)) {
+				console.log('conditional', stackItem.condition, true');
 				callbackStacks.unshift(stack);
 				return this.stackExecute(stackItem.do, callbackStacks);
 			}
@@ -281,25 +308,7 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			break;
 
 		case "for":
-			if (stackItem.autoStop) {
-				if (this.isOnGoal()) {
-					stack.shift();
-					return executeStackItem(stack, callbackStacks);
-				}
-			}
-			if (stackItem.counts === undefined && stackItem.counter === undefined) {
-				stackItem.counter = this.secretLimit;
-			} else if (stackItem.counter === undefined) {
-				stackItem.counter = stackItem.counts;
-			}
-			stackItem.counter -= 1;
-			if (stackItem.counter == 0) {
-				stack.shift();
-			}
-			callbackStacks.unshift(stack);
-
-			let forStack = Utils.deepCopy(stackItem.do);
-			return this.stackExecute(forStack, callbackStacks);
+			return this.executeFor(stackItem, stack, callbackStacks);
 
 		case "step":
 			this.step();
@@ -341,8 +350,5 @@ OssieGame.prototype.debugStackItem = function(stackItem) {
 			console.error('Stack error: action "' + stackItem.commandID + '" missing required property "' + requirement + '"');
 			return false;
 		}
-	}
-	if (this.allowedCommands.indexOf(stackItem.commandID) == -1) {
-		console.error('Stack contains unallowed item "' + stackItem.commandID + '"');
 	}
 }

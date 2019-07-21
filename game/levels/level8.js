@@ -8,7 +8,7 @@ Level8 = new Phaser.Class({
 		'if_padrechts',
 		'for_till',
 		'for_x',
-		'turnDegrees',
+		'turndegrees',
 	]),
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
@@ -25,14 +25,14 @@ Level8 = new Phaser.Class({
 			[0,0,0,0,0,0,0,0,1],
 			[2,1,1,1,1,1,1,1,1],
 		];
-		const nodes = Utils.boardToNodes(gameboard, TYPE_ORIENTATION_DEGREES);
+		const [nodes, goalPosition] = Utils.boardToNodes(gameboard, TYPE_ORIENTATION_DEGREES);
 		const levelConfig = {
-			goalPosition: '0,5',
+			goalPosition: goalPosition,
 			initPosition: {
-				orientation: '90',
+				orientation: 90,
 				nodeLocation: '6,2',
 			},
-			maxCommands: 6,
+			maxCommands: 4,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,

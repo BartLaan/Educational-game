@@ -10,19 +10,18 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 		this.showIntro();
 	}
 };
-InterPhaser.prototype.debug = true;
 
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
-	this.showModal(instructionName);
+	window.showModal(instructionName);
 }
 
 InterPhaser.prototype.setLevel = function() {
 	let phsr = this.phaser
 	// let height = window.innerHeight
 	// let width = window.innerHeight * WH_RATIO
-	let height = 786
-	let width = 1024
+	let height = BASE_SIZE_Y
+	let width = BASE_SIZE_X
 	let scalingfactor = width / SCALING_FACTOR_DIV
 	this.height = height
 	this.width = width
@@ -96,14 +95,6 @@ InterPhaser.prototype.setDynamicObjects = function() {
 		me.running = true;
 	});
 
-	objects.execute.on('pointerout', function (pointer) {
-		this.clearTint();
-	});
-
-	objects.execute.on('pointerup', function (pointer) {
-		this.clearTint();
-	});
-
 	objects.reset.on('pointerdown', this.resetLevel.bind(this));
 
 	objects.backButton.on('pointerdown', this.showIntro.bind(this));
@@ -155,6 +146,7 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 }
 
 InterPhaser.prototype.resetLevel = function() {
+	if (window.modalVisible) { return }
 	console.log("restarting level")
 	this.eventHandler(PHASER_STACK_RESET);
 	this.activeCommand = undefined;
@@ -216,65 +208,48 @@ InterPhaser.prototype.setInteractions = function() {
 	// handle click events for different buttons
 	// ================================================================
 	let newDrag = false
-	this.selectedObject = null;
 
 	let fastClickTimeout = null;
 	let fastClick = false;
 	phsr.input.on('gameobjectdown', function(pointer, gameObject) {
 		if (myself.isRunning === true) { return; }
-		// Only allow command objects that are not already in the queue to be added
-		if (gameObject.getData('commandID') === undefined || myself.inDropZone(pointer)) { return }
-
+		// Only allow command objects to be dragged
+		if (gameObject.getData('commandID') === undefined) { return }
 		fastClick = true;
 		clearTimeout(fastClickTimeout);
 		fastClickTimeout = setTimeout(function() {
 			fastClick = false;
 		}, 300);
+
+		newDrag = true;
+		firstDrag = true;
 	});
-	phsr.input.on('gameobjectup', function(pointer, gameObject) {
-		if (fastClick && !myself.maxedOut) {
-			myself.stackIndex = undefined;
-			if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
+
+	let firstDrag = true; // is not actually dragging yet
+	phsr.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+		if (myself.running === true) { return }
+		if (firstDrag) {
+			return firstDrag = false;
+		}
+		if (newDrag) {
+			let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1;
+			// Drag/remove command from the command queue
+			if (myself.inDropZone(pointer)) {
+				myself.removeFromStack(gameObject);
+
+			} else if (!myself.maxedOut && canHaveMultiple) {
+				// Dragging from original position, so create another one under the hood
 				myself.duplicateObject(gameObject);
 			}
-			let command = gameObject.getData('command');
-			if (command && command.degrees !== undefined) {
-				command.degrees = null;
-			}
-			if (command && command.counts !== undefined) {
-				command.counts = null;
-			}
-			myself.dropObjectOnStack(gameObject);
-			fastClick = false;
 			newDrag = false;
-		}
-	});
-
-	phsr.input.on('dragstart', function (pointer, gameObject) {
-		if (myself.running === true) { return }
-
-		myself.selectedObject = gameObject;
-		newDrag = true;
-
-		// Drag/remove command from the command queue
-		if (myself.inDropZone(pointer)) {
-			myself.removeFromStack(gameObject);
-			return;
+			fastClick = false;
 		}
 
-		let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1;
-		// Dragging from original position, so create another one under the hood
-		if (canHaveMultiple) {
-			myself.duplicateObject(gameObject)
-		}
-	});
-
-	phsr.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-		fastClick = false;
-		if (myself.running === true) { return }
+		gameObject.setDepth(3);
 
 		gameObject.x = dragX;
 		gameObject.y = dragY;
+
 		if (myself.inDropZone(pointer)) {
 			myself.positionCommands(pointer);
 		}
@@ -283,22 +258,38 @@ InterPhaser.prototype.setInteractions = function() {
 	phsr.input.on('dragend', function (pointer, gameObject, dropped) {
 		if (myself.running === true) { return }
 		myself.clearHoverTexture(gameObject);
+		gameObject.setDepth(2);
+		newDrag = false;
 
-		if (!pointer.isDown && !myself.maxedOut &&  myself.inDropZone(pointer) && newDrag === true) {
-			newDrag = false;
+		let inDropZone = myself.inDropZone(pointer)
+		let dontDrop = myself.maxedOut && gameObject.name !== 'close'
+		if (fastClick) {
+			myself.stackIndex = undefined;
+			if (!dontDrop && !inDropZone && OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
+				myself.duplicateObject(gameObject);
+			}
+			// fastClick to ask for new input for numbers
+			let command = gameObject.getData('command');
+			if (inDropZone && command && (command.degrees !== undefined || command.counts !== undefined)) {
+				return myself.askCounts(gameObject);
+			}
+		}
+
+		let shouldDrop = !dontDrop && (fastClick || inDropZone);
+		if (shouldDrop && !pointer.isDown) {
 			return myself.dropObjectOnStack(gameObject);
 		}
-		// Dropped outside of drop zone -> delete this object
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
+			// Dropped outside of drop zone -> delete this object
 			myself.objects[gameObject.name][gameObject.getData('i')] = undefined;
 			gameObject.destroy();
 			myself.positionCommands();
 		} else {
+			// Don't delete object if there is only one (i.e. open/close)
 			let conf = OBJECT_CONF[gameObject.name];
 			gameObject.x = myself.width * conf.offsetX;
 			gameObject.y = myself.height * conf.offsetY;
 		}
-		newDrag = false;
 	});
 
 	phsr.input.on('pointerover', function (event, gameObjectList) {
@@ -315,6 +306,7 @@ InterPhaser.prototype.setInteractions = function() {
 	});
 }
 
+// Used to make a new command in the command area to replace the one that the user is dragging
 InterPhaser.prototype.duplicateObject = function(gameObject) {
 	let newObjectI = gameObject.getData('i') + 1;
 	let newObjectRef = gameObject.name + '-' + newObjectI.toString();
@@ -332,7 +324,7 @@ InterPhaser.prototype.setHoverTexture = function(gameObject) {
 
 	gameObject.setData('hover', true);
 	if (SPRITE_PATHS[hoverTexture] === undefined) {
-		let newScale = objConfig.scaling ? HOVER_SCALING * objConfig.scaling : HOVER_SCALING
+		let newScale = objConfig.scaling ? HOVER_SCALING * objConfig.scaling : HOVER_SCALING;
 		gameObject.setScale(newScale);
 		return;
 	}
@@ -393,17 +385,13 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	let askForX = command.counts === null;
 	let askDegrees = command.degrees === null;
 	if (askForX || askDegrees) {
-		let result = this.askCounts(askForX ? 'Hoe vaak herhalen?' : 'Hoeveel graden?');
+		result = this.askCounts(gameObject);
 		if (result === false) {
 			// user cancelled input
 			delete this.objects[command.objectRef];
 			gameObject.destroy();
 			return this.positionCommands();
 		}
-
-		let key = askForX ? 'counts' : 'degrees';
-		command[key] = result;
-		this.renderNumber(gameObject, result);
 	}
 
 	// Add object to internal InterPhaser stack
@@ -419,16 +407,30 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	this.updateStepcount();
 }
 
-InterPhaser.prototype.askCounts = function(msg, wrongInput) {
-	let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg;
-	let result = window.prompt(question, 'Voer een getal in');
-	if (result === null) { return false; } // Cancel
+InterPhaser.prototype.askCounts = function(gameObject) {
+	let command = gameObject.getData('command');
+	let askForX = command.counts !== undefined;
+	let msg = askForX ? 'Hoe vaak herhalen?' : 'Hoeveel graden?';
 
-	let counts = parseInt(result, 10);
-	if (!isNaN(counts)) {
-		return counts;
+	let promptForInput = function(wrongInput) {
+		let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg;
+		let result = window.prompt(question, 'Voer een getal in');
+		if (result === null) { return false; } // Cancel
+
+		let counts = parseInt(result, 10);
+		if (!isNaN(counts) && counts < 1000 && counts > -1000) {
+			return counts;
+		}
+		return promptForInput(true);
 	}
-	this.askCounts(msg, true)
+
+	let result = promptForInput();
+	if (result === false) { return false }
+
+	let key = askForX ? 'counts' : 'degrees';
+	command[key] = result;
+	this.renderNumber(gameObject, result);
+	return true;
 }
 
 InterPhaser.prototype.positionCommands = function(pointer) {
@@ -550,7 +552,8 @@ InterPhaser.prototype.updateStepcount = function() {
 	let lastStackObject = this.stackObjects.slice(-1)[0];
 	let commandTotal = this.stackObjects.reduce(function(counter, stackObject) {
 		let commandID = stackObject.getData('commandID');
-		return commandID !== undefined && commandID !== 'blockend' ? counter + 1 : counter;
+		let isCommand = commandID !== undefined && ['open', 'close', 'blockend'].indexOf(commandID) === -1;
+		return isCommand ? counter + 1 : counter;
 	}, 0);
 
 	let newTexture = commandTotal.toString();
@@ -611,20 +614,22 @@ InterPhaser.prototype.hasObject = function(objectName) {
 }
 
 InterPhaser.prototype.fail = function() {
-	this.running = false;
-	let loseImage = this.phaser.add.image(0, 0, 'fail');
-	Phaser.Display.Align.In.Center(loseImage, this.objects.background);
-	loseImage.setDepth(3);
-	let okButton = this.setGameObject(OBJECT_CONF['okButton'], 'okButton');
-
-	let me = this;
-	okButton.on('pointerdown', function(pointer) {
-		loseImage.destroy();
-		okButton.destroy();
-		if (me.activeCommand !== undefined && !Utils.isBracketObject(me.activeCommand)) {
-			me.activeCommand.setTexture(me.activeCommand.texture.key.replace('-crnt', ''));
-		}
-	});
+	// this.running = false;
+	// let loseImage = this.phaser.add.image(0, 0, 'fail');
+	// Phaser.Display.Align.In.Center(loseImage, this.objects.background);
+	// loseImage.setDepth(3);
+	// let okButton = this.setGameObject(OBJECT_CONF['okButton'], 'okButton');
+	//
+	// let me = this;
+	// okButton.on('pointerdown', function(pointer) {
+	// 	loseImage.destroy();
+	// 	okButton.destroy();
+	// 	if (me.activeCommand !== undefined && !Utils.isBracketObject(me.activeCommand)) {
+	// 		me.activeCommand.setTexture(me.activeCommand.texture.key.replace('-crnt', ''));
+	// 	}
+	// });
+	window.showModal('fail');
+	this.updateCurrentCommand();
 }
 /**
 * displays a victory image on screen when victory event is fired
@@ -645,14 +650,14 @@ InterPhaser.prototype.win = function() {
 			image.style.display = 'none';
 			nextButton.style.display = 'none';
 			prevButton.style.display = 'none';
-			nextButton.removeEventListener(onClick);
-			prevButton.removeEventListener(onClick);
-			window.game.scene.stop(me.levelConfig.levelName);
+			nextButton.removeEventListener('click', onClick);
+			prevButton.removeEventListener('click', onClick);
 
 			let btnName = e.target.id;
 			if (btnName === 'nextButton') {
 				let nextLevel = LEVELS[LEVELS.indexOf(me.levelConfig.levelName) + 1];
 				if (nextLevel !== undefined) {
+					window.game.scene.stop(me.levelConfig.levelName);
 					return window.game.scene.start(nextLevel);
 				}
 			}
@@ -684,29 +689,39 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	}
 }
 
-InterPhaser.prototype.onCommandExecute = function(commandID) {
-	let [commandName, commandI] = commandID.split('-');
+InterPhaser.prototype.onCommandExecute = function(commandReference) {
+	let [commandName, commandI] = commandReference.split('-');
 	let isMultiple = OBJECTS_MULTIPLE.indexOf(commandName) !== -1;
 	let commandObject = isMultiple ? this.objects[commandName][commandI] : this.objects[commandName];
+	if (!Utils.isBracketObject(commandObject)) {
+		this.updateCurrentCommand(commandObject);
+	}
+}
 
+InterPhaser.prototype.updateCurrentCommand = function(commandObject) {
+	let activeCommand = this.activeCommand;
 	// Reset texture of previous activeCommand
-	if (this.activeCommand !== undefined && !Utils.isBracketObject(this.activeCommand)) {
-		let sprite = this.activeCommand.add !== undefined ? this.activeCommand.getAt(0) : this.activeCommand;
-		sprite.setTexture(OBJECT_CONF[this.activeCommand.name].spriteID);
+	if (activeCommand && activeCommand.scene && !Utils.isBracketObject(activeCommand)) {
+		let sprite = activeCommand.add !== undefined ? activeCommand.getAt(0) : activeCommand;
+		sprite.setTexture(OBJECT_CONF[activeCommand.name].spriteID);
+		this.positionCommands();
 	}
 
 	this.activeCommand = commandObject;
 
-	// Show custom "current" sprite if applicable
-	if (!Utils.isBracketObject(commandObject)) {
-		let sprite = commandObject.add !== undefined ? commandObject.getAt(0) : commandObject;
-		let crntTexture = sprite.texture.key + '-crnt';
-		if (SPRITE_PATHS[crntTexture] !== undefined) {
-			sprite.setTexture(crntTexture);
-		}
+	if (commandObject === undefined) { return }
+
+	// Show custom "current" sprite if applicable.
+	// The command is a container if it has numbers (turnDegrees), so we need to get the sprite from it
+	let sprite = commandObject.add !== undefined ? commandObject.getAt(0) : commandObject;
+	let crntTexture = sprite.texture.key + '-crnt';
+	if (SPRITE_PATHS[crntTexture] !== undefined) {
+		sprite.setTexture(crntTexture);
+		this.positionCommands(); // texture has different size, so realign the stack
 	}
 }
 
+// Render number for commands that need it (forX, turnDegrees)
 InterPhaser.prototype.renderNumber = function(object, num) {
 	object.each(function(sprite) {
 		if (sprite.name.indexOf('number') > -1) {
@@ -724,48 +739,4 @@ InterPhaser.prototype.renderNumber = function(object, num) {
 		numberObj.name = 'number' + numI;
 		object.add(numberObj);
 	}
-}
-
-InterPhaser.prototype.showModal = function(modalKey, timeout) {
-	if (timeout === undefined) { timeout = 0; }
-
-	let image = document.getElementById('fullscreenGif');
-	image.style.display = 'block';
-	image.setAttribute('src', SPRITE_PATHS[modalKey]);
-	let okButton = document.getElementById('okButton');
-
-	setTimeout(function() {
-		okButton.style.display = 'block';
-
-		let onClick = function() {
-			image.style.display = 'none';
-			okButton.style.display = 'none';
-			okButton.removeEventListener(onClick);
-		}
-		okButton.addEventListener('click', onClick);
-	}, timeout)
-}
-
-window.handleRepeat = function() {
-	console.log("herhalingen: ", document.repeatform.herhalingen.value)
-	toggleRepeatOverlay()
-	this.selectedObject.setData('repeats', document.repeatform.herhalingen.value);
-	insertBrackets(null, this.selectedObject)
-}
-// FUNCTIONS TO HANDLE INTERACTION WITH HTML
-// renderRepeatPrompt("")
-function renderRepeatPrompt(text) {
-	el = document.getElementById("repeatOverlay");
-	let html = "";
-
-	html += "<button class ='close' onclick='toggleRepeatOverlay()'>close window (NOT FOR FINAL GAME)</button><ul>" +
-	"<p>Je hebt de <img src ='assets/herhaal-x.png'/> knop gebruikt, hoe vaak wil je dat de commando's herhaald worden?</p>" +
-	"<form action='javascript:handleRepeat()' name='repeatform' class='close' accept-charset='utf-8'>" +
-	"<input type='text' name='herhalingen' value=''>" +
-	"<input type='submit' value='Submit'>" +
-	"</form>"
-
-	// console.log(html)
-	html += "</ul>";
-	el.innerHTML = html;
 }

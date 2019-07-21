@@ -95,6 +95,8 @@ SPRITE_PATHS = {
 	'instruction14b':				'assets/instructies/instructie-14b.gif',
 	'instruction15':				'assets/instructies/instructie-15.gif',
 	'instruction16':				'assets/instructies/instructie-16.gif',
+	'intro': 						'assets/popups/ossie-vuilnis.gif',
+	'helloworld':					'assets/popups/hello-world.gif',
 	'turndegrees':					'assets/commands/draai-graden.png',
 	'turndegrees-crnt':				'assets/commands/draai-graden-crnt.png',
 	'turnleft':						'assets/commands/draai-links.png',

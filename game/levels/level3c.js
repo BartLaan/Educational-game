@@ -23,14 +23,14 @@ Level3c = new Phaser.Class({
 			[1,1,0,0,0,0,0,0,0],
 			[1,0,0,0,0,0,0,0,0],
 		];
-		const nodes = Utils.boardToNodes(gameboard);
+		const [nodes, goalPosition] = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			goalPosition: '4,1',
+			goalPosition: goalPosition,
 			initPosition: {
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			maxCommands: 10,
+			maxCommands: 5,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,

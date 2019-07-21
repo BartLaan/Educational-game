@@ -60,6 +60,7 @@ Utils.cardinalName = function(orientationCode, orientationType) {
 Utils.boardToNodes = function(board, orientationType) {
 	let useDegrees = orientationType === TYPE_ORIENTATION_DEGREES;
 	let nodes = {};
+	let goal;
 
 	for (let y in board) {
 		y = parseInt(y, 10);
@@ -77,6 +78,7 @@ Utils.boardToNodes = function(board, orientationType) {
 
 			if (board[y][x] == 2) {
 				node.goal = true;
+				goal = nodeName;
 			}
 			if (yMin && board[y - 1][x] != 0) {
 				node[Utils.cardinalName('n', orientationType)] = Utils.coordToStr(x, y - 1);
@@ -110,7 +112,7 @@ Utils.boardToNodes = function(board, orientationType) {
 			nodes[nodeName] = node;
 		}
 	}
-	return nodes;
+	return [nodes, goal];
 }
 
 Utils.resizeBoard = function(board, minSize) {
@@ -161,9 +163,8 @@ Utils.cardinalToAngle = function(cardinal) {
 
 // Turn the orientation clockwise if clockWise is true, otherwise counterclockwise. Should only be used with cardinals
 Utils.turnClock = function(orientation, clockWise) {
-	let degrees = parseInt(orientation, 10);
-	if (degrees) {
-		return degrees + (clockWise ? 90 : -90)
+	if (typeof orientation === 'number') {
+		return Utils.turnDegrees(orientation, (clockWise ? 90 : -90));
 	}
 	let cardinals = ['north', 'east', 'south', 'west'];
 	let shift = clockWise ? 1 : cardinals.length - 1; // 3 = -1 when doing modulo operation
@@ -174,11 +175,20 @@ Utils.turnClock = function(orientation, clockWise) {
 	return cardinals[newOrientationIdx];
 }
 
-Utils.isBracketObject = function(object) {
-	if (typeof object !== 'string') {
-		return object.getData !== undefined && BRACKET_OBJECTS.indexOf(object.getData('commandID')) > -1;
+Utils.turnDegrees = function(initDegrees, addDegrees) {
+	let newOrientation = (initDegrees + addDegrees) % 360;
+	if (newOrientation < 0) {
+		newOrientation += 360;
 	}
-	return BRACKET_OBJECTS.indexOf(object) > -1;
+
+	return newOrientation;
+}
+
+Utils.isBracketObject = function(gameObject) {
+	if (typeof gameObject !== 'string') {
+		return gameObject.getData !== undefined && BRACKET_OBJECTS.indexOf(gameObject.getData('commandID')) > -1;
+	}
+	return BRACKET_OBJECTS.indexOf(gameObject) > -1;
 }
 
 // load sprites
@@ -243,5 +253,6 @@ Utils.preloadLevel = function(phaser) {
 }
 
 Utils.initializeLevel = function() {
+	console.log('Initializing level "' + this.levelName + '"');
 	Phaser.Scene.call(this, { key: this.levelName });
 }

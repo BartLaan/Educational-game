@@ -27,14 +27,14 @@ Level10 = new Phaser.Class({
 			[0,0,0,0,0,0,0,0,1],
 			[1,1,1,1,1,1,1,1,1],
 		];
-		const nodes = Utils.boardToNodes(gameboard, TYPE_ORIENTATION_DEGREES);
+		const [nodes, goalPosition] = Utils.boardToNodes(gameboard, TYPE_ORIENTATION_DEGREES);
 		const levelConfig = {
-			goalPosition: '8,1',
+			goalPosition: goalPosition,
 			initPosition: {
-				orientation: '90',
+				orientation: 90,
 				nodeLocation: '0,5',
 			},
-			maxCommands: 10,
+			maxCommands: 8,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
@@ -43,5 +43,12 @@ Level10 = new Phaser.Class({
 		}
 
 		window.ossieGame = new OssieGame(levelConfig, this);
+		let interPhaser = window.ossieGame.interPhaser;
+		let callback = function() {
+			location.href = location.href.split('?')[0] + '?level=1';
+		}
+		interPhaser.win = function() {
+			window.showModal('helloworld', 1000, callback);
+		}
 	}
 });

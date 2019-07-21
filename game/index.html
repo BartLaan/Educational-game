@@ -10,9 +10,6 @@
 	<script src="utils.js"></script>
 	<script src="inter_phaser.js"></script>
 	<script src="ossie_game.js"></script>
-</head>
-<body style="background-color:white;">
-	<div>
 	<script src="levels/level1.js"></script>
 	<script src="levels/level2.js"></script>
 	<script src="levels/level3a.js"></script>
@@ -25,53 +22,9 @@
 	<script src="levels/level8.js"></script>
 	<script src="levels/level9.js"></script>
 	<script src="levels/level10.js"></script>
-
-	<script>
-	var config = {
-		type: Phaser.WEBGL,
-		parent: 'phaser-example',
-		width: 1024,
-		height: 786,
-		// scale: 'SHOW_ALL',
-		// orientation: 'LANDSCAPE',
-		scene: [
-			Level1,
-			Level2,
-			Level3a,
-			Level3b,
-			Level3c,
-			Level4,
-			Level5,
-			Level6,
-			Level7,
-			Level8,
-			Level9,
-			Level10,
-		]
-	};
-
-	// make phaser game object
-	var game = new Phaser.Game(config);
-
-	window.debug = true;
-	window.selectLevel = function() {
-		let levelName = window.prompt("Select level:");
-		let nextLevel = 'level' + levelName;
-		if (LEVELS.indexOf(nextLevel) !== undefined) {
-			console.log('Starting level "' + nextLevel + '"');
-			window.game.scene.stop('level1');
-			setTimeout(function() {
-				window.game.scene.start(nextLevel);
-			}, 100)
-		} else {
-			console.log('Could not find level "' + nextLevel + '"');
-		}
-	}
-	</script>
-	<script>
-	</script>
-	</div>
-	<!-- Used in InterPhaser to show modals -->
+</head>
+<body>
+	<!-- Used to show modals -->
 	<img id="fullscreenGif"></img>
 	<div id="okButton" class="modalButton"></div>
 	<div id="nextButton" class="modalButton"></div>
@@ -80,5 +33,7 @@
 		<div id="promptContent">
 		</div>
 	</div>
+
+	<script src="init.js"></script>
 </body>
 </html>

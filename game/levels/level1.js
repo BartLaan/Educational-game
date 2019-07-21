@@ -9,15 +9,16 @@ Level1 = new Phaser.Class({
 
 	preload: function ()
 	{
-		if (window.debug) {
-			window.selectLevel();
-			return;
-		}
+		// if (window.debug) {
+		// 	window.selectLevel();
+		// 	return;
+		// }
 		Utils.loadSprites(this);
 	},
 
 	create: function ()
 	{
+		window.showModal('intro', 1000);
 		const gameboard = [
 			[0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0],
@@ -26,14 +27,14 @@ Level1 = new Phaser.Class({
 			[0,0,0,0,0,0,0,0,1],
 			[1,1,1,1,1,1,1,2,1]
 		];
-		const nodes = Utils.boardToNodes(gameboard);
+		const [nodes, goalPosition] = Utils.boardToNodes(gameboard);
 		const levelConfig = {
-			goalPosition: '7,5',
+			goalPosition: goalPosition,
 			initPosition: {
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			maxCommands: 10,
+			maxCommands: 8,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,
