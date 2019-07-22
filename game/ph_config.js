@@ -88,7 +88,7 @@ OBJECT_CONF = {
 		spriteID: 'execute',
 	},
 	for: {
-		command: { commandID: "for"},
+		command: { commandID: "for", counts: 9999 },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.46,

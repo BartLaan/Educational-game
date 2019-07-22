@@ -213,15 +213,17 @@ OssieGame.prototype.executeFor = function(stackItem, stack, callbackStacks) {
 			stack.shift();
 			return this.stackExecute(stack, callbackStacks);
 		}
+	} else if (stackItem.counts !== undefined && stackItem.counts <= 0) {
+		// Only take forloop serious if it has at least 1
+		stack.shift();
+		return this.stackExecute(stack, callbackStacks);
 	} else {
-		// Level3b
-		if (stackItem.counts === undefined && stackItem.counter === undefined) {
-			stackItem.counter = this.secretLimit;
-		} else if (stackItem.counter === undefined) {
+		if (stackItem.counter === undefined) {
 			stackItem.counter = stackItem.counts;
 		}
 		stackItem.counter -= 1;
 		if (stackItem.counter <= 0) {
+			// If counter reaches zero, remove for command from stack and do the last loop
 			stack.shift();
 		}
 	}

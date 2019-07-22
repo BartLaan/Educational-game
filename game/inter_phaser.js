@@ -207,12 +207,13 @@ InterPhaser.prototype.setInteractions = function() {
 	// ================================================================
 	// handle click events for different buttons
 	// ================================================================
+	let firstDrag = true;
 	let newDrag = false
 
 	let fastClickTimeout = null;
 	let fastClick = false;
 	phsr.input.on('gameobjectdown', function(pointer, gameObject) {
-		if (myself.isRunning === true) { return; }
+		if (myself.running === true) { return; }
 		// Only allow command objects to be dragged
 		if (gameObject.getData('commandID') === undefined) { return }
 		fastClick = true;
@@ -225,14 +226,14 @@ InterPhaser.prototype.setInteractions = function() {
 		firstDrag = true;
 	});
 
-	let firstDrag = true; // is not actually dragging yet
 	phsr.input.on('drag', function (pointer, gameObject, dragX, dragY) {
 		if (myself.running === true) { return }
 		if (firstDrag) {
+			// First drag event doesn't count, as it fires on initial mouse click without any movement
 			return firstDrag = false;
 		}
 		if (newDrag) {
-			let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1;
+			let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1;
 			// Drag/remove command from the command queue
 			if (myself.inDropZone(pointer)) {
 				myself.removeFromStack(gameObject);
@@ -261,26 +262,18 @@ InterPhaser.prototype.setInteractions = function() {
 		gameObject.setDepth(2);
 		newDrag = false;
 
-		let inDropZone = myself.inDropZone(pointer)
-		let dontDrop = myself.maxedOut && gameObject.name !== 'close'
 		if (fastClick) {
-			myself.stackIndex = undefined;
-			if (!dontDrop && !inDropZone && OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
-				myself.duplicateObject(gameObject);
-			}
-			// fastClick to ask for new input for numbers
-			let command = gameObject.getData('command');
-			if (inDropZone && command && (command.degrees !== undefined || command.counts !== undefined)) {
-				return myself.askCounts(gameObject);
-			}
+			return myself.fastClick(pointer, gameObject);
 		}
 
-		let shouldDrop = !dontDrop && (fastClick || inDropZone);
-		if (shouldDrop && !pointer.isDown) {
+		let stackFull = myself.maxedOut && OBJECTS_WRAP.indexOf(gameObject.name) === -1;
+		let shouldDrop = myself.inDropZone(pointer) && !pointer.isDown;
+		if (!stackFull && shouldDrop) {
 			return myself.dropObjectOnStack(gameObject);
 		}
-		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) !== -1) {
-			// Dropped outside of drop zone -> delete this object
+
+		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
+			// Dragged outside of drop zone -> delete this object
 			myself.objects[gameObject.name][gameObject.getData('i')] = undefined;
 			gameObject.destroy();
 			myself.positionCommands();
@@ -348,6 +341,23 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 	gameObject.setTexture(newTexture);
 
 }
+InterPhaser.prototype.fastClick = function(pointer, gameObject) {
+	this.stackIndex = undefined;
+	let inDropZone = this.inDropZone(pointer)
+	let stackFull = myself.maxedOut && OBJECTS_WRAP.indexOf(gameObject.name) === -1;
+
+	// fastClick in DropZone to ask for new input for numbers
+	if (inDropZone && OBJECTS_NUMBERCOMMAND.indexOf(gameObject.name) > -1) {
+		return this.askCounts(gameObject);
+	}
+	if (inDropZone || stackFull) { return }
+
+	// Add command to stack
+	this.dropObjectOnStack(gameObject);
+	if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
+		this.duplicateObject(gameObject);
+	}
+}
 //  Just a visual display of the drop zone
 InterPhaser.prototype.renderDropZone = function() {
 	if (this.graphics === undefined) {
@@ -382,9 +392,8 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 
 	// First input the amount for commands that require it
 	let command = gameObject.getData('command');
-	let askForX = command.counts === null;
-	let askDegrees = command.degrees === null;
-	if (askForX || askDegrees) {
+	let askForCounts = command.counts === null || command.degrees === null;
+	if (askForCounts) {
 		result = this.askCounts(gameObject);
 		if (result === false) {
 			// user cancelled input
@@ -459,6 +468,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		}
 		object.x = stackX + (object.width / 2);
 
+		// See if we should add temporary space around the pointer
 		let bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop';
 		let tryTempSpace = this.stackIndex === undefined && pointer !== undefined && !bracketSideOrTop;
 		if (tryTempSpace && pointer.y < object.y) {
@@ -614,7 +624,7 @@ InterPhaser.prototype.hasObject = function(objectName) {
 }
 
 InterPhaser.prototype.fail = function() {
-	// this.running = false;
+	this.running = false;
 	// let loseImage = this.phaser.add.image(0, 0, 'fail');
 	// Phaser.Display.Align.In.Center(loseImage, this.objects.background);
 	// loseImage.setDepth(3);

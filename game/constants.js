@@ -103,6 +103,10 @@ OBJECTS_NUMBERCOMMAND = [
 	'for_x',
 	'turndegrees',
 ];
+OBJECTS_WRAP = [
+	'close',
+	'open',
+];
 LEVELS = [
 	'level1',
 	'level2',
