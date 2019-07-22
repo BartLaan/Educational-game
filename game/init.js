@@ -74,6 +74,7 @@ window.selectLevel = function(nextLevel) {
 
 window.showModal = function(imageKey, timeout, callback) {
 	window.modalVisible = true;
+	console.log('modalshow');
 	let enableInteraction = function() {
 		image.removeEventListener('load', enableInteraction);
 

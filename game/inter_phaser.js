@@ -147,6 +147,7 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 
 InterPhaser.prototype.resetLevel = function() {
 	if (window.modalVisible) { return }
+
 	console.log("restarting level")
 	this.eventHandler(PHASER_STACK_RESET);
 	this.activeCommand = undefined;
