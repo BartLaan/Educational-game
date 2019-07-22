@@ -272,6 +272,7 @@ InterPhaser.prototype.setInteractions = function() {
 		if (!stackFull && shouldDrop) {
 			return myself.dropObjectOnStack(gameObject);
 		}
+		if (stackFull) { return; }
 
 		myself.positionCommands();
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
