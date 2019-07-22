@@ -186,6 +186,7 @@ OssieGame.prototype.turnR = function() {
 OssieGame.prototype.turnDegrees = function(degrees) {
 	if (typeof degrees != 'number') { return console.error('I want a number here, not a string') }
 	this.ossiePos.orientation = Utils.turnDegrees(this.ossiePos.orientation, degrees);
+	this.eventHandler(STACK_OSSIEPOS_CHANGE);
 }
 
 OssieGame.prototype.conditional = function(conditionalCode) {
