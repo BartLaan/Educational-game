@@ -273,11 +273,11 @@ InterPhaser.prototype.setInteractions = function() {
 			return myself.dropObjectOnStack(gameObject);
 		}
 
+		myself.positionCommands();
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
 			// Dragged outside of drop zone -> delete this object
 			myself.objects[gameObject.name][gameObject.getData('i')] = undefined;
 			gameObject.destroy();
-			myself.positionCommands();
 		} else {
 			// Don't delete object if there is only one (i.e. open/close)
 			let conf = OBJECT_CONF[gameObject.name];
@@ -345,7 +345,7 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 InterPhaser.prototype.fastClick = function(pointer, gameObject) {
 	this.stackIndex = undefined;
 	let inDropZone = this.inDropZone(pointer)
-	let stackFull = myself.maxedOut && OBJECTS_WRAP.indexOf(gameObject.name) === -1;
+	let stackFull = this.maxedOut && OBJECTS_WRAP.indexOf(gameObject.name) === -1;
 
 	// fastClick in DropZone to ask for new input for numbers
 	if (inDropZone && OBJECTS_NUMBERCOMMAND.indexOf(gameObject.name) > -1) {
