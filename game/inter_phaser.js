@@ -626,7 +626,7 @@ InterPhaser.prototype.hasObject = function(objectName) {
 }
 
 InterPhaser.prototype.fail = function() {
-	this.running = false;
+	// this.running = false;
 	// let loseImage = this.phaser.add.image(0, 0, 'fail');
 	// Phaser.Display.Align.In.Center(loseImage, this.objects.background);
 	// loseImage.setDepth(3);
@@ -640,7 +640,7 @@ InterPhaser.prototype.fail = function() {
 	// 		me.activeCommand.setTexture(me.activeCommand.texture.key.replace('-crnt', ''));
 	// 	}
 	// });
-	window.showModal('fail');
+	window.showModal('fail', undefined, function() { this.running = false; }.bind(this));
 	this.updateCurrentCommand();
 }
 /**
