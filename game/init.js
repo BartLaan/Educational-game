@@ -2,8 +2,8 @@ window.init = function() {
 	var config = {
 		type: Phaser.WEBGL,
 		parent: 'phaser-example',
-		width: 1024,
-		height: 768,
+		width: window.innerWidth,
+		height: window.innerWidth / WH_RATIO,
 		// scale: 'SHOW_ALL',
 		// orientation: 'LANDSCAPE',
 		scene: [
@@ -87,7 +87,7 @@ window.showModal = function(imageKey, timeout, callback) {
 		}
 
 		let onClick = function(e) {
-			image.style.display = 'none';
+			modal.style.display = 'none';
 			clickElement.style.display = 'none';
 			clickElement.removeEventListener('click', onClick);
 			window.modalVisible = false;
@@ -98,9 +98,10 @@ window.showModal = function(imageKey, timeout, callback) {
 		clickElement.addEventListener('click', onClick);
 	}
 
+	let modal = document.getElementById('modal');
+	modal.style.display = 'block';
 	let image = document.getElementById('fullscreenGif');
 	image.setAttribute('src', SPRITE_PATHS[imageKey]);
-	image.style.display = 'block';
 
 	if (timeout !== undefined) {
 		setTimeout(enableInteraction, timeout);

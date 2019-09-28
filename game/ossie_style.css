@@ -3,22 +3,34 @@ body {
 	font-family: 'Verdana', Helvetica, Arial, sans-serif !important;
 	margin: 0;
 }
-
+canvas {
+	position: fixed;
+	top: 0;
+	z-index: 1;
+}
+#modal {
+	height: calc(100vw / 1.3333);
+	position: relative;
+	width: 100vw;
+	z-index: 2;
+}
 img,
 .modalButton {
-	display: none;
-	position: fixed;
+	height: auto;
+	position: absolute;
+	width: 100%;
 }
 
 .modalButton {
 	background-size: cover;
+	display: none;
 }
 #okButton {
 	background-image: url('assets/buttons/ok.png');
-	left: calc(0.259 * 1024px);
-	top: calc(0.678 * 768px);
-	height: calc(0.158 * 768px);
-	width: calc(0.289 * 1024px);
+	left: 25.9%;
+	top: 67.8%;
+	height: 15.8%;
+	width: 28.9%;
 }
 #okButton:hover {
 	background-image: url('assets/buttons/ok-hover.png');
@@ -26,29 +38,29 @@ img,
 
 #nextButton {
 	background-image: url('assets/buttons/volgende-opdracht.png');
-	left: calc(0.47 * 1024px);
-	top: calc(0.85 * 768px);
-	height: calc(0.114 * 768px);
-	width: calc(0.508 * 1024px);
+	left: 47%;
+	top: 85%;
+	height: 11.4%;
+	width: 50.8%;
 }
 #nextButton:hover {
-	height: calc(0.115 * 768px);
-	width: calc(0.508 * 1024px);
-	top: calc(0.849 * 768px);
+	height: 11.5%;
+	width: 50.8%;
+	top: 84.9%;
 }
 
 #prevButton {
 	background-image: url('assets/buttons/opnieuw-spelen.png');
-	left: calc(0.01 * 1024px);
-	top: calc(0.85 * 768px);
-	height: calc(0.115 * 768px);
-	width: calc(0.46 * 1024px);
+	left: 1%;
+	top: 85%;
+	height: 11.5%;
+	width: 46%;
 }
 #prevButton:hover {
-	left: calc(0.008 * 1024px);
-	top: calc(0.849 * 768px);
-	height: calc(0.117 * 768px);
-	width: calc(0.465 * 1024px);
+	left: 0.8%;
+	top: 84.9%;
+	height: 11.7%;
+	width: 46.5%;
 }
 
 #repeatOverlay {
@@ -61,7 +73,7 @@ img,
 	margin-bottom: 40%;
 	text-align:center;
 	background-color: rgb(136, 5, 0);
-	color:white
+	color:white;
 	z-index: 1000;
 	overflow-y: scroll;
 	box-shadow: -1px 2px 15px -1px rgb(131, 34, 34);

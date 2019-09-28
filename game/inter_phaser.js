@@ -3,8 +3,14 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.levelConfig = levelConfig;
 	this.eventHandler = eventHandler;
 
+	//let height = BASE_SIZE_Y
+	//let width = BASE_SIZE_X
+	this.width = window.innerWidth
+	this.height = this.width / WH_RATIO
+	this.scalingfactor = this.width / SCALING_FACTOR_DIV
+
 	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
-	this.setLevel();
+	this.initLevel();
 	this.setInteractions();
 	if (!window.debug) {
 		this.showIntro();
@@ -16,21 +22,11 @@ InterPhaser.prototype.showIntro = function() {
 	window.showModal(instructionName);
 }
 
-InterPhaser.prototype.setLevel = function() {
-	let phsr = this.phaser
-	// let height = window.innerHeight
-	// let width = window.innerHeight * WH_RATIO
-	let height = BASE_SIZE_Y
-	let width = BASE_SIZE_X
-	let scalingfactor = width / SCALING_FACTOR_DIV
-	this.height = height
-	this.width = width
-	this.scalingfactor = scalingfactor
-
-	this.stepsize_horizontal = width * BOARD_STEPSIZE_X
-	this.stepsize_vertical = height * BOARD_STEPSIZE_Y
-	this.boardOffsetX = width * BOARD_OFFSET_X
-	this.boardOffsetY = height * BOARD_OFFSET_Y
+InterPhaser.prototype.initLevel = function() {
+	this.stepsize_horizontal = this.w(BOARD_STEPSIZE_X)
+	this.stepsize_vertical = this.h(BOARD_STEPSIZE_Y)
+	this.boardOffsetX = this.w(BOARD_OFFSET_X)
+	this.boardOffsetY = this.h(BOARD_OFFSET_Y)
 
 	// ================================================================
 	// PREPARING ASSETS
@@ -38,13 +34,12 @@ InterPhaser.prototype.setLevel = function() {
 
 	// Set static objects
 	this.objects = {};
-	let objects = this.objects;
 	this.stackObjects = [];
 
 	let backgroundName = 'background' + this.levelConfig.levelName.replace(/[A-Za-z]/g, '');
-	this.objects.background = phsr.add.image(0, 0, backgroundName).setOrigin(0, 0);
+	this.objects.background = this.phaser.add.image(0, 0, backgroundName).setOrigin(0, 0);
 	this.objects.background.name = 'background';
-	this.objects.background.setDisplaySize(width, height);
+	this.objects.background.setDisplaySize(this.width, this.height);
 
 	let maxCommands = this.levelConfig.maxCommands;
 	OBJECT_CONF.stepcount_total.spriteID = maxCommands.toString();
@@ -74,15 +69,12 @@ InterPhaser.prototype.setDynamicObjects = function() {
 		}
 	}
 
-	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
-		if (this.hasObject('questionmark')) {
-			let questionmarkCoords = Utils.strToCoord(this.levelConfig.goalPosition);
-			objects.questionmark.x += this.boardOffsetX;
-			objects.questionmark.y += this.boardOffsetY;
-			objects.questionmark.x += this.stepsize_horizontal * questionmarkCoords.x;
-			objects.questionmark.y += this.stepsize_vertical * questionmarkCoords.y;
-		}
-	// ELSE ??
+	if (this.levelConfig.spaceType === TYPE_SPACE_GRID && this.hasObject('questionmark')) {
+		let questionmarkCoords = Utils.strToCoord(this.levelConfig.goalPosition);
+		objects.questionmark.x += this.boardOffsetX;
+		objects.questionmark.y += this.boardOffsetY;
+		objects.questionmark.x += this.stepsize_horizontal * questionmarkCoords.x;
+		objects.questionmark.y += this.stepsize_vertical * questionmarkCoords.y;
 	}
 
 	let me = this;
@@ -129,8 +121,10 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 		gameObject.setData('commandID', config.command.commandID);
 	}
 	if (config.offsetX !== undefined) {
-		gameObject.x = config.offsetX * this.width;
-		gameObject.y = config.offsetY * this.height;
+		let offsetX = config.offsetX * (BASE_SIZE_X / this.width);
+		let offsetY = config.offsetY * (BASE_SIZE_Y / this.height);
+		gameObject.x = this.w(config.offsetX);
+		gameObject.y = this.h(config.offsetY);
 	}
 	if (config.depth !== undefined) {
 		gameObject.setDepth(config.depth);
@@ -199,11 +193,8 @@ InterPhaser.prototype.setInteractions = function() {
 	let phsr = this.phaser;
 	let pOjs = this.objects;
 
-	let height = this.height;
-	let width = this.width;
-
 	// this.renderDropZone();
-	this.stackPos = { x: width * STACK_ZONE_POS_X, y: height * STACK_ZONE_POS_Y };
+	this.stackPos = { x: this.w(STACK_ZONE_POS_X), y: this.h(STACK_ZONE_POS_Y) };
 
 	// ================================================================
 	// handle click events for different buttons
@@ -282,8 +273,8 @@ InterPhaser.prototype.setInteractions = function() {
 		} else {
 			// Don't delete object if there is only one (i.e. open/close)
 			let conf = OBJECT_CONF[gameObject.name];
-			gameObject.x = myself.width * conf.offsetX;
-			gameObject.y = myself.height * conf.offsetY;
+			gameObject.x = myself.w(conf.offsetX);
+			gameObject.y = myself.h(conf.offsetY);
 		}
 	});
 
@@ -300,6 +291,9 @@ InterPhaser.prototype.setInteractions = function() {
 		}
 	});
 }
+
+InterPhaser.prototype.h = function(heightInUnits) { return this.height * heightInUnits }
+InterPhaser.prototype.w = function(widthInUnits) { return this.width * widthInUnits }
 
 // Used to make a new command in the command area to replace the one that the user is dragging
 InterPhaser.prototype.duplicateObject = function(gameObject) {
@@ -367,25 +361,25 @@ InterPhaser.prototype.renderDropZone = function() {
 		this.graphics.lineStyle(2, 0xffff00);
 	}
 	this.graphics.strokeRect(
-		this.width * BOARD_OFFSET_X,
-		this.height * BOARD_OFFSET_Y,
-		this.width * BOARD_STEPSIZE_X * 8,
-		this.height * BOARD_STEPSIZE_Y * 5
+		this.w(BOARD_OFFSET_X),
+		this.h(BOARD_OFFSET_Y),
+		this.w(BOARD_STEPSIZE_X * 8),
+		this.h(BOARD_STEPSIZE_Y * 5)
 	);
 	this.graphics.strokeRect(
-		this.width * BOARD_OFFSET_X,
-		this.height * BOARD_OFFSET_Y,
-		this.width * BOARD_STEPSIZE_X,
-		this.height * BOARD_STEPSIZE_Y
+		this.w(BOARD_OFFSET_X),
+		this.h(BOARD_OFFSET_Y),
+		this.w(BOARD_STEPSIZE_X),
+		this.h(BOARD_STEPSIZE_Y)
 	);
 }
 
 InterPhaser.prototype.inDropZone = function(location) {
 	return (
-		location.x > this.width * STACK_ZONE_POS_X
-		&& location.x < this.width * (STACK_ZONE_POS_X + STACK_ZONE_WIDTH)
-		&& location.y > this.height * STACK_ZONE_POS_Y
-		&& location.y < this.height * (STACK_ZONE_POS_Y + STACK_ZONE_HEIGHT)
+		location.x > this.w(STACK_ZONE_POS_X)
+		&& location.x < this.w(STACK_ZONE_POS_X + STACK_ZONE_WIDTH)
+		&& location.y > this.h(STACK_ZONE_POS_Y)
+		&& location.y < this.h(STACK_ZONE_POS_Y + STACK_ZONE_HEIGHT)
 	);
 }
 
@@ -446,13 +440,13 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 
 InterPhaser.prototype.positionCommands = function(pointer) {
 	this.stackIndex = undefined;
-	let bracketIndent = STACK_BRACKET_INDENT * this.height;
-	let bracketTopOffset = STACK_BRACKET_OFFSET * this.height;
-	let bracketSpacing = STACK_BRACKET_SPACING * this.height;
-	let commandSpacing = STACK_COMMAND_SPACING * this.height;
-	let avgCommandSize = STACK_AVG_CMD_SIZE * this.height;
-	let stackX = STACK_ZONE_POS_X * this.width;
-	let stackY = (STACK_ZONE_POS_Y * this.height) + avgCommandSize;
+	let bracketIndent = this.h(STACK_BRACKET_INDENT);
+	let bracketTopOffset = this.h(STACK_BRACKET_OFFSET);
+	let bracketSpacing = this.h(STACK_BRACKET_SPACING);
+	let commandSpacing = this.h(STACK_COMMAND_SPACING);
+	let avgCommandSize = this.h(STACK_AVG_CMD_SIZE);
+	let stackX = this.w(STACK_ZONE_POS_X);
+	let stackY = this.h(STACK_ZONE_POS_Y) + avgCommandSize;
 
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
@@ -500,7 +494,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 			case 'for':
 			case 'for_x':
 			case 'for_till':
-				stackY = (object.y + object.height / 2) - 0.002 * this.height;
+				stackY = (object.y + object.height / 2) - this.h(0.002);
 				break;
 			case 'open':
 				stackX += bracketIndent;
@@ -647,8 +641,9 @@ InterPhaser.prototype.fail = function() {
 * displays a victory image on screen when victory event is fired
 */
 InterPhaser.prototype.win = function() {
+	let modal = document.getElementById('modal');
+	modal.style.display = 'block';
 	let image = document.getElementById('fullscreenGif');
-	image.style.display = 'block';
 	image.setAttribute('src', SPRITE_PATHS['victory']);
 	let nextButton = document.getElementById('nextButton');
 	let prevButton = document.getElementById('prevButton');
@@ -659,7 +654,7 @@ InterPhaser.prototype.win = function() {
 		prevButton.style.display = 'block';
 
 		let onClick = function(e) {
-			image.style.display = 'none';
+			modal.style.display = 'none';
 			nextButton.style.display = 'none';
 			prevButton.style.display = 'none';
 			nextButton.removeEventListener('click', onClick);
@@ -689,8 +684,8 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 		player.x = this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
 		player.y = this.boardOffsetY + (this.stepsize_vertical * ossieCoords.y);
 	} else {
-		let coordX = ossieCoords.x * (this.width / BASE_SIZE_X);
-		let coordY = ossieCoords.y * (this.height / BASE_SIZE_Y);
+		let coordX = ossieCoords.x * this.w(BASE_SIZE_X);
+		let coordY = ossieCoords.y * this.h(BASE_SIZE_Y);
 		player.x = this.boardOffsetX + coordX;
 		player.y = this.boardOffsetY + coordY;
 	}
@@ -741,9 +736,9 @@ InterPhaser.prototype.renderNumber = function(object, num) {
 		}
 	})
 	let config = OBJECT_CONF[object.name];
-	let numX = config.numOffsetX * this.width;
-	let numY = config.numOffsetY * this.height;
-	let numSpacing = NUM_SPACING * this.width;
+	let numX = this.w(config.numOffsetX);
+	let numY = this.h(config.numOffsetY);
+	let numSpacing = this.w(NUM_SPACING);
 	// get array of decreasing order of magnitude (-123 > ['3','2','1','-'])
 	let numParts = num.toString().split('').reverse();
 	for (let numI in numParts) {
