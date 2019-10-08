@@ -72,44 +72,4 @@ window.selectLevel = function(nextLevel) {
 	}
 }
 
-window.showModal = function(imageKey, timeout, callback) {
-	window.modalVisible = true;
-
-	let enableInteraction = function() {
-		image.removeEventListener('load', enableInteraction);
-
-		let clickElement;
-		if (imageKey === 'intro' || imageKey === 'helloworld') {
-			clickElement = image;
-		} else {
-			clickElement = document.getElementById('okButton');
-			clickElement.style.display = 'block';
-		}
-
-		let onClick = function(e) {
-			modal.style.display = 'none';
-			clickElement.style.display = 'none';
-			clickElement.removeEventListener('click', onClick);
-			window.modalVisible = false;
-			if (callback !== undefined) {
-				callback();
-			}
-		}
-		clickElement.addEventListener('click', onClick);
-	}
-
-	let modal = document.getElementById('modal');
-	modal.style.display = 'block';
-	let image = document.getElementById('fullscreenGif');
-	image.setAttribute('src', SPRITE_PATHS[imageKey]);
-
-	if (timeout !== undefined) {
-		setTimeout(enableInteraction, timeout);
-	} else if (image.complete) {
-		enableInteraction();
-	} else {
-		image.addEventListener('load', enableInteraction);
-	}
-}
-
 window.init();

@@ -45,10 +45,14 @@ Level10 = new Phaser.Class({
 		window.ossieGame = new OssieGame(levelConfig, this);
 		let interPhaser = window.ossieGame.interPhaser;
 		let callback = function() {
-			location.href = location.href.split('?')[0] + '?level=1';
-		}
+			window.game.scene.stop(this.levelName);
+			window.game.scene.start(LEVELS[LEVELS.indexOf(this.levelName) + 1]);
+		}.bind(this);
+
+		let intermezzoModal = Object.create(Modals.EventModal);
 		interPhaser.win = function() {
-			window.showModal('helloworld', 1000, callback);
+			console.log('lose :()');
+			intermezzoModal.spawn('helloworld', 3000, callback);
 		}
 	}
 });

@@ -44,6 +44,7 @@ Level1 = new Phaser.Class({
 
 			window.ossieGame = new OssieGame(levelConfig, this);
 		}
-		window.showModal('intro', 3000, startLevel1.bind(this));
+		let introModal = Object.create(Modals.EventModal);
+		introModal.spawn('intro', 3000, startLevel1.bind(this));
 	}
 });

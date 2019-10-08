@@ -1,5 +1,9 @@
 // Constructor for OssieGame instance. See OssieGame.checkLevelConfig for details on levelConfig.
 function OssieGame(levelConfig, phaser) {
+	if (window.activeLevel == levelConfig.levelName) {
+		return false;
+	}
+	window.activeLevel = levelConfig.levelName;
 	if (window.debug) {
 		this.checkLevelConfig(levelConfig);
 	}

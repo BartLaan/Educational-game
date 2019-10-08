@@ -19,7 +19,8 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
-	window.showModal(instructionName);
+	let instructionModal = Object.create(Modal);
+	instructionModal.spawn(instructionName);
 }
 
 InterPhaser.prototype.initLevel = function() {
@@ -620,59 +621,24 @@ InterPhaser.prototype.hasObject = function(objectName) {
 }
 
 InterPhaser.prototype.fail = function() {
-	// this.running = false;
-	// let loseImage = this.phaser.add.image(0, 0, 'fail');
-	// Phaser.Display.Align.In.Center(loseImage, this.objects.background);
-	// loseImage.setDepth(3);
-	// let okButton = this.setGameObject(OBJECT_CONF['okButton'], 'okButton');
-	//
-	// let me = this;
-	// okButton.on('pointerdown', function(pointer) {
-	// 	loseImage.destroy();
-	// 	okButton.destroy();
-	// 	if (me.activeCommand !== undefined && !Utils.isBracketObject(me.activeCommand)) {
-	// 		me.activeCommand.setTexture(me.activeCommand.texture.key.replace('-crnt', ''));
-	// 	}
-	// });
-	window.showModal('fail', undefined, function() { this.running = false; }.bind(this));
+	let me = this;
+	let callback = function () {
+		me.running = false;
+	}
+	let modal = Object.create(Modals.FailModal);
+	modal.spawn(callback);
 	this.updateCurrentCommand();
 }
 /**
 * displays a victory image on screen when victory event is fired
 */
 InterPhaser.prototype.win = function() {
-	let modal = document.getElementById('modal');
-	modal.style.display = 'block';
-	let image = document.getElementById('fullscreenGif');
-	image.setAttribute('src', SPRITE_PATHS['victory']);
-	let nextButton = document.getElementById('nextButton');
-	let prevButton = document.getElementById('prevButton');
-
 	let me = this;
-	setTimeout(function() {
-		nextButton.style.display = 'block';
-		prevButton.style.display = 'block';
-
-		let onClick = function(e) {
-			modal.style.display = 'none';
-			nextButton.style.display = 'none';
-			prevButton.style.display = 'none';
-			nextButton.removeEventListener('click', onClick);
-			prevButton.removeEventListener('click', onClick);
-
-			let btnName = e.target.id;
-			if (btnName === 'nextButton') {
-				let nextLevel = LEVELS[LEVELS.indexOf(me.levelConfig.levelName) + 1];
-				if (nextLevel !== undefined) {
-					window.game.scene.stop(me.levelConfig.levelName);
-					return window.game.scene.start(nextLevel);
-				}
-			}
-			me.resetLevel();
-		}
-		nextButton.addEventListener('click', onClick);
-		prevButton.addEventListener('click', onClick);
-	}, VICTORY_TIMEOUT);
+	let callback = function () {
+		me.resetLevel();
+	}
+	let modal = Object.create(Modals.WinModal);
+	modal.spawn(this.levelConfig.levelName, callback);
 }
 
 InterPhaser.prototype.updateOssiePos = function(ossiePos) {

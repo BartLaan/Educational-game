@@ -1,5 +1,8 @@
 Utils = {};
 
+// Makes deep copy of whatever object is inside.
+// WARNING!! Does NOT check for self-references/loops or check if property is a
+// prototype property
 Utils.deepCopy = function(object) {
 	if (object === null) { return null }
 
@@ -57,6 +60,8 @@ Utils.cardinalName = function(orientationCode, orientationType) {
 	}
 }
 
+// The game uses this function to get from a human readable/customizable board
+// representation to a usable internal representation
 Utils.boardToNodes = function(board, orientationType) {
 	let useDegrees = orientationType === TYPE_ORIENTATION_DEGREES;
 	let nodes = {};
@@ -115,6 +120,7 @@ Utils.boardToNodes = function(board, orientationType) {
 	return [nodes, goal];
 }
 
+// Expands the board when needed
 Utils.resizeBoard = function(board, minSize) {
 
 	let size = {
@@ -139,6 +145,8 @@ Utils.resizeBoard = function(board, minSize) {
 	return board;
 }
 
+// Reverse of boardToNodes
+// I think this is not used anymore but it can be handy for debugging.
 Utils.nodesToBoard = function(nodes) {
 	let board = [[0]];
 	for (node of nodes) {
@@ -184,6 +192,7 @@ Utils.turnDegrees = function(initDegrees, addDegrees) {
 	return newOrientation;
 }
 
+// This should probably be moved to somewhere else, but is common to ossieGame/interPhaser
 Utils.isBracketObject = function(gameObject) {
 	if (typeof gameObject !== 'string') {
 		return gameObject.getData !== undefined && BRACKET_OBJECTS.indexOf(gameObject.getData('commandID')) > -1;
@@ -191,7 +200,7 @@ Utils.isBracketObject = function(gameObject) {
 	return BRACKET_OBJECTS.indexOf(gameObject) > -1;
 }
 
-// load sprites
+// Preloads sprites for a phaser scene
 Utils.loadSprites = function(phaser) {
 	let spriteArray = [];
 	let sprite404 = [];
@@ -248,10 +257,11 @@ Utils.loadSprites = function(phaser) {
 	}
 }
 
+// These are here so we have to write as little boilerplate code for the level files
+// as possible
 Utils.preloadLevel = function(phaser) {
 	Utils.loadSprites(phaser);
 }
-
 Utils.initializeLevel = function() {
 	console.log('Initializing level "' + this.levelName + '"');
 	Phaser.Scene.call(this, { key: this.levelName });
