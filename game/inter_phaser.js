@@ -7,7 +7,7 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	//let width = BASE_SIZE_X
 	this.width = window.innerWidth
 	this.height = this.width / WH_RATIO
-	this.scalingfactor = this.width / SCALING_FACTOR_DIV
+	this.scalingFactor = this.width / SCALING_FACTOR_DIV
 
 	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
 	this.initLevel();
@@ -17,6 +17,38 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	}
 };
 
+// Every member variable should be indexed here. Can you tell I prefer typed languages?
+// phsr object, indicating the command that the character is executing
+InterPhaser.prototype.activeCommand = null;
+// number, offsets for the playing field/space that the avatar can move in
+InterPhaser.prototype.boardOffsetX = null;
+InterPhaser.prototype.boardOffsetY = null;
+// height to use. callculated based on width in constructor
+InterPhaser.prototype.height = null;
+// phsr graphics. Used for debugging purposes
+InterPhaser.prototype.graphics = null;
+// object containing the level configuration set for each level
+InterPhaser.prototype.levelConfig = null;
+// boolean, indicates whether the player has reached the maximum number of commands
+InterPhaser.prototype.maxedOut = false;
+// object with object names as keys, phaser objects/object lists as values
+InterPhaser.prototype.objects = {};
+// the phaser instance (I think it's actually a scene)
+InterPhaser.prototype.phaser = null;
+// boolean, indicates the gamestate, i.e. whether the character is executing the commands
+InterPhaser.prototype.running = false;
+// number, factor to scale all size units by
+InterPhaser.prototype.scalingFactor = null;
+// number, indicating the stack position that the pointer is hovering over
+InterPhaser.prototype.stackIndex = null;
+// list of phaser objects representing the commands in the command stack
+InterPhaser.prototype.stackObjects = [];
+// number, indicating the size of a grid element
+InterPhaser.prototype.stepsizeX = null;
+InterPhaser.prototype.stepsizeY = null;
+// number, indicating the width of the canvas. Should be equal to window.innerWidth except when resizing
+InterPhaser.prototype.width = null;
+
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
 	let instructionModal = Object.create(Modal);
@@ -24,19 +56,12 @@ InterPhaser.prototype.showIntro = function() {
 }
 
 InterPhaser.prototype.initLevel = function() {
-	this.stepsize_horizontal = this.w(BOARD_STEPSIZE_X)
-	this.stepsize_vertical = this.h(BOARD_STEPSIZE_Y)
-	this.boardOffsetX = this.w(BOARD_OFFSET_X)
-	this.boardOffsetY = this.h(BOARD_OFFSET_Y)
-
-	// ================================================================
-	// PREPARING ASSETS
-	// ================================================================
+	this.stepsizeX = this.w(BOARD_STEPSIZE_X);
+	this.stepsizeY = this.h(BOARD_STEPSIZE_Y);
+	this.boardOffsetX = this.w(BOARD_OFFSET_X);
+	this.boardOffsetY = this.h(BOARD_OFFSET_Y);
 
 	// Set static objects
-	this.objects = {};
-	this.stackObjects = [];
-
 	let backgroundName = 'background' + this.levelConfig.levelName.replace(/[A-Za-z]/g, '');
 	this.objects.background = this.phaser.add.image(0, 0, backgroundName).setOrigin(0, 0);
 	this.objects.background.name = 'background';
@@ -74,14 +99,14 @@ InterPhaser.prototype.setDynamicObjects = function() {
 		let questionmarkCoords = Utils.strToCoord(this.levelConfig.goalPosition);
 		objects.questionmark.x += this.boardOffsetX;
 		objects.questionmark.y += this.boardOffsetY;
-		objects.questionmark.x += this.stepsize_horizontal * questionmarkCoords.x;
-		objects.questionmark.y += this.stepsize_vertical * questionmarkCoords.y;
+		objects.questionmark.x += this.stepsizeX * questionmarkCoords.x;
+		objects.questionmark.y += this.stepsizeY * questionmarkCoords.y;
 	}
 
 	let me = this;
 	objects.execute.on('pointerdown', function (pointer) {
 		this.setTint(0xff0000);
-		if (me.stackObjects === undefined || me.stackObjects.length === 0) return;
+		if (me.stackObjects.length === 0) return;
 
 		let repr = me.getStackRepresentation();
 		me.eventHandler(PHASER_STACK_START, { stack: repr });
@@ -96,7 +121,7 @@ InterPhaser.prototype.setDynamicObjects = function() {
 }
 
 InterPhaser.prototype.setGameObject = function(config, id) {
-	let scaling = (config.scaling || 1) * this.scalingfactor;
+	let scaling = (config.scaling || 1) * this.scalingFactor;
 	let objectName = id.split('-')[0];
 
 	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID);
@@ -145,12 +170,12 @@ InterPhaser.prototype.resetLevel = function() {
 
 	console.log("restarting level")
 	this.eventHandler(PHASER_STACK_RESET);
-	this.activeCommand = undefined;
-	this.stackIndex = undefined;
+	this.activeCommand = null;
+	this.stackIndex = null;
 	this.running = false;
 	this.maxedOut = false;
 
-	// Lots of prior knowledge here: we are
+	// Lots of prior knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
 	for (let objectName of INIT_OBJECTS) {
 		if (this.objects[objectName] === undefined) { continue }
 		console.log('resetting object', objectName);
@@ -182,8 +207,6 @@ InterPhaser.prototype.resetLevel = function() {
 	// Cleaned up old data, now we need to reinitialize. That's easy:
 	this.setDynamicObjects();
 	// this.setInteractions();
-	// window.game.scene.stop(this.levelConfig.levelName);
-	// window.game.scene.start(this.levelConfig.levelName);
 }
 
 InterPhaser.prototype.setInteractions = function() {
@@ -314,7 +337,7 @@ InterPhaser.prototype.setHoverTexture = function(gameObject) {
 
 	gameObject.setData('hover', true);
 	if (SPRITE_PATHS[hoverTexture] === undefined) {
-		let newScale = objConfig.scaling ? HOVER_SCALING * objConfig.scaling : HOVER_SCALING;
+		let newScale = (objConfig.scaling || 1) * HOVER_SCALING * this.scalingFactor;
 		gameObject.setScale(newScale);
 		return;
 	}
@@ -328,7 +351,7 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 
 	gameObject.setData('hover', false);
 	if (!gameObject.texture || gameObject.texture.key.indexOf('hover') === -1) {
-		let newScale = objConfig.scaling ? objConfig.scaling : (1 / HOVER_SCALING);
+		let newScale = (objConfig.scaling || 1) * this.scalingFactor;
 		gameObject.setScale(newScale);
 		return;
 	}
@@ -339,14 +362,14 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 
 }
 InterPhaser.prototype.fastClick = function(pointer, gameObject) {
-	this.stackIndex = undefined;
+	this.stackIndex = null;
 	let inDropZone = this.inDropZone(pointer)
 
 	// fastClick in DropZone to ask for new input for numbers
 	if (inDropZone && OBJECTS_NUMBERCOMMAND.indexOf(gameObject.name) > -1) {
 		return this.askCounts(gameObject);
 	}
-	if (inDropZone || myself.maxedOut) { return }
+	if (inDropZone || this.maxedOut) { return }
 
 	// Add command to stack
 	this.dropObjectOnStack(gameObject);
@@ -356,7 +379,7 @@ InterPhaser.prototype.fastClick = function(pointer, gameObject) {
 }
 //  Just a visual display of the drop zone
 InterPhaser.prototype.renderDropZone = function() {
-	if (this.graphics === undefined) {
+	if (this.graphics === null) {
 		this.graphics = this.phaser.add.graphics();
 		this.graphics.lineStyle(2, 0xffff00);
 	}
@@ -400,7 +423,7 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 	}
 
 	// Add object to internal InterPhaser stack
-	this.stackIndex = this.stackIndex !== undefined ? this.stackIndex : this.stackObjects.length;
+	this.stackIndex = this.stackIndex !== null ? this.stackIndex : this.stackObjects.length;
 	this.stackObjects.splice(this.stackIndex, 0, gameObject);
 
 	let isBracketObject = Utils.isBracketObject(gameObject);
@@ -439,7 +462,7 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 }
 
 InterPhaser.prototype.positionCommands = function(pointer) {
-	this.stackIndex = undefined;
+	this.stackIndex = null;
 	let bracketIndent = this.h(STACK_BRACKET_INDENT);
 	let bracketTopOffset = this.h(STACK_BRACKET_OFFSET);
 	let bracketSpacing = this.h(STACK_BRACKET_SPACING);
@@ -466,7 +489,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 
 		// See if we should add temporary space around the pointer
 		let bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop';
-		let tryTempSpace = this.stackIndex === undefined && pointer !== undefined && !bracketSideOrTop;
+		let tryTempSpace = this.stackIndex === null && pointer !== undefined && !bracketSideOrTop;
 		if (tryTempSpace && pointer.y < object.y) {
 			this.stackIndex = parseInt(i, 10); // WHY THE FFFFFFFF IS THIS A STRING???
 			object.y += avgCommandSize;
@@ -558,7 +581,7 @@ InterPhaser.prototype.updateStepcount = function() {
 	let lastStackObject = this.stackObjects.slice(-1)[0];
 	let commandTotal = this.stackObjects.reduce(function(counter, stackObject) {
 		let commandID = stackObject.getData('commandID');
-		let isCommand = commandID !== undefined && ['open', 'close', 'blockend'].indexOf(commandID) === -1;
+		let isCommand = commandID !== undefined && commandID !== 'blockend';
 		return isCommand ? counter + 1 : counter;
 	}, 0);
 
@@ -646,8 +669,8 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 
 	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
 		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
-		player.x = this.boardOffsetX + (this.stepsize_horizontal * ossieCoords.x);
-		player.y = this.boardOffsetY + (this.stepsize_vertical * ossieCoords.y);
+		player.x = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
+		player.y = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
 	} else {
 		let coordX = ossieCoords.x * this.w(BASE_SIZE_X);
 		let coordY = ossieCoords.y * this.h(BASE_SIZE_Y);
@@ -674,6 +697,7 @@ InterPhaser.prototype.updateCurrentCommand = function(commandObject) {
 	let activeCommand = this.activeCommand;
 	// Reset texture of previous activeCommand
 	if (activeCommand && activeCommand.scene && !Utils.isBracketObject(activeCommand)) {
+		// .add exists for phaser groups, I think
 		let sprite = activeCommand.add !== undefined ? activeCommand.getAt(0) : activeCommand;
 		sprite.setTexture(OBJECT_CONF[activeCommand.name].spriteID);
 		this.positionCommands();

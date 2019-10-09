@@ -54,20 +54,16 @@ let Modal = {
 		this.modalEl.style.display = 'none';
 		this.dismissEl.style.display = 'none';
 		this.dismissEl.removeEventListener('click', this.dismissHandler);
-		this.dismissHandler = undefined;
 
 		window.modalVisible = null;
 
-		if (this.callback !== undefined) {
-			this.callback();
-		}
 		this.afterHide();
 	}
 }
 
 Modals = {};
 
-let modalInit = function() {
+window.initModals = function() {
 	Modal.backgroundEl = document.getElementById('fullscreenGif');
 	Modal.modalEl = document.getElementById('modal');
 	Modal.dismissEl = document.getElementById('okButton');
@@ -134,43 +130,3 @@ let modalInit = function() {
 	}
 	Modals.EventModal = EventModal;
 }
-
-window.onload = modalInit;
-
-// window.renderModal = function(imageKey, timeout) {
-// 	let enableInteraction = function() {
-// 		image.removeEventListener('load', enableInteraction);
-//
-// 		let clickElement;
-// 		if (imageKey === 'intro' || imageKey === 'helloworld') {
-// 			clickElement = image;
-// 		} else {
-// 			clickElement = document.getElementById('okButton');
-// 			clickElement.style.display = 'block';
-// 		}
-//
-// 		let onClick = function(e) {
-// 			modal.style.display = 'none';
-// 			clickElement.style.display = 'none';
-// 			clickElement.removeEventListener('click', onClick);
-// 			window.modalVisible = false;
-// 			if (callback !== undefined) {
-// 				callback();
-// 			}
-// 		}
-// 		clickElement.addEventListener('click', onClick);
-// 	}
-//
-// 	let modal = document.getElementById('modal');
-// 	modal.style.display = 'block';
-// 	let image = document.getElementById('fullscreenGif');
-// 	image.setAttribute('src', SPRITE_PATHS[imageKey]);
-//
-// 	if (timeout !== undefined) {
-// 		setTimeout(enableInteraction, timeout);
-// 	} else if (image.complete) {
-// 		enableInteraction();
-// 	} else {
-// 		image.addEventListener('load', enableInteraction);
-// 	}
-// }

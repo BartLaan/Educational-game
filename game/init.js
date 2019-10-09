@@ -1,4 +1,5 @@
 window.init = function() {
+	window.initModals();
 	var config = {
 		type: Phaser.WEBGL,
 		parent: 'phaser-example',
