@@ -30,7 +30,7 @@ Level4 = new Phaser.Class({
 				orientation: 'east',
 				nodeLocation: '0,5',
 			},
-			maxCommands: 17,
+			maxCommands: 19,
 			levelName: this.levelName,
 			nodes: nodes,
 			objects: this.objects,

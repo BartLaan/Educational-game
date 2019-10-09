@@ -259,12 +259,11 @@ InterPhaser.prototype.setInteractions = function() {
 			return myself.fastClick(pointer, gameObject);
 		}
 
-		let stackFull = myself.maxedOut && OBJECTS_WRAP.indexOf(gameObject.name) === -1;
 		let shouldDrop = myself.inDropZone(pointer) && !pointer.isDown;
-		if (!stackFull && shouldDrop) {
+		if (!myself.maxedOut && shouldDrop) {
 			return myself.dropObjectOnStack(gameObject);
 		}
-		if (stackFull) { return; }
+		if (myself.maxedOut) { return; }
 
 		myself.positionCommands();
 		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
@@ -293,6 +292,7 @@ InterPhaser.prototype.setInteractions = function() {
 	});
 }
 
+// Helpers for converting height/width units to pixel values
 InterPhaser.prototype.h = function(heightInUnits) { return this.height * heightInUnits }
 InterPhaser.prototype.w = function(widthInUnits) { return this.width * widthInUnits }
 
@@ -341,13 +341,12 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 InterPhaser.prototype.fastClick = function(pointer, gameObject) {
 	this.stackIndex = undefined;
 	let inDropZone = this.inDropZone(pointer)
-	let stackFull = this.maxedOut && OBJECTS_WRAP.indexOf(gameObject.name) === -1;
 
 	// fastClick in DropZone to ask for new input for numbers
 	if (inDropZone && OBJECTS_NUMBERCOMMAND.indexOf(gameObject.name) > -1) {
 		return this.askCounts(gameObject);
 	}
-	if (inDropZone || stackFull) { return }
+	if (inDropZone || myself.maxedOut) { return }
 
 	// Add command to stack
 	this.dropObjectOnStack(gameObject);
