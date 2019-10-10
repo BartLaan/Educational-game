@@ -256,7 +256,7 @@ OssieGame.prototype.gameEnd = function(proper) {
 		}
 		return;
 	} else if (proper) {
-		this.eventHandler(STACK_FAIL);
+		// this.eventHandler(STACK_FAIL);
 	}
 	this.eventHandler(STACK_OPEN_END);
 }

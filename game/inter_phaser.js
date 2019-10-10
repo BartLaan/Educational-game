@@ -647,12 +647,9 @@ InterPhaser.prototype.hasObject = function(objectName) {
 }
 
 InterPhaser.prototype.fail = function() {
-	let me = this;
-	let callback = function () {
-		me.running = false;
-	}
+	this.running = false;
 	let modal = Object.create(Modals.FailModal);
-	modal.spawn(callback);
+	modal.spawn();
 	this.updateCurrentCommand();
 }
 /**

@@ -33,11 +33,10 @@ let Modal = {
 			this.backgroundEl.setAttribute('src', SPRITE_PATHS[this.key]);
 		}
 
-		// this.backgroundEl.style.display = 'block'; // should not be needed
 		this.dismissEl.style.display = 'block';
 		this.modalEl.style.display = 'block';
 
-		this.dismissHandler = function() {
+		this.dismissHandler = function(e) {
 			this.hide();
 			if (this.dismissCallback) {
 				this.dismissCallback();
@@ -54,6 +53,7 @@ let Modal = {
 		this.modalEl.style.display = 'none';
 		this.dismissEl.style.display = 'none';
 		this.dismissEl.removeEventListener('click', this.dismissHandler);
+		this.isVisible = false;
 
 		window.modalVisible = null;
 
@@ -66,6 +66,7 @@ Modals = {};
 window.initModals = function() {
 	Modal.backgroundEl = document.getElementById('fullscreenGif');
 	Modal.modalEl = document.getElementById('modal');
+	Modal.modalEl.addEventListener('mousedown', function(e) { e.preventDefault(); });
 	Modal.dismissEl = document.getElementById('okButton');
 
 	// Win modal
@@ -105,6 +106,7 @@ window.initModals = function() {
 
 	let FailModal = Object.create(Modal);
 	FailModal.key = 'fail';
+	FailModal.spawn = FailModal.render;
 	Modals.FailModal = FailModal;
 
 	// Event modal
@@ -120,7 +122,7 @@ window.initModals = function() {
 		this.dismissEl.style.display = 'none';
 		this.dismissEl.removeEventListener('click', this.dismissHandler);
 
-		this.timer = setTimeout(function() {
+		this.timer = setTimeout(function(e) {
 			this.backgroundEl.addEventListener('click', this.dismissHandler);
 		}.bind(this), this.timeout);
 	}
