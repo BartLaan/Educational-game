@@ -240,6 +240,7 @@ InterPhaser.prototype.setInteractions = function() {
 
 		newDrag = true;
 		firstDrag = true;
+		phsr.input.setDefaultCursor('grabbing');
 	});
 
 	phsr.input.on('drag', function (pointer, gameObject, dragX, dragY) {
@@ -277,6 +278,7 @@ InterPhaser.prototype.setInteractions = function() {
 		myself.clearHoverTexture(gameObject);
 		gameObject.setDepth(2);
 		newDrag = false;
+		phsr.input.setDefaultCursor('default');
 
 		if (fastClick) {
 			return myself.fastClick(pointer, gameObject);
@@ -333,9 +335,10 @@ InterPhaser.prototype.setHoverTexture = function(gameObject) {
 	let objConfig = OBJECT_CONF[gameObject.name];
 	if (objConfig === undefined || gameObject.getData('hover')) { return }
 
+	gameObject.setData('hover', true);
+	this.phaser.input.setDefaultCursor('pointer');
 	let hoverTexture = gameObject.texture ? gameObject.texture.key + "-hover" : '';
 
-	gameObject.setData('hover', true);
 	if (SPRITE_PATHS[hoverTexture] === undefined) {
 		let newScale = (objConfig.scaling || 1) * HOVER_SCALING * this.scalingFactor;
 		gameObject.setScale(newScale);
@@ -350,6 +353,8 @@ InterPhaser.prototype.clearHoverTexture = function(gameObject) {
 	if (objConfig === undefined || !gameObject.getData('hover')) { return }
 
 	gameObject.setData('hover', false);
+	this.phaser.input.setDefaultCursor('default');
+
 	if (!gameObject.texture || gameObject.texture.key.indexOf('hover') === -1) {
 		let newScale = (objConfig.scaling || 1) * this.scalingFactor;
 		gameObject.setScale(newScale);
@@ -597,7 +602,6 @@ InterPhaser.prototype.getStackRepresentation = function() {
 	let stack = this.stackObjects;
 	// Recursive inner function
 	let stackRepresentationInner = function(startIndex) {
-		startIndex = startIndex === undefined ? 0 : startIndex;
 		let result = [];
 		let ifObject = undefined;
 

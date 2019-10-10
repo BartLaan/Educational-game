@@ -22,6 +22,8 @@ SPRITE_PATHS = {
 	'17': 					'assets/integers/17.png',
 	'18': 					'assets/integers/18.png',
 	'19': 					'assets/integers/19.png',
+	'20': 					'assets/integers/20.png',
+	'21': 					'assets/integers/21.png',
 	'backbutton':			'assets/buttons/terug.png',
 	'close': 				'assets/commands/sluit.png',
 	'execute': 				'assets/buttons/uitvoeren.png',
