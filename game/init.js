@@ -1,10 +1,16 @@
 window.init = function() {
 	window.initModals();
+	let minHeight = Math.min(window.innerHeight, window.innerWidth / WH_RATIO);
+	let widthThatWillFit = Math.min(window.innerWidth, window.innerHeight * WH_RATIO);
+	let modalEl = document.getElementById('modal');
+	modalEl.style.width = widthThatWillFit;
+	modalEl.style.height = widthThatWillFit / WH_RATIO;
+
 	var config = {
 		type: Phaser.WEBGL,
 		parent: 'phaser-example',
-		width: window.innerWidth,
-		height: window.innerWidth / WH_RATIO,
+		width: widthThatWillFit,
+		height: widthThatWillFit / WH_RATIO,
 		// scale: 'SHOW_ALL',
 		// orientation: 'LANDSCAPE',
 		scene: [

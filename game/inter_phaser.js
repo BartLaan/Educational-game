@@ -3,9 +3,7 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.levelConfig = levelConfig;
 	this.eventHandler = eventHandler;
 
-	//let height = BASE_SIZE_Y
-	//let width = BASE_SIZE_X
-	this.width = window.innerWidth
+	this.width = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
 	this.height = this.width / WH_RATIO
 	this.scalingFactor = this.width / SCALING_FACTOR_DIV
 
