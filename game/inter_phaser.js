@@ -480,10 +480,10 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 
 		let halfObjectHeight = object.displayHeight / 2;
 		// Set height for the object
-		// Note about how this works: stackY is defined as the top-left position of an object, but
+		// Note about how this works: stackX/stackY is defined as the top-left position of an object, but
 		// the objects's y coordinate is set in the middle of the object so that the hovering effect
 		// (i.e. it temporarily becomes a bit larger) works correctly. What that means is that we have to
-		// add half of the object height to the stackY
+		// add half of the object width/height to stackX/stackY
 		object.y = object.name === 'bracketSide' ? stackY : stackY + halfObjectHeight;
 		if (object.name === 'bracketBottom') {
 			var bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')];
@@ -495,7 +495,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		if (object.name === 'bracketBottom' || object.name === 'close') {
 			stackX -= bracketIndent;
 		}
-		object.x = stackX + (object.width / 2);
+		object.x = Math.ceil(stackX + (object.displayWidth / 2));
 
 		// See if we should add temporary space around the pointer (when dragging command)
 		let bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop';
