@@ -471,14 +471,20 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 	let bracketSpacing = this.h(STACK_BRACKET_SPACING);
 	let commandSpacing = this.h(STACK_COMMAND_SPACING);
 	let avgCommandSize = this.h(STACK_AVG_CMD_SIZE);
+	// The coordinates for the top-left aligned position for the next object
 	let stackX = this.w(STACK_ZONE_POS_X);
 	let stackY = this.h(STACK_ZONE_POS_Y) + avgCommandSize;
 
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
 
+		let halfObjectHeight = object.displayHeight / 2;
 		// Set height for the object
-		object.y = object.name === 'bracketSide' ? stackY : stackY + object.displayHeight / 2;
+		// Note about how this works: stackY is defined as the top-left position of an object, but
+		// the objects's y coordinate is set in the middle of the object so that the hovering effect
+		// (i.e. it temporarily becomes a bit larger) works correctly. What that means is that we have to
+		// add half of the object height to the stackY
+		object.y = object.name === 'bracketSide' ? stackY : stackY + halfObjectHeight;
 		if (object.name === 'bracketBottom') {
 			var bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')];
 			let heightDiff = object.y - bracketSide.y;
@@ -491,7 +497,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		}
 		object.x = stackX + (object.width / 2);
 
-		// See if we should add temporary space around the pointer
+		// See if we should add temporary space around the pointer (when dragging command)
 		let bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop';
 		let tryTempSpace = this.stackIndex === null && pointer !== undefined && !bracketSideOrTop;
 		if (tryTempSpace && pointer.y < object.y) {
@@ -499,6 +505,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 			object.y += avgCommandSize;
 		}
 
+		let objectBottom = object.y + halfObjectHeight;
 		// Determine the position for the next item
 		switch (object.name) {
 			case 'bracketTop':
@@ -510,24 +517,24 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				break;
 			case 'bracketBottom':
 				// Scaling of bracket side
-				heightDiff = (object.y + object.displayHeight / 2) - bracketSide.y;
+				heightDiff = objectBottom - bracketSide.y;
 				let newScale = heightDiff / bracketSide.displayHeight;
 				bracketSide.scaleY = Math.max(0.2, newScale);
 				bracketSide.scaleX = Math.max(0.5, Math.min(0.8, newScale));
 				bracketSide.x = bracketSide.x - Math.min(10, 13 * newScale);
 				bracketSide.y += heightDiff / 2;
 
-				stackY = object.y + object.displayHeight / 2 + bracketSpacing;
+				stackY = objectBottom + bracketSpacing;
 				break;
 			case 'for':
 			case 'for_x':
 			case 'for_till':
-				stackY = (object.y + object.displayHeight / 2) - this.h(0.002);
+				stackY = objectBottom - this.h(0.002);
 				break;
 			case 'open':
 				stackX += bracketIndent;
 			default:
-				stackY = object.y + (object.displayHeight / 2) + commandSpacing;
+				stackY = objectBottom + commandSpacing;
 		}
 	}
 }
