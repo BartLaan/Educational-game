@@ -130,7 +130,7 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 		// SO this is a bit weird, we're replacing the gameObject with a container containing the gameObject.
 		// This is so that we can treat the container like an object, so it will take the number with it when dragging
 		let container = this.phaser.add.container(0, 0, [gameObject]);
-		container.setSize(gameObject.width, gameObject.height);
+		container.setSize(gameObject.displayWidth, gameObject.displayHeight);
 		gameObject = container;
 	}
 	gameObject.setData('objectRef', id);
@@ -145,8 +145,8 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 		gameObject.setData('commandID', config.command.commandID);
 	}
 	if (config.offsetX !== undefined) {
-		let offsetX = config.offsetX * (BASE_SIZE_X / this.width);
-		let offsetY = config.offsetY * (BASE_SIZE_Y / this.height);
+		let offsetX = config.offsetX * (BASE_SIZE_X / this.displayWidth);
+		let offsetY = config.offsetY * (BASE_SIZE_Y / this.displayHeight);
 		gameObject.x = this.w(config.offsetX);
 		gameObject.y = this.h(config.offsetY);
 	}
@@ -477,7 +477,8 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
 
-		object.y = object.name === 'bracketSide' ? stackY : stackY + object.height / 2;
+		// Set height for the object
+		object.y = object.name === 'bracketSide' ? stackY : stackY + object.displayHeight / 2;
 		if (object.name === 'bracketBottom') {
 			var bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')];
 			let heightDiff = object.y - bracketSide.y;
@@ -498,6 +499,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 			object.y += avgCommandSize;
 		}
 
+		// Determine the position for the next item
 		switch (object.name) {
 			case 'bracketTop':
 				stackY = stackY + bracketTopOffset;
@@ -508,24 +510,24 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				break;
 			case 'bracketBottom':
 				// Scaling of bracket side
-				heightDiff = (object.y + object.height / 2) - bracketSide.y;
-				let newScale = heightDiff / bracketSide.height;
+				heightDiff = (object.y + object.displayHeight / 2) - bracketSide.y;
+				let newScale = heightDiff / bracketSide.displayHeight;
 				bracketSide.scaleY = Math.max(0.2, newScale);
 				bracketSide.scaleX = Math.max(0.5, Math.min(0.8, newScale));
 				bracketSide.x = bracketSide.x - Math.min(10, 13 * newScale);
 				bracketSide.y += heightDiff / 2;
 
-				stackY = object.y + object.height / 2 + bracketSpacing;
+				stackY = object.y + object.displayHeight / 2 + bracketSpacing;
 				break;
 			case 'for':
 			case 'for_x':
 			case 'for_till':
-				stackY = (object.y + object.height / 2) - this.h(0.002);
+				stackY = (object.y + object.displayHeight / 2) - this.h(0.002);
 				break;
 			case 'open':
 				stackX += bracketIndent;
 			default:
-				stackY = object.y + (object.height / 2) + commandSpacing;
+				stackY = object.y + (object.displayHeight / 2) + commandSpacing;
 		}
 	}
 }
