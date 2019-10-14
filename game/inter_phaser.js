@@ -123,15 +123,17 @@ InterPhaser.prototype.setGameObject = function(config, id) {
 	let objectName = id.split('-')[0];
 
 	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID);
-	gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling);
 
 	// we need to draw numbers for the amount of repeats for forX and degrees for turnDegrees
 	if (objectName === 'for_x' || objectName === 'turndegrees') {
 		// SO this is a bit weird, we're replacing the gameObject with a container containing the gameObject.
 		// This is so that we can treat the container like an object, so it will take the number with it when dragging
 		let container = this.phaser.add.container(0, 0, [gameObject]);
-		container.setSize(gameObject.displayWidth, gameObject.displayHeight);
+		container.setSize(gameObject.width, gameObject.height);
+		container.setScale(scaling);
 		gameObject = container;
+	} else {
+		gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling);
 	}
 	gameObject.setData('objectRef', id);
 	gameObject.name = objectName;
@@ -518,13 +520,13 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 			case 'bracketBottom':
 				// Scaling of bracket side
 				heightDiff = objectBottom - bracketSide.y;
-				let newScale = heightDiff / bracketSide.displayHeight;
+				let newScale = heightDiff / bracketSide.height;
 				bracketSide.scaleY = Math.max(0.2, newScale);
 				bracketSide.scaleX = Math.max(0.5, Math.min(0.8, newScale));
 				bracketSide.x = bracketSide.x - Math.min(10, 13 * newScale);
 				bracketSide.y += heightDiff / 2;
 
-				stackY = objectBottom + bracketSpacing;
+				stackY = objectBottom + this.h(0.002);
 				break;
 			case 'for':
 			case 'for_x':
