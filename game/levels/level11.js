@@ -1,4 +1,4 @@
-Level10 = new Phaser.Class({
+Level11 = new Phaser.Class({
 	Extends: Phaser.Scene,
 
 	levelName: 'level11',

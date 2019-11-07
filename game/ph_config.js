@@ -211,7 +211,7 @@ OBJECT_CONF = {
 		interactive: true,
 		offsetX: COMMAND_AREA_X + 0.1,
 		offsetY: COMMAND_AREA_Y,
-		spriteID: 'step',
+		spriteID: 'steppixels',
 	},
 	turndegrees: {
 		command: { commandID: 'turnDegrees', degrees: null },

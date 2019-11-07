@@ -26,7 +26,7 @@ window.init = function() {
 			Level8,
 			Level9,
 			Level10,
-			// Level11,
+			Level11,
 			// Level12,
 			// Level13,
 			// Level14,
@@ -36,15 +36,12 @@ window.init = function() {
 	};
 
 	function runLevelFromUrl() {
-		// such beautiful get query parsing
-		let level = location.href.split('?level=')[1];
+		// such beautiful url parsing
+		let level = location.href.split('#level-')[1];
 		if (level === undefined) {
-			level = location.href.split('&level=')[1];
-			if (level === undefined) {
-				return;
-			}
+			return;
 		}
-		level = 'level' + level.split('&')[0];
+		level = 'level' + level;
 		// Phaser runs the first scene in the config array, so in order to change the loaded level,
 		// we find the levelIndex and move it to the front of the array
 		let levelIndex = LEVELS.indexOf(level);

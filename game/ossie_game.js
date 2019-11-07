@@ -172,7 +172,7 @@ OssieGame.prototype.resetOssie = function() {
 }
 
 OssieGame.prototype.step = function() {
-	if (this.levelConfig.spaceType === TYPE_SPACE_PIXELS) {
+	if (this.levelConfig.spaceType === TYPE_SPACE_PIXLES) {
 		let unsafeNewX = this.ossiePos.nodeLocation + Math.sine(this.ossiePos.orientation);
 		let unsafeNewY = this.ossiePos.nodeLocation + Math.cosine(this.ossiePos.orientation);
 		let newX = Math.min(Math.max(0, newX), BOARD_PIXLESIZE_X);
@@ -285,7 +285,7 @@ OssieGame.prototype.gameStart = function() {
 	if (stackToExecute.shift().commandID !== 'open') {
 		return this.eventHandler(STACK_FORGOTOPEN);
 	}
-	if (this.levelConfig.spaceType === TYPE_SPACE_PIXELS) {
+	if (this.levelConfig.spaceType === TYPE_SPACE_PIXLES) {
 		this.pathTaken = [];
 	}
 

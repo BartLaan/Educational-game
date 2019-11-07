@@ -105,4 +105,6 @@ SPRITE_PATHS = {
 	'turnleft-crnt':				'assets/commands/draai-links-crnt.png',
 	'turnright':					'assets/commands/draai-rechts.png',
 	'turnright-crnt':				'assets/commands/draai-rechts-crnt.png',
+	'steppixels':					'assets/commands/ga-vooruit-pixels.png',
+	'steppixels-crnt':				'assets/commands/ga-vooruit-pixels-crnt.png',
 }
