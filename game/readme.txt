@@ -1,3 +1,7 @@
+General notes:
+	- The PIXLE unit (note the intentional misspelling) is used as the smallest unit
+		and its size is arbitrarily defined
+
 Naming conventions:
 	- snake_case for filenames
 	- camelCase for variable names and object properties

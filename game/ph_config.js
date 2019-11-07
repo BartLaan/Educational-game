@@ -1,4 +1,6 @@
 // SIZES
+BOARD_PIXLESIZE_X = 100;
+BOARD_PIXLESIZE_Y = 75;
 BOARD_STEPSIZE_X = 0.0776
 BOARD_STEPSIZE_Y = 0.1044
 BOARD_OFFSET_X = 0.33
@@ -12,6 +14,7 @@ FAILBUTTON_Y = 0.6
 HOVER_SCALING = 1.04;
 NUM_SPACING = 0.015;
 NUM_SCALING = 0.6;
+PIXLESIZE = 0.005;
 STACK_AVG_CMD_SIZE = 0.04
 STACK_BRACKET_INDENT = 0.027
 STACK_BRACKET_OFFSET = 0.01
@@ -202,6 +205,13 @@ OBJECT_CONF = {
 		offsetX: STEP_COUNT_DISPLAY_X + (STEP_COUNT_SPACING * 3),
 		offsetY: STEP_COUNT_DISPLAY_Y,
 		scaling: 0.9,
+	},
+	steppixels: {
+		command: { commandID: 'stepPixels', pixels: null },
+		interactive: true,
+		offsetX: COMMAND_AREA_X + 0.1,
+		offsetY: COMMAND_AREA_Y,
+		spriteID: 'step',
 	},
 	turndegrees: {
 		command: { commandID: 'turnDegrees', degrees: null },

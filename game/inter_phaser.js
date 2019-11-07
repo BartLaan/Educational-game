@@ -33,6 +33,8 @@ InterPhaser.prototype.maxedOut = false;
 InterPhaser.prototype.objects = {};
 // the phaser instance (I think it's actually a scene)
 InterPhaser.prototype.phaser = null;
+// Size of the "pixle" unit, used in the TYPE_SPACE_PIXLES levels
+InterPhaser.prototype.pixlesize = null;
 // boolean, indicates the gamestate, i.e. whether the character is executing the commands
 InterPhaser.prototype.running = false;
 // number, factor to scale all size units by

@@ -17,6 +17,21 @@ function OssieGame(levelConfig, phaser) {
 	}
 };
 
+// Array of possible player positions (for TYPE_SPACE_GRID)
+OssieGame.prototype.nodes = null;
+// Where the avatar starts
+OssieGame.prototype.initPosition = null;
+OssieGame.prototype.orientationType = null;
+// Current position of the avatar
+OssieGame.prototype.ossiePos = null;
+OssieGame.prototype.interPhaser = null;
+// Timer used for the pacing of the "gamemplay"
+OssieGame.prototype.timer = null;
+// Internal representation of the commands that should be executed
+OssieGame.prototype.stack = null;
+// Array with nodes (or commands, I haven't figured that out yet) that the avatar has been to/executed
+OssieGame.prototype.pathTaken = [];
+
 OssieGame.prototype.checkLevelConfig = function(levelConfig) {
 	let required = [
 		'goalPosition', // Node reference of the goal
@@ -69,6 +84,7 @@ OssieGame.prototype.eventHandler = function(eventCode, data) {
 			// this.interPhaser.disableStackInteraction();
 			break;
 		case STACK_WALKINTOWALL:
+			console.log("BONK, you walked into a wall");
 			break;
 		case STACK_WIN:
 			this.interPhaser.win();
@@ -156,13 +172,24 @@ OssieGame.prototype.resetOssie = function() {
 }
 
 OssieGame.prototype.step = function() {
+	if (this.levelConfig.spaceType === TYPE_SPACE_PIXELS) {
+		let unsafeNewX = this.ossiePos.nodeLocation + Math.sine(this.ossiePos.orientation);
+		let unsafeNewY = this.ossiePos.nodeLocation + Math.cosine(this.ossiePos.orientation);
+		let newX = Math.min(Math.max(0, newX), BOARD_PIXLESIZE_X);
+		let newY = Math.min(Math.max(0, newY), BOARD_PIXLESIZE_Y);
+		if (newX !== unsafeNewX || newY !== unsafeNewY) {
+			return this.eventHandler(STACK_WALKINTOWALL);
+		}
+
+		return newX.toString() + ',' + newY.toString();
+	}
+
 	let newNode = this.nodes[this.ossiePos.nodeLocation][this.ossiePos.orientation];
 	if (newNode !== undefined) {
 		this.ossiePos.nodeLocation = newNode;
 		this.eventHandler(STACK_OSSIEPOS_CHANGE);
 	} else {
 		this.eventHandler(STACK_WALKINTOWALL);
-		console.log("BONK, you walked into a wall");
 	}
 }
 
@@ -188,7 +215,7 @@ OssieGame.prototype.turnR = function() {
 }
 
 OssieGame.prototype.turnDegrees = function(degrees) {
-	if (typeof degrees != 'number') { return console.error('I want a number here, not a string') }
+	if (typeof degrees != 'number') { return console.error('I want a number here, not a', typeof degrees) }
 	this.ossiePos.orientation = Utils.turnDegrees(this.ossiePos.orientation, degrees);
 	this.eventHandler(STACK_OSSIEPOS_CHANGE);
 }
@@ -202,19 +229,33 @@ OssieGame.prototype.conditional = function(conditionalCode) {
 		case CONDITIONAL_RIGHTFREE:
 			return this.pathExistsTo('right');
 		case CONDITIONAL_ONGOAL:
-			return this.isOnGoal();
+			return this.hasReachedGoal();
 		default:
 			return true;
 	}
 }
 
-OssieGame.prototype.isOnGoal = function() {
-	return this.nodes[this.ossiePos.nodeLocation].goal === true
+OssieGame.prototype.hasReachedGoal = function() {
+	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
+		return this.nodes[this.ossiePos.nodeLocation].goal === true
+	}
+	// else
+	if (this.pathTaken.length < this.levelConfig.goalPath.length) {
+		return false;
+	}
+	// Check if the player has passed all the checkpoints
+	for (let i in this.levelConfig.goalPath) {
+		if (this.levelConfig.goalPath[i] !== this.pathTaken[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 OssieGame.prototype.executeFor = function(stackItem, stack, callbackStacks) {
 	if (stackItem.autoStop) {
-		if (this.isOnGoal()) {
+		if (this.hasReachedGoal()) {
 			stack.shift();
 			return this.stackExecute(stack, callbackStacks);
 		}
@@ -244,12 +285,15 @@ OssieGame.prototype.gameStart = function() {
 	if (stackToExecute.shift().commandID !== 'open') {
 		return this.eventHandler(STACK_FORGOTOPEN);
 	}
+	if (this.levelConfig.spaceType === TYPE_SPACE_PIXELS) {
+		this.pathTaken = [];
+	}
 
 	this.stackExecute(stackToExecute, []);
 }
 
 OssieGame.prototype.gameEnd = function(proper) {
-	if (proper && this.isOnGoal()) {
+	if (proper && this.hasReachedGoal()) {
 		this.eventHandler(STACK_WIN);
 		if (window.debug) {
 			console.log('won');
