@@ -4,12 +4,16 @@ function OssieGame(levelConfig, phaser) {
 		return false;
 	}
 	window.activeLevel = levelConfig.levelName;
+	window.location.hash = levelConfig.levelName;
 	if (window.debug) {
 		this.checkLevelConfig(levelConfig);
 	}
 	this.nodes = levelConfig.nodes;
 	this.initPosition = levelConfig.initPosition;
 	this.orientationType = levelConfig.orientationType;
+	this.spaceType = levelConfig.spaceType;
+	this.goalPath = levelConfig.goalPath;
+
 	this.ossiePos = Utils.deepCopy(levelConfig.initPosition);
 	this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this));
 	if (window.debug) {
@@ -172,7 +176,7 @@ OssieGame.prototype.resetOssie = function() {
 }
 
 OssieGame.prototype.step = function() {
-	if (this.levelConfig.spaceType === TYPE_SPACE_PIXLES) {
+	if (this.spaceType === TYPE_SPACE_PIXLES) {
 		let unsafeNewX = this.ossiePos.nodeLocation + Math.sine(this.ossiePos.orientation);
 		let unsafeNewY = this.ossiePos.nodeLocation + Math.cosine(this.ossiePos.orientation);
 		let newX = Math.min(Math.max(0, newX), BOARD_PIXLESIZE_X);
@@ -236,16 +240,16 @@ OssieGame.prototype.conditional = function(conditionalCode) {
 }
 
 OssieGame.prototype.hasReachedGoal = function() {
-	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
+	if (this.spaceType === TYPE_SPACE_GRID) {
 		return this.nodes[this.ossiePos.nodeLocation].goal === true
 	}
 	// else
-	if (this.pathTaken.length < this.levelConfig.goalPath.length) {
+	if (this.pathTaken.length < this.goalPath.length) {
 		return false;
 	}
 	// Check if the player has passed all the checkpoints
-	for (let i in this.levelConfig.goalPath) {
-		if (this.levelConfig.goalPath[i] !== this.pathTaken[i]) {
+	for (let i in this.goalPath) {
+		if (this.goalPath[i] !== this.pathTaken[i]) {
 			return false;
 		}
 	}
@@ -285,7 +289,7 @@ OssieGame.prototype.gameStart = function() {
 	if (stackToExecute.shift().commandID !== 'open') {
 		return this.eventHandler(STACK_FORGOTOPEN);
 	}
-	if (this.levelConfig.spaceType === TYPE_SPACE_PIXLES) {
+	if (this.spaceType === TYPE_SPACE_PIXLES) {
 		this.pathTaken = [];
 	}
 

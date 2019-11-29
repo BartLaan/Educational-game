@@ -36,24 +36,32 @@ window.init = function() {
 	};
 
 	function runLevelFromUrl() {
-		// such beautiful url parsing
-		let level = location.href.split('#level-')[1];
-		if (level === undefined) {
+		let level = location.hash.replace('#', '');
+		if (level === "") {
 			return;
 		}
-		level = 'level' + level;
 		// Phaser runs the first scene in the config array, so in order to change the loaded level,
 		// we find the levelIndex and move it to the front of the array
 		let levelIndex = LEVELS.indexOf(level);
 		if (levelIndex === undefined) {
 			return console.log('Could not find level "' + level + '"');
 		}
+		console.log('Loading level', level, 'from url');
 		let scene = config.scene[levelIndex];
 		config.scene.splice(levelIndex, 1);
 		config.scene.unshift(scene);
 	}
-
 	runLevelFromUrl();
+
+	addEventListener("hashchange", function(){
+		let nextLevel = window.location.hash.replace('#', '');
+		if (nextLevel === window.activeLevel || LEVELS.indexOf(nextLevel) === undefined) {
+			return;
+		}
+		window.game.scene.stop(window.activeLevel);
+		window.game.scene.start(nextLevel);
+	})
+
 	// make phaser game object
 	window.game = new Phaser.Game(config);
 	window.debug = false;
@@ -75,5 +83,4 @@ window.selectLevel = function(nextLevel) {
 		console.log('Could not find level "' + nextLevel + '"');
 	}
 }
-
 window.init();

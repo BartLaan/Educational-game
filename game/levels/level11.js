@@ -11,7 +11,15 @@ Level11 = new Phaser.Class({
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
 
-	preload: function() { Utils.preloadLevel(this) },
+	preload: function() {
+		Utils.preloadLevel(this);
+		this.load.spritesheet(
+			"background11_ss",
+			"assets/backgrounds/background-11.png",
+			{frameHeight: 768, frameWidth: 1024}
+		);
+
+	},
 
 	create: function ()
 	{
@@ -31,15 +39,22 @@ Level11 = new Phaser.Class({
 
 		window.ossieGame = new OssieGame(levelConfig, this);
 		let interPhaser = window.ossieGame.interPhaser;
-		let callback = function() {
-			window.game.scene.stop(this.levelName);
-			window.game.scene.start(LEVELS[LEVELS.indexOf(this.levelName) + 1]);
-		}.bind(this);
 
-		let intermezzoModal = Object.create(Modals.EventModal);
-		interPhaser.win = function() {
-			console.log('lose :()');
-			intermezzoModal.spawn('helloworld', 3000, callback);
+		let newBackground = interPhaser.phaser.add.sprite(0, 0, 'background11_ss', 0);
+		interPhaser.objects.background.destroy();
+		interPhaser.objects.background = newBackground;
+		newBackground.setOrigin(0, 0);
+		newBackground.name = 'background';
+		newBackground.setDisplaySize(interPhaser.width, interPhaser.height);
+
+		this.anims.create({
+			key: 'background11_anim',
+			frames: this.anims.generateFrameNames("background11_ss"),
+			frameRate: 2,
+		});
+
+		interPhaser.afterIntro = function() {
+			newBackground.play('background11_anim');
 		}
 	}
 });

@@ -9,6 +9,7 @@ canvas {
 	z-index: 1;
 }
 #modal {
+	display: none; 
 	height: calc(100vw / 1.3333);
 	max-height: 100vh;
 	max-width: calc(100vh * 1.3333);

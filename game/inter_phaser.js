@@ -52,8 +52,10 @@ InterPhaser.prototype.width = null;
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
 	let instructionModal = Object.create(Modal);
+	instructionModal.afterHide = this.afterIntro.bind(this);
 	instructionModal.spawn(instructionName);
 }
+InterPhaser.prototype.afterIntro = function() {}
 
 InterPhaser.prototype.initLevel = function() {
 	this.stepsizeX = this.w(BOARD_STEPSIZE_X);
@@ -679,21 +681,27 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 	let player = this.objects.player
 	playerConfig = OBJECT_CONF.player
 
-	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
-		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
-		player.x = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
-		player.y = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
-	} else {
-		let coordX = ossieCoords.x * this.w(BASE_SIZE_X);
-		let coordY = ossieCoords.y * this.h(BASE_SIZE_Y);
-		player.x = this.boardOffsetX + coordX;
-		player.y = this.boardOffsetY + coordY;
-	}
 	if (this.levelConfig.orientationType === TYPE_ORIENTATION_CARDINALS) {
 		player.angle = Utils.cardinalToAngle(ossiePos.orientation);
 	} else {
 		player.angle = ossiePos.orientation - 90;
 	}
+
+	let newX, newY;
+	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
+		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
+		newX = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
+		newY = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
+	} else {
+		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
+		let coordX = ossieCoords.x * this.w(BASE_SIZE_X);
+		let coordY = ossieCoords.y * this.h(BASE_SIZE_Y);
+		newX = this.boardOffsetX + coordX;
+		newY = this.boardOffsetY + coordY;
+	}
+	// Animate to new location. With setTimer? Or for loop w/ setTimeouts
+	player.x = newX
+	player.y = newY
 }
 
 InterPhaser.prototype.onCommandExecute = function(commandReference) {
