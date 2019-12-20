@@ -9,11 +9,8 @@ Level1 = new Phaser.Class({
 
 	preload: function ()
 	{
-		// if (window.debug) {
-		// 	window.selectLevel();
-		// 	return;
-		// }
-		Utils.loadSprites(this);
+		Utils.preloadLevel(this);
+		Utils.loadSpritesheet(this, 'intro');
 	},
 
 	create: function ()
@@ -34,7 +31,7 @@ Level1 = new Phaser.Class({
 					orientation: 'east',
 					nodeLocation: '0,5',
 				},
-				maxCommands: 10,
+				maxCommands: 9,
 				levelName: this.levelName,
 				nodes: nodes,
 				objects: this.objects,
@@ -45,6 +42,6 @@ Level1 = new Phaser.Class({
 			window.ossieGame = new OssieGame(levelConfig, this);
 		}
 		let introModal = Object.create(Modals.EventModal);
-		introModal.spawn('intro', 3000, startLevel1.bind(this));
+		introModal.spawn(this, 'intro', 3000, startLevel1.bind(this));
 	}
 });

@@ -13,12 +13,7 @@ Level11 = new Phaser.Class({
 
 	preload: function() {
 		Utils.preloadLevel(this);
-		this.load.spritesheet(
-			"background11_ss",
-			"assets/backgrounds/background-11.png",
-			{frameHeight: 768, frameWidth: 1024}
-		);
-
+		Utils.loadSpritesheet(this, 'background11');
 	},
 
 	create: function ()

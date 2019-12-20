@@ -3,16 +3,12 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.levelConfig = levelConfig;
 	this.eventHandler = eventHandler;
 
-	this.width = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
-	this.height = this.width / WH_RATIO
-	this.scalingFactor = this.width / SCALING_FACTOR_DIV
+	Utils.width = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
+	Utils.height = Utils.width / WH_RATIO
+	this.scalingFactor = Utils.width / SCALING_FACTOR_DIV
 
 	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
 	this.initLevel();
-	this.setInteractions();
-	if (!window.debug) {
-		this.showIntro();
-	}
 };
 
 // Every member variable should be indexed here. Can you tell I prefer typed languages?
@@ -53,27 +49,29 @@ InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
 	let instructionModal = Object.create(Modal);
 	instructionModal.afterHide = this.afterIntro.bind(this);
-	instructionModal.spawn(instructionName);
+	instructionModal.spawn(this.phaser, instructionName);
 }
 InterPhaser.prototype.afterIntro = function() {}
 
 InterPhaser.prototype.initLevel = function() {
-	this.stepsizeX = this.w(BOARD_STEPSIZE_X);
-	this.stepsizeY = this.h(BOARD_STEPSIZE_Y);
-	this.boardOffsetX = this.w(BOARD_OFFSET_X);
-	this.boardOffsetY = this.h(BOARD_OFFSET_Y);
+	this.stepsizeX = Utils.w(BOARD_STEPSIZE_X);
+	this.stepsizeY = Utils.h(BOARD_STEPSIZE_Y);
+	this.boardOffsetX = Utils.w(BOARD_OFFSET_X);
+	this.boardOffsetY = Utils.h(BOARD_OFFSET_Y);
 
 	// Set static objects
 	let backgroundName = 'background' + this.levelConfig.levelName.replace(/[A-Za-z]/g, '');
 	this.objects.background = this.phaser.add.image(0, 0, backgroundName).setOrigin(0, 0);
 	this.objects.background.name = 'background';
-	this.objects.background.setDisplaySize(this.width, this.height);
+	this.objects.background.setDisplaySize(Utils.width, Utils.height);
 
 	let maxCommands = this.levelConfig.maxCommands;
 	OBJECT_CONF.stepcount_total.spriteID = maxCommands.toString();
-	this.objects.stepcount_total = this.setGameObject(OBJECT_CONF.stepcount_total, 'stepcount_total');
+	this.objects.stepcount_total = Utils.setGameObject(this.phaser, OBJECT_CONF.stepcount_total, 'stepcount_total');
 
 	this.setDynamicObjects();
+	this.setInteractions();
+	this.showIntro();
 }
 
 InterPhaser.prototype.setDynamicObjects = function() {
@@ -85,13 +83,13 @@ InterPhaser.prototype.setDynamicObjects = function() {
 
 		// normal objects
 		if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
-			objects[objectName] = this.setGameObject(objConfig, objectName);
+			objects[objectName] = Utils.setGameObject(this.phaser, objConfig, objectName);
 			objects[objectName].name = objectName;
 
 		} else { // draggable commands can have multiple versions
 			objects[objectName] = {};
 			let objectRef = objectName + '-' + 0;
-			let object = this.setGameObject(objConfig, objectRef);
+			let object = Utils.setGameObject(this.phaser, objConfig, objectRef);
 			object.setData('i', 0);
 			objects[objectName][0] = object;
 		}
@@ -106,11 +104,11 @@ InterPhaser.prototype.setDynamicObjects = function() {
 	}
 
 	let me = this;
-	objects.execute.on('pointerdown', function (pointer) {
+	objects.execute.on('pointerdown', function(pointer) {
 		this.setTint(0xff0000);
 		if (me.stackObjects.length === 0) return;
 
-		let repr = me.getStackRepresentation();
+		let repr = Utils.getStackRepresentation(me.stackObjects);
 		me.eventHandler(PHASER_STACK_START, { stack: repr });
 		me.running = true;
 	});
@@ -120,53 +118,6 @@ InterPhaser.prototype.setDynamicObjects = function() {
 	objects.backButton.on('pointerdown', this.showIntro.bind(this));
 
 	this.updateOssiePos(this.levelConfig.initPosition);
-}
-
-InterPhaser.prototype.setGameObject = function(config, id) {
-	let scaling = (config.scaling || 1) * this.scalingFactor;
-	let objectName = id.split('-')[0];
-
-	let gameObject = this.phaser.add.sprite(0, 0, config.spriteID);
-
-	// we need to draw numbers for the amount of repeats for forX and degrees for turnDegrees
-	if (objectName === 'for_x' || objectName === 'turndegrees') {
-		// SO this is a bit weird, we're replacing the gameObject with a container containing the gameObject.
-		// This is so that we can treat the container like an object, so it will take the number with it when dragging
-		let container = this.phaser.add.container(0, 0, [gameObject]);
-		container.setSize(gameObject.width, gameObject.height);
-		container.setScale(scaling);
-		gameObject = container;
-	} else {
-		gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling);
-	}
-	gameObject.setData('objectRef', id);
-	gameObject.name = objectName;
-
-
-	if (config.command !== undefined) {
-		let commandObject = Utils.deepCopy(config.command);
-		// This is a command object, we need a reference to itself for when we pass it to the stack
-		commandObject.objectRef = id;
-		gameObject.setData('command', commandObject);
-		gameObject.setData('commandID', config.command.commandID);
-	}
-	if (config.offsetX !== undefined) {
-		let offsetX = config.offsetX * (BASE_SIZE_X / this.displayWidth);
-		let offsetY = config.offsetY * (BASE_SIZE_Y / this.displayHeight);
-		gameObject.x = this.w(config.offsetX);
-		gameObject.y = this.h(config.offsetY);
-	}
-	if (config.depth !== undefined) {
-		gameObject.setDepth(config.depth);
-	}
-	if (config.interactive === true || config.draggable === true) {
-		gameObject.setInteractive();
-	}
-	if (config.draggable === true) {
-		this.phaser.input.setDraggable(gameObject);
-	}
-
-	return gameObject;
 }
 
 InterPhaser.prototype.resetLevel = function() {
@@ -222,7 +173,7 @@ InterPhaser.prototype.setInteractions = function() {
 	let pOjs = this.objects;
 
 	// this.renderDropZone();
-	this.stackPos = { x: this.w(STACK_ZONE_POS_X), y: this.h(STACK_ZONE_POS_Y) };
+	this.stackPos = { x: Utils.w(STACK_ZONE_POS_X), y: Utils.h(STACK_ZONE_POS_Y) };
 
 	// ================================================================
 	// handle click events for different buttons
@@ -254,12 +205,11 @@ InterPhaser.prototype.setInteractions = function() {
 			return firstDrag = false;
 		}
 		if (newDrag) {
-			let canHaveMultiple = OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1;
 			// Drag/remove command from the command queue
 			if (myself.inDropZone(pointer)) {
 				myself.removeFromStack(gameObject);
 
-			} else if (!myself.maxedOut && canHaveMultiple) {
+			} else if (!myself.maxedOut) {
 				// Dragging from original position, so create another one under the hood
 				myself.duplicateObject(gameObject);
 			}
@@ -295,16 +245,9 @@ InterPhaser.prototype.setInteractions = function() {
 		if (myself.maxedOut) { return; }
 
 		myself.positionCommands();
-		if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
-			// Dragged outside of drop zone -> delete this object
-			myself.objects[gameObject.name][gameObject.getData('i')] = undefined;
-			gameObject.destroy();
-		} else {
-			// Don't delete object if there is only one (i.e. open/close)
-			let conf = OBJECT_CONF[gameObject.name];
-			gameObject.x = myself.w(conf.offsetX);
-			gameObject.y = myself.h(conf.offsetY);
-		}
+		// Dragged outside of drop zone -> delete this object
+		myself.objects[gameObject.name][gameObject.getData('i')] = undefined;
+		gameObject.destroy();
 	});
 
 	phsr.input.on('pointerover', function (event, gameObjectList) {
@@ -321,15 +264,11 @@ InterPhaser.prototype.setInteractions = function() {
 	});
 }
 
-// Helpers for converting height/width units to pixel values
-InterPhaser.prototype.h = function(heightInUnits) { return this.height * heightInUnits }
-InterPhaser.prototype.w = function(widthInUnits) { return this.width * widthInUnits }
-
 // Used to make a new command in the command area to replace the one that the user is dragging
 InterPhaser.prototype.duplicateObject = function(gameObject) {
 	let newObjectI = gameObject.getData('i') + 1;
 	let newObjectRef = gameObject.name + '-' + newObjectI.toString();
-	let newObject = this.setGameObject(OBJECT_CONF[gameObject.name], newObjectRef);
+	let newObject = Utils.setGameObject(this.phaser, OBJECT_CONF[gameObject.name], newObjectRef);
 	newObject.setData('i', newObjectI);
 	this.objects[gameObject.name][newObjectI] = newObject;
 }
@@ -382,9 +321,7 @@ InterPhaser.prototype.fastClick = function(pointer, gameObject) {
 
 	// Add command to stack
 	this.dropObjectOnStack(gameObject);
-	if (OBJECTS_MULTIPLE.indexOf(gameObject.name) > -1) {
-		this.duplicateObject(gameObject);
-	}
+	this.duplicateObject(gameObject);
 }
 //  Just a visual display of the drop zone
 InterPhaser.prototype.renderDropZone = function() {
@@ -393,25 +330,25 @@ InterPhaser.prototype.renderDropZone = function() {
 		this.graphics.lineStyle(2, 0xffff00);
 	}
 	this.graphics.strokeRect(
-		this.w(BOARD_OFFSET_X),
-		this.h(BOARD_OFFSET_Y),
-		this.w(BOARD_STEPSIZE_X * 8),
-		this.h(BOARD_STEPSIZE_Y * 5)
+		Utils.w(BOARD_OFFSET_X),
+		Utils.h(BOARD_OFFSET_Y),
+		Utils.w(BOARD_STEPSIZE_X * 8),
+		Utils.h(BOARD_STEPSIZE_Y * 5)
 	);
 	this.graphics.strokeRect(
-		this.w(BOARD_OFFSET_X),
-		this.h(BOARD_OFFSET_Y),
-		this.w(BOARD_STEPSIZE_X),
-		this.h(BOARD_STEPSIZE_Y)
+		Utils.w(BOARD_OFFSET_X),
+		Utils.h(BOARD_OFFSET_Y),
+		Utils.w(BOARD_STEPSIZE_X),
+		Utils.h(BOARD_STEPSIZE_Y)
 	);
 }
 
 InterPhaser.prototype.inDropZone = function(location) {
 	return (
-		location.x > this.w(STACK_ZONE_POS_X)
-		&& location.x < this.w(STACK_ZONE_POS_X + STACK_ZONE_WIDTH)
-		&& location.y > this.h(STACK_ZONE_POS_Y)
-		&& location.y < this.h(STACK_ZONE_POS_Y + STACK_ZONE_HEIGHT)
+		location.x > Utils.w(STACK_ZONE_POS_X)
+		&& location.x < Utils.w(STACK_ZONE_POS_X + STACK_ZONE_WIDTH)
+		&& location.y > Utils.h(STACK_ZONE_POS_Y)
+		&& location.y < Utils.h(STACK_ZONE_POS_Y + STACK_ZONE_HEIGHT)
 	);
 }
 
@@ -466,20 +403,20 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 
 	let key = askForX ? 'counts' : 'degrees';
 	command[key] = result;
-	this.renderNumber(gameObject, result);
+	Utils.renderNumber(gameObject, result);
 	return true;
 }
 
 InterPhaser.prototype.positionCommands = function(pointer) {
 	this.stackIndex = null;
-	let bracketIndent = this.h(STACK_BRACKET_INDENT);
-	let bracketTopOffset = this.h(STACK_BRACKET_OFFSET);
-	let bracketSpacing = this.h(STACK_BRACKET_SPACING);
-	let commandSpacing = this.h(STACK_COMMAND_SPACING);
-	let avgCommandSize = this.h(STACK_AVG_CMD_SIZE);
+	let bracketIndent = Utils.h(STACK_BRACKET_INDENT);
+	let bracketTopOffset = Utils.h(STACK_BRACKET_OFFSET);
+	let bracketSpacing = Utils.h(STACK_BRACKET_SPACING);
+	let commandSpacing = Utils.h(STACK_COMMAND_SPACING);
+	let avgCommandSize = Utils.h(STACK_AVG_CMD_SIZE);
 	// The coordinates for the top-left aligned position for the next object
-	let stackX = this.w(STACK_ZONE_POS_X);
-	let stackY = this.h(STACK_ZONE_POS_Y) + avgCommandSize;
+	let stackX = Utils.w(STACK_ZONE_POS_X);
+	let stackY = Utils.h(STACK_ZONE_POS_Y) + avgCommandSize;
 
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
@@ -530,12 +467,12 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				bracketSide.x = bracketSide.x - Math.min(10, 13 * newScale);
 				bracketSide.y += heightDiff / 2;
 
-				stackY = objectBottom + this.h(0.002);
+				stackY = objectBottom + Utils.h(0.002);
 				break;
 			case 'for':
 			case 'for_x':
 			case 'for_till':
-				stackY = objectBottom - this.h(0.002);
+				stackY = objectBottom - Utils.h(0.002);
 				break;
 			case 'open':
 				stackX += bracketIndent;
@@ -552,7 +489,7 @@ InterPhaser.prototype.insertBrackets = function(gameObject) {
 	let insertIn = this.stackIndex + 1;
 	for (let objectName of ['bracketBottom', 'bracketSide', 'bracketTop']) {
 		let objID = objectName + '-for:' + gameObject.getData('objectRef');
-		let object = this.setGameObject(OBJECT_CONF[objectName], objID);
+		let object = Utils.setGameObject(this.phaser, OBJECT_CONF[objectName], objID);
 		this.objects[objID] = object;
 		this.stackObjects.splice(insertIn, 0, object);
 
@@ -572,8 +509,7 @@ InterPhaser.prototype.clearBracketObject = function(bracketObject) {
 		let selfRef = object.getData('objectRef');
 		let blockRef = object.getData('blockRef');
 
-		let permDelete = bracketItems.indexOf(object.name) > -1 || OBJECTS_MULTIPLE.indexOf(object.name) > -1;
-		if (object.scene !== undefined && permDelete) {
+		if (object.scene !== undefined) {
 			object.destroy();
 			delete this.objects[selfRef];
 		}
@@ -609,52 +545,6 @@ InterPhaser.prototype.updateStepcount = function() {
 	this.maxedOut = commandTotal >= this.levelConfig.maxCommands;
 }
 
-// Convert the InterPhaser stacklist to a representation that the ossiegame stack can work with nicely.
-// startindex is optional.
-InterPhaser.prototype.getStackRepresentation = function() {
-	let stack = this.stackObjects;
-	// Recursive inner function
-	let stackRepresentationInner = function(startIndex) {
-		let result = [];
-		let ifObject = undefined;
-
-		for (let i = startIndex; i < stack.length; i++) {
-			let object = stack[i];
-			let stackItem = object.getData('command');
-			if (stackItem) {
-				stackItem.stackIndex = i;
-			}
-			let commandID = object.getData('commandID');
-
-			switch (commandID) {
-				case undefined:
-					// Bracketside/brackettop
-					break;
-
-				case 'blockend':
-					// End of this part of the stack, return the results
-					return [result, i];
-
-				case 'if':
-					ifObject = stackItem.stackIndex;
-				case 'else':
-					stackItem.blockRef = commandID === 'else' ? ifObject : undefined; // fallthrough of if case
-				case 'for':
-					let [newStack, newI] = stackRepresentationInner(i + 1); // RECURSION
-					stackItem.do = newStack;
-					i = newI;
-
-				default:
-					result.push(stackItem);
-			}
-		}
-
-		return result;
-	}.bind(this);
-	// Init with 0 to start at the top of command stack
-	return stackRepresentationInner(0);
-}
-
 InterPhaser.prototype.hasObject = function(objectName) {
 	return this.levelConfig.objects.indexOf(objectName) >= 0
 }
@@ -662,22 +552,22 @@ InterPhaser.prototype.hasObject = function(objectName) {
 InterPhaser.prototype.fail = function() {
 	this.running = false;
 	let modal = Object.create(Modals.FailModal);
-	modal.spawn();
+	modal.spawn(this.phaser);
 	this.updateCurrentCommand();
 }
 /**
 * displays a victory image on screen when victory event is fired
 */
 InterPhaser.prototype.win = function() {
-	let me = this;
-	let callback = function () {
-		me.resetLevel();
-	}
 	let modal = Object.create(Modals.WinModal);
-	modal.spawn(this.levelConfig.levelName, callback);
+	modal.spawn(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this));
 }
 
-InterPhaser.prototype.updateOssiePos = function(ossiePos) {
+InterPhaser.prototype.updateOssiePos = function(ossiePos, animate) {
+	if (animate === undefined) {
+		animate = false;
+	}
+
 	let player = this.objects.player
 	playerConfig = OBJECT_CONF.player
 
@@ -687,27 +577,29 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos) {
 		player.angle = ossiePos.orientation - 90;
 	}
 
-	let newX, newY;
+	let newCoords = {};
+	let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
 	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
-		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
-		newX = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
-		newY = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
+		newCoords.x = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
+		newCoords.y = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
 	} else {
-		let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
-		let coordX = ossieCoords.x * this.w(BASE_SIZE_X);
-		let coordY = ossieCoords.y * this.h(BASE_SIZE_Y);
-		newX = this.boardOffsetX + coordX;
-		newY = this.boardOffsetY + coordY;
+		let coordX = ossieCoords.x * Utils.w(BASE_SIZE_X);
+		let coordY = ossieCoords.y * Utils.h(BASE_SIZE_Y);
+		newCoords.x = this.boardOffsetX + coordX;
+		newCoords.y = this.boardOffsetY + coordY;
 	}
-	// Animate to new location. With setTimer? Or for loop w/ setTimeouts
-	player.x = newX
-	player.y = newY
+
+	if (animate) {
+		Utils.animateMovement(player, newCoords, MOVEMENT_DURATION);
+		return;
+	}
+	player.x = newCoords.x;
+	player.y = newCoords.y;
 }
 
 InterPhaser.prototype.onCommandExecute = function(commandReference) {
 	let [commandName, commandI] = commandReference.split('-');
-	let isMultiple = OBJECTS_MULTIPLE.indexOf(commandName) !== -1;
-	let commandObject = isMultiple ? this.objects[commandName][commandI] : this.objects[commandName];
+	let commandObject = this.objects[commandName][commandI];
 	if (!Utils.isBracketObject(commandObject)) {
 		this.updateCurrentCommand(commandObject);
 	}
@@ -734,25 +626,5 @@ InterPhaser.prototype.updateCurrentCommand = function(commandObject) {
 	if (SPRITE_PATHS[crntTexture] !== undefined) {
 		sprite.setTexture(crntTexture);
 		this.positionCommands(); // texture has different size, so realign the stack
-	}
-}
-
-// Render number for commands that need it (forX, turnDegrees)
-InterPhaser.prototype.renderNumber = function(object, num) {
-	object.each(function(sprite) {
-		if (sprite.name.indexOf('number') > -1) {
-			object.remove(sprite, true, true);
-		}
-	})
-	let config = OBJECT_CONF[object.name];
-	let numX = this.w(config.numOffsetX);
-	let numY = this.h(config.numOffsetY);
-	let numSpacing = this.w(NUM_SPACING);
-	// get array of decreasing order of magnitude (-123 > ['3','2','1','-'])
-	let numParts = num.toString().split('').reverse();
-	for (let numI in numParts) {
-		let numberObj = this.phaser.add.sprite(numX - (numSpacing * numI), numY, numParts[numI]).setScale(NUM_SCALING);
-		numberObj.name = 'number' + numI;
-		object.add(numberObj);
 	}
 }

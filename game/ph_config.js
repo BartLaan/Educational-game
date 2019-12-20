@@ -20,7 +20,7 @@ STACK_BRACKET_INDENT = 0.027
 STACK_BRACKET_OFFSET = 0.01
 STACK_BRACKET_SPACING = 0.02
 STACK_COMMAND_SPACING = 0.002
-STACK_ZONE_POS_X = 0.07
+STACK_ZONE_POS_X = 0.10
 STACK_ZONE_POS_Y = 0.04
 STACK_ZONE_HEIGHT = 0.92
 STACK_ZONE_WIDTH = 0.21
@@ -32,21 +32,22 @@ WINBUTTON_Y = 0.88
 BASE_SIZE_X = 1024;
 BASE_SIZE_Y = 768;
 // etc
-COMMAND_TIMING = 250 // ms
+ANIMATION_FPS = 30
+MOVEMENT_DURATION = 250 // ms
+COMMAND_TIMING = 400 // ms
 SCALING_FACTOR_DIV = 1024
 VICTORY_TIMEOUT = 1500 // ms
 WH_RATIO = 1.3333333333
 
 // Initial configuration for objects
 OBJECT_CONF = {
-	// HTML now, to display gifs
-	// againButton: {
-	// 	depth: 4,
-	// 	interactive: true,
-	// 	offsetX: 0.25,
-	// 	offsetY: WINBUTTON_Y,
-	// 	spriteID: 'playagain',
-	// },
+	againButton: {
+		depth: 11,
+		interactive: true,
+		offsetX: 0.25,
+		offsetY: WINBUTTON_Y,
+		spriteID: 'playagain',
+	},
 	backButton: {
 		depth: 2,
 		interactive: true,
@@ -140,21 +141,20 @@ OBJECT_CONF = {
 		offsetY: COMMAND_AREA_Y + 0.048,
 		spriteID: 'if-padvooruit',
 	},
-	// HTML now, to display gifs
-	// nextButton: {
-	// 	depth: 4,
-	// 	interactive: true,
-	// 	offsetX: 0.74,
-	// 	offsetY: WINBUTTON_Y,
-	// 	spriteID: 'nextlevel',
-	// },
-	// okButton: {
-	// 	depth: 4,
-	// 	interactive: true,
-	// 	offsetX: CONFIRM_POS_X,
-	// 	offsetY: CONFIRM_POS_Y,
-	// 	spriteID: 'ok',
-	// },
+	nextButton: {
+		depth: 11,
+		interactive: true,
+		offsetX: 0.74,
+		offsetY: WINBUTTON_Y,
+		spriteID: 'nextlevel',
+	},
+	okButton: {
+		depth: 11,
+		interactive: true,
+		offsetX: CONFIRM_POS_X,
+		offsetY: CONFIRM_POS_Y,
+		spriteID: 'ok',
+	},
 	open: {
 		command: { commandID: 'open' },
 		depth: 2,

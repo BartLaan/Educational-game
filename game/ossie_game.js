@@ -82,7 +82,7 @@ OssieGame.prototype.eventHandler = function(eventCode, data) {
 			}.bind(this), 800);
 			break;
 		case STACK_OSSIEPOS_CHANGE:
-			this.interPhaser.updateOssiePos(this.getPosition());
+			this.interPhaser.updateOssiePos(this.getPosition(), true);
 			break;
 		case STACK_START:
 			// this.interPhaser.disableStackInteraction();

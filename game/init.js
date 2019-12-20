@@ -1,16 +1,19 @@
 window.init = function() {
 	window.initModals();
-	let minHeight = Math.min(window.innerHeight, window.innerWidth / WH_RATIO);
 	let widthThatWillFit = Math.min(window.innerWidth, window.innerHeight * WH_RATIO);
-	let modalEl = document.getElementById('modal');
-	modalEl.style.width = widthThatWillFit;
-	modalEl.style.height = widthThatWillFit / WH_RATIO;
+	window.gameWidth = widthThatWillFit;
+	window.gameHeight = widthThatWillFit / WH_RATIO;
+	window.gameScale = widthThatWillFit / BASE_SIZE_X;
+
+	// let modalEl = document.getElementById('modal');
+	// modalEl.style.width = widthThatWillFit;
+	// modalEl.style.height = widthThatWillFit / WH_RATIO;
 
 	var config = {
 		type: Phaser.WEBGL,
 		parent: 'phaser-example',
-		width: widthThatWillFit,
-		height: widthThatWillFit / WH_RATIO,
+		width: window.gameWidth,
+		height: window.gameHeight,
 		// scale: 'SHOW_ALL',
 		// orientation: 'LANDSCAPE',
 		scene: [
