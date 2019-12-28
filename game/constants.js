@@ -30,7 +30,6 @@ COMMON_SPRITES = [
 	'close',
 	'execute',
 	'execute-hover',
-	'fail',
 	'nextlevel',
 	'ok',
 	'ok-hover',
@@ -42,7 +41,10 @@ COMMON_SPRITES = [
 	'slash',
 	'step',
 	'step-crnt',
-	'victory',
+];
+COMMON_MODALS = [
+	'fail',
+	'levelcomplete',
 ];
 
 BRACKET_OBJECTS = [ 'if', 'else', 'for' ];
@@ -62,7 +64,7 @@ COMMON_OBJECTS = [
 	'step',
 	'stepcount',
 	'stepcount_slash',
-	'victory',
+	'levelcomplete',
 ];
 INIT_OBJECTS = [
 	'backButton',
@@ -87,6 +89,7 @@ INIT_OBJECTS = [
 	'turnright',
 ];
 OBJECTS_MULTIPLE = [
+	'close',
 	'else',
 	'for',
 	'for_till',
@@ -94,6 +97,7 @@ OBJECTS_MULTIPLE = [
 	'if_padlinks',
 	'if_padrechts',
 	'if_padvooruit',
+	'open',
 	'turndegrees',
 	'turnleft',
 	'turnright',

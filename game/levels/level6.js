@@ -7,6 +7,7 @@ Level6 = new Phaser.Class({
 		'for_x',
 		'turndegrees',
 	]),
+	modals: COMMON_MODALS,
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
 

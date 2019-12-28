@@ -12,6 +12,9 @@ Level10 = new Phaser.Class({
 		'for_x',
 		'turndegrees',
 	]),
+	modals: COMMON_MODALS.concat([
+		'afterlvl10',
+	]),
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
 
@@ -51,7 +54,7 @@ Level10 = new Phaser.Class({
 
 		let intermezzoModal = Object.create(Modals.EventModal);
 		interPhaser.win = function() {
-			intermezzoModal.spawn('helloworld', 3000, callback);
+			intermezzoModal.spawn('afterlvl10', 3000, callback);
 		}
 	}
 });

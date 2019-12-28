@@ -142,7 +142,6 @@ Utils.loadSprites = function(phaser) {
 	spriteArray = spriteArray.concat(COMMON_SPRITES);
 
 	let levelID = phaser.levelName.replace('level', '');
-	spriteArray.push('instruction' + levelID);
 	spriteArray.push('background' + levelID.replace(/a|b|c/g, ''));
 
 	for (let objName of phaser.objects) {
@@ -188,7 +187,7 @@ Utils.loadSprites = function(phaser) {
 		}
 	}
 	if (missingSprites.length) {
-		console.error('Could not find sprites with the following IDs:\n ', missingSprites.join('\n  '));
+		console.log('Could not find sprites with the following IDs:\n ', missingSprites.join('\n  '));
 	}
 }
 
@@ -196,15 +195,49 @@ Utils.loadSprites = function(phaser) {
 // as possible
 Utils.preloadLevel = function(phaser) {
 	Utils.loadSprites(phaser);
-	let ssKey = phaser.levelName.replace('level', 'instruction');
-	Utils.loadSpritesheet(phaser, ssKey);
+	Utils.loadModals(phaser);
 }
 Utils.loadSpritesheet = function(phaser, ssKey) {
+	console.log(ssKey + "_ss");
 	phaser.load.spritesheet(
 		ssKey + "_ss",
 		SPRITESHEET_PATHS[ssKey],
 		{ frameHeight: 768, frameWidth: 1024 }
 	);
+}
+Utils.loadModals = function(phaser) {
+	let instructionModalKey = phaser.levelName.replace('level', 'instruction');
+	phaser.modals.push(instructionModalKey);
+
+	let modalContainer = document.getElementById('modalContainer');
+	for (let modalKey of phaser.modals) {
+		if (MODALS_CONF[modalKey].mode === 'html') {
+			Utils.loadHTMLModal(modalKey);
+		} else {
+			Utils.loadSpritesheet(phaser, modalKey);
+		}
+	}
+}
+// Preload modal gifs to work around loading times
+Utils.loadHTMLModal = function(modalKey) {
+	let modalElId = modalKey + '_modal';
+	if (document.getElementById(modalElId) !== null) return;
+
+	let modalEl = document.createElement('div');
+	modalEl.id = modalElId;
+	modalEl.className = 'modal';
+
+	let modalBg = document.createElement('img');
+	modalBg.src = GIF_PATHS[modalKey];
+	modalBg.className = 'fullscreenGif';
+	modalEl.appendChild(modalBg);
+	for (let buttonName of MODALS_CONF[modalKey].buttons) {
+		let buttonEl = document.createElement('div');
+		buttonEl.className = 'modalButton ' + buttonName;
+		modalEl.appendChild(buttonEl);
+	}
+
+	modalContainer.appendChild(modalEl);
 }
 Utils.initializeLevel = function() {
 	console.log('Initializing level "' + this.levelName + '"');

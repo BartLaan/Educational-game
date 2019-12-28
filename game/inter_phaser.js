@@ -8,6 +8,7 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.scalingFactor = Utils.width / SCALING_FACTOR_DIV
 
 	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
+	this.showIntro();
 	this.initLevel();
 };
 
@@ -71,7 +72,6 @@ InterPhaser.prototype.initLevel = function() {
 
 	this.setDynamicObjects();
 	this.setInteractions();
-	this.showIntro();
 }
 
 InterPhaser.prototype.setDynamicObjects = function() {
@@ -556,10 +556,10 @@ InterPhaser.prototype.fail = function() {
 	this.updateCurrentCommand();
 }
 /**
-* displays a victory image on screen when victory event is fired
+* displays a levelcomplete image on screen when victory event is fired
 */
 InterPhaser.prototype.win = function() {
-	let modal = Object.create(Modals.WinModal);
+	let modal = Object.create(Modals.LevelCompleteModal);
 	modal.spawn(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this));
 }
 

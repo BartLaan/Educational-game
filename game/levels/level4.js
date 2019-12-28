@@ -8,6 +8,7 @@ Level4 = new Phaser.Class({
 		'turnleft',
 		'turnright',
 	]),
+	modals: COMMON_MODALS,
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
 

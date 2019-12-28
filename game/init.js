@@ -14,6 +14,7 @@ window.init = function() {
 		parent: 'phaser-example',
 		width: window.gameWidth,
 		height: window.gameHeight,
+		transparent: true,
 		// scale: 'SHOW_ALL',
 		// orientation: 'LANDSCAPE',
 		scene: [

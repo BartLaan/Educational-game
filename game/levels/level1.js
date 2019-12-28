@@ -4,13 +4,15 @@ Level1 = new Phaser.Class({
 	levelName: 'level1',
 
 	objects: COMMON_OBJECTS,
+	modals: COMMON_MODALS.concat([
+		'intro',
+	]),
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
 
 	preload: function ()
 	{
 		Utils.preloadLevel(this);
-		Utils.loadSpritesheet(this, 'intro');
 	},
 
 	create: function ()
