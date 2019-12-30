@@ -39,7 +39,7 @@ Level11 = new Phaser.Class({
 			window.ossieGame = new OssieGame(levelConfig, this);
 			let interPhaser = window.ossieGame.interPhaser;
 
-			let newBackground = interPhaser.phaser.add.sprite(0, 0, 'background11_ss', 1);
+			let newBackground = interPhaser.phaser.add.sprite(0, 0, 'background11_ss', 0);
 			interPhaser.objects.background.destroy();
 			interPhaser.objects.background = newBackground;
 			newBackground.setOrigin(0, 0);

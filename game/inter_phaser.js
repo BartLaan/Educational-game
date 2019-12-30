@@ -3,9 +3,9 @@ function InterPhaser(phaser, levelConfig, eventHandler) {
 	this.levelConfig = levelConfig;
 	this.eventHandler = eventHandler;
 
-	Utils.width = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
-	Utils.height = Utils.width / WH_RATIO
-	this.scalingFactor = Utils.width / SCALING_FACTOR_DIV
+	this.width = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
+	this.height = this.width / WH_RATIO
+	this.scalingFactor = this.width / SCALING_FACTOR_DIV
 
 	this.levelConfig.objects = this.levelConfig.objects.concat(COMMON_OBJECTS);
 	this.showIntro();
@@ -49,7 +49,11 @@ InterPhaser.prototype.width = null;
 InterPhaser.prototype.showIntro = function() {
 	let instructionName = this.levelConfig.levelName.replace('level', 'instruction');
 	let instructionModal = Object.create(Modal);
-	instructionModal.afterHide = this.afterIntro.bind(this);
+
+	// Hack: use anonymous function so that we can replace the afterIntro function after creating the InterPhaser instance. This is necessary because showIntro is called in the constructor.
+	instructionModal.afterHide = function() {
+		this.afterIntro();
+	}.bind(this);
 	instructionModal.spawn(this.phaser, instructionName);
 }
 InterPhaser.prototype.afterIntro = function() {}
@@ -64,7 +68,7 @@ InterPhaser.prototype.initLevel = function() {
 	let backgroundName = 'background' + this.levelConfig.levelName.replace(/[A-Za-z]/g, '');
 	this.objects.background = this.phaser.add.image(0, 0, backgroundName).setOrigin(0, 0);
 	this.objects.background.name = 'background';
-	this.objects.background.setDisplaySize(Utils.width, Utils.height);
+	this.objects.background.setDisplaySize(this.width, this.height);
 
 	let maxCommands = this.levelConfig.maxCommands;
 	OBJECT_CONF.stepcount_total.spriteID = maxCommands.toString();
