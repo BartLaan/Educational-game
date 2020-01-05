@@ -186,6 +186,7 @@ OBJECT_CONF = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.1,
 		offsetY: COMMAND_AREA_Y,
+		scaling: 0.95,
 		spriteID: 'step',
 	},
 	stepcount: {
@@ -229,6 +230,7 @@ OBJECT_CONF = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.2,
 		offsetY: COMMAND_AREA_Y,
+		scaling: 0.95,
 		spriteID: 'turnleft',
 	},
 	turnright: {
@@ -237,6 +239,7 @@ OBJECT_CONF = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.335,
 		offsetY: COMMAND_AREA_Y,
+		scaling: 0.95,
 		spriteID: 'turnright',
 	},
 }

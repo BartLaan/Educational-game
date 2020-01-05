@@ -82,6 +82,11 @@ Utils.renderNumber = function(phaser, object, num) {
 }
 
 Utils.animateMovement = function(object, newCoords, duration) {
+	let existingAnimation = object.getData('animatedMovement');
+	if (existingAnimation !== undefined) {
+		clearInterval(existingAnimation);
+	}
+
 	let frameDuration = 1000 / ANIMATION_FPS;
 	let frameAmount = Math.ceil(duration / frameDuration);
 
@@ -112,4 +117,5 @@ Utils.animateMovement = function(object, newCoords, duration) {
 		object.y = potentialNewY;
 
 	}, frameDuration);
+	object.setData('animatedMovement', interval);
 }

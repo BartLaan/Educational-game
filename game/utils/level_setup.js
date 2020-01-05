@@ -194,6 +194,7 @@ Utils.loadSprites = function(phaser) {
 // These are here so we have to write as little boilerplate code for the level files
 // as possible
 Utils.preloadLevel = function(phaser) {
+	console.log('loading', phaser.levelName);
 	Utils.loadSprites(phaser);
 	Utils.loadModals(phaser);
 }

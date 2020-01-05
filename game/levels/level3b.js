@@ -48,7 +48,7 @@ Level3b = new Phaser.Class({
 		// player is past question mark and had more than 7 for-loops
 		interPhaser.onCommandExecute = function(objectRef) {
 			InterPhaser.prototype.onCommandExecute.bind(interPhaser)(objectRef);
-			if (objectRef.indexOf('step') > -1, window.ossieGame.isOnGoal()) {
+			if (objectRef.indexOf('step') > -1, window.ossieGame.hasReachedGoal()) {
 				goal = true;
 			}
 
