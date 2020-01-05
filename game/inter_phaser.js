@@ -27,7 +27,7 @@ InterPhaser.prototype.levelConfig = null;
 // boolean, indicates whether the player has reached the maximum number of commands
 InterPhaser.prototype.maxedOut = false;
 // object with object names as keys, phaser objects/object lists as values
-InterPhaser.prototype.objects = {};
+InterPhaser.prototype.objects = null;
 // the phaser instance (I think it's actually a scene)
 InterPhaser.prototype.phaser = null;
 // Size of the "pixle" unit, used in the TYPE_SPACE_PIXLES levels
@@ -39,7 +39,7 @@ InterPhaser.prototype.scalingFactor = null;
 // number, indicating the stack position that the pointer is hovering over
 InterPhaser.prototype.stackIndex = null;
 // list of phaser objects representing the commands in the command stack
-InterPhaser.prototype.stackObjects = [];
+InterPhaser.prototype.stackObjects = null;
 // number, indicating the size of a grid element
 InterPhaser.prototype.stepsizeX = null;
 InterPhaser.prototype.stepsizeY = null;
@@ -59,6 +59,8 @@ InterPhaser.prototype.showIntro = function() {
 InterPhaser.prototype.afterIntro = function() {}
 
 InterPhaser.prototype.initLevel = function() {
+	this.objects = {};
+	this.stackObjects = [];
 	this.stepsizeX = Utils.w(BOARD_STEPSIZE_X);
 	this.stepsizeY = Utils.h(BOARD_STEPSIZE_Y);
 	this.boardOffsetX = Utils.w(BOARD_OFFSET_X);
@@ -407,7 +409,7 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 
 	let key = askForX ? 'counts' : 'degrees';
 	command[key] = result;
-	Utils.renderNumber(gameObject, result);
+	Utils.renderNumber(this.phaser, gameObject, result);
 	return true;
 }
 
@@ -421,7 +423,6 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 	// The coordinates for the top-left aligned position for the next object
 	let stackX = Utils.w(STACK_ZONE_POS_X);
 	let stackY = Utils.h(STACK_ZONE_POS_Y) + avgCommandSize;
-
 	for (let i in this.stackObjects) {
 		let object = this.stackObjects[i];
 
