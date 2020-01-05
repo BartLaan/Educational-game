@@ -7,7 +7,7 @@ BOARD_OFFSET_X = 0.33
 BOARD_OFFSET_Y = 0.072
 CONFIRM_POS_X = 0.4
 CONFIRM_POS_Y = 0.74
-COMMAND_AREA_X = 0.43
+COMMAND_AREA_X = 0.45
 COMMAND_AREA_Y = 0.78
 FAILBUTTON_X = 0.4
 FAILBUTTON_Y = 0.6
@@ -95,16 +95,18 @@ OBJECT_CONF = {
 		command: { commandID: "for", counts: 9999 },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.46,
+		offsetX: COMMAND_AREA_X + 0.43,
 		offsetY: COMMAND_AREA_Y,
+		scaling: 0.9,
 		spriteID: 'for',
 	},
 	for_till: {
 		command: { commandID: 'for', autoStop: true },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.465,
+		offsetX: COMMAND_AREA_X + 0.44,
 		offsetY: COMMAND_AREA_Y + 0.082,
+		scaling: 0.9,
 		spriteID: 'for-till',
 	},
 	for_x: {
@@ -113,8 +115,9 @@ OBJECT_CONF = {
 		draggable: true,
 		numOffsetX: 0.018,
 		numOffsetY: 0.019,
-		offsetX: COMMAND_AREA_X + 0.465,
+		offsetX: COMMAND_AREA_X + 0.44,
 		offsetY: COMMAND_AREA_Y,
+		scaling: 0.9,
 		spriteID: 'for-x',
 	},
 	if_padlinks: {
@@ -123,6 +126,7 @@ OBJECT_CONF = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.124,
 		offsetY: COMMAND_AREA_Y + 0.048,
+		scaling: 0.9,
 		spriteID: 'if-padlinks',
 	},
 	if_padrechts: {
@@ -131,6 +135,7 @@ OBJECT_CONF = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.235,
 		offsetY: COMMAND_AREA_Y + 0.048,
+		scaling: 0.9,
 		spriteID: 'if-padrechts',
 	},
 	if_padvooruit: {
@@ -139,6 +144,7 @@ OBJECT_CONF = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.35,
 		offsetY: COMMAND_AREA_Y + 0.048,
+		scaling: 0.9,
 		spriteID: 'if-padvooruit',
 	},
 	nextButton: {
@@ -177,7 +183,7 @@ OBJECT_CONF = {
 		interactive: true,
 		offsetX: 0.375,
 		offsetY: 0.735,
-		scaling: 0.95,
+		scaling: 0.9,
 		spriteID: 'reset',
 	},
 	step: {
@@ -220,7 +226,7 @@ OBJECT_CONF = {
 		draggable: true,
 		numOffsetX: 0.04,
 		numOffsetY: 0,
-		offsetX: COMMAND_AREA_X + 0.21,
+		offsetX: COMMAND_AREA_X + 0.2,
 		offsetY: COMMAND_AREA_Y,
 		scaling: 0.9,
 		spriteID: 'turndegrees',
@@ -229,7 +235,7 @@ OBJECT_CONF = {
 		command: { commandID: 'turnL' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.2,
+		offsetX: COMMAND_AREA_X + 0.19,
 		offsetY: COMMAND_AREA_Y,
 		scaling: 0.9,
 		spriteID: 'turnleft',
@@ -238,7 +244,7 @@ OBJECT_CONF = {
 		command: { commandID: 'turnR' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 0.335,
+		offsetX: COMMAND_AREA_X + 0.315,
 		offsetY: COMMAND_AREA_Y,
 		scaling: 0.9,
 		spriteID: 'turnright',
