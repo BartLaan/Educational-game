@@ -448,8 +448,8 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 		// See if we should add temporary space around the pointer (when dragging command)
 		let bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop';
 		let tryTempSpace = this.stackIndex === null && pointer !== undefined && !bracketSideOrTop;
-		if (tryTempSpace && pointer.y < object.y) {
-			this.stackIndex = parseInt(i, 10); // WHY THE FFFFFFFF IS THIS A STRING???
+		if (tryTempSpace && pointer.y < (object.y + halfObjectHeight)) {
+			this.stackIndex = parseInt(i, 10);
 			object.y += avgCommandSize;
 		}
 
@@ -467,9 +467,10 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				// Scaling of bracket side
 				heightDiff = objectBottom - bracketSide.y;
 				let newScale = heightDiff / bracketSide.height;
+				// #magicnumbers (trial & error)
 				bracketSide.scaleY = Math.max(0.2, newScale);
-				bracketSide.scaleX = Math.max(0.5, Math.min(0.8, newScale));
-				bracketSide.x = bracketSide.x - Math.min(10, 13 * newScale);
+				bracketSide.scaleX = 0.5
+				bracketSide.x = object.getTopLeft().x + Utils.w(0.01)
 				bracketSide.y += heightDiff / 2;
 
 				stackY = objectBottom + Utils.h(0.002);

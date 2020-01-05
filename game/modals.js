@@ -23,7 +23,7 @@ let Modal = {
 		if (this.isVisible) { return }
 
 		if (window.modalVisible !== null) {
-			console.error('Error: trying to open a new popup "' + this.key +
+			console.log('Warning: trying to open a new popup "' + this.key +
 				'" when popup "' + window.modalVisible + '" is still open!');
 			window.modalVisible.hide();
 		}
