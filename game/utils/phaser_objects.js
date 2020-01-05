@@ -88,20 +88,28 @@ Utils.animateMovement = function(object, newCoords, duration) {
 	let stepX = (newCoords.x - object.x) / frameAmount;
 	let stepY = (newCoords.y - object.y) / frameAmount;
 	let moveRight = object.x < newCoords.x;
+	let moveDown = object.y < newCoords.y;
 	let origPosX = object.x;
 
 	let interval = setInterval(function() {
 		let potentialNewX = object.x + stepX;
-		let overShoot = moveRight ? potentialNewX > newCoords.x : potentialNewX < newCoords.x;
+		let overShootX = moveRight
+			? potentialNewX > newCoords.x
+			: potentialNewX < newCoords.x;
 
-		if (overShoot) {
+		let potentialNewY = object.y + stepY;
+		let overShootY = moveDown
+			? potentialNewY > newCoords.y
+			: potentialNewY < newCoords.y;
+
+		if (overShootX || overShootY) {
 			object.x = newCoords.x;
 			object.y = newCoords.y;
 			clearInterval(interval);
 			return;
 		}
 		object.x = potentialNewX;
-		object.y = object.y;
+		object.y = potentialNewY;
 
 	}, frameDuration);
 }

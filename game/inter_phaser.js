@@ -573,22 +573,20 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos, animate) {
 	}
 
 	let player = this.objects.player
-	playerConfig = OBJECT_CONF.player
 
 	if (this.levelConfig.orientationType === TYPE_ORIENTATION_CARDINALS) {
 		player.angle = Utils.cardinalToAngle(ossiePos.orientation);
 	} else {
 		player.angle = ossiePos.orientation - 90;
 	}
-
 	let newCoords = {};
 	let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
 	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
 		newCoords.x = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
 		newCoords.y = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
 	} else {
-		let coordX = ossieCoords.x * Utils.w(BASE_SIZE_X);
-		let coordY = ossieCoords.y * Utils.h(BASE_SIZE_Y);
+		let coordX = Utils.w(ossieCoords.x);
+		let coordY = Utils.h(ossieCoords.y);
 		newCoords.x = this.boardOffsetX + coordX;
 		newCoords.y = this.boardOffsetY + coordY;
 	}
