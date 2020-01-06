@@ -581,6 +581,13 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos, animate) {
 	} else {
 		player.angle = ossiePos.orientation - 90;
 	}
+	// Make sure that the avatar is not upside-down
+	if (player.angle > 90 || player.angle < -90) {
+		// player.angle = 360 - player.angle;
+		player.setFlipY(true);
+	} else {
+		player.setFlipY(false);
+	}
 	let newCoords = {};
 	let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
 	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {

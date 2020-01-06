@@ -54,7 +54,7 @@ Level10 = new Phaser.Class({
 
 		let intermezzoModal = Object.create(Modals.EventModal);
 		interPhaser.win = function() {
-			intermezzoModal.spawn('afterlvl10', 3000, callback);
+			intermezzoModal.spawn(interPhaser.phaser, 'afterlvl10', 3000, callback);
 		}
 	}
 });

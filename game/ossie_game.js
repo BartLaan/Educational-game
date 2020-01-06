@@ -347,7 +347,6 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 	switch (stackItem.commandID) {
 		case "if":
 			if (this.conditional(stackItem.condition)) {
-				console.log('conditional', stackItem.condition, true);
 				callbackStacks.unshift(stack);
 				return this.stackExecute(stackItem.do, callbackStacks);
 			}
