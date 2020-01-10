@@ -30,8 +30,6 @@ InterPhaser.prototype.maxedOut = false;
 InterPhaser.prototype.objects = null;
 // the phaser instance (I think it's actually a scene)
 InterPhaser.prototype.phaser = null;
-// Size of the "pixle" unit, used in the TYPE_SPACE_PIXLES levels
-InterPhaser.prototype.pixlesize = null;
 // boolean, indicates the gamestate, i.e. whether the character is executing the commands
 InterPhaser.prototype.running = false;
 // number, factor to scale all size units by
@@ -61,8 +59,13 @@ InterPhaser.prototype.afterIntro = function() {}
 InterPhaser.prototype.initLevel = function() {
 	this.objects = {};
 	this.stackObjects = [];
-	this.stepsizeX = Utils.w(BOARD_STEPSIZE_X);
-	this.stepsizeY = Utils.h(BOARD_STEPSIZE_Y);
+	if (this.levelConfig.spaceType === TYPE_SPACE_PIXLES) {
+		this.stepsizeX = Utils.w(this.levelConfig.pixleSize);
+		this.stepsizeY = this.stepsizeX;
+	} else {
+		this.stepsizeX = Utils.w(BOARD_STEPSIZE_X);
+		this.stepsizeY = Utils.h(BOARD_STEPSIZE_Y);
+	}
 	this.boardOffsetX = Utils.w(BOARD_OFFSET_X);
 	this.boardOffsetY = Utils.h(BOARD_OFFSET_Y);
 
@@ -588,16 +591,11 @@ InterPhaser.prototype.updateOssiePos = function(ossiePos, animate) {
 	} else {
 		player.setFlipY(false);
 	}
-	let newCoords = {};
+
 	let ossieCoords = Utils.strToCoord(ossiePos.nodeLocation);
-	if (this.levelConfig.spaceType === TYPE_SPACE_GRID) {
-		newCoords.x = this.boardOffsetX + (this.stepsizeX * ossieCoords.x);
-		newCoords.y = this.boardOffsetY + (this.stepsizeY * ossieCoords.y);
-	} else {
-		let coordX = Utils.w(ossieCoords.x);
-		let coordY = Utils.h(ossieCoords.y);
-		newCoords.x = this.boardOffsetX + coordX;
-		newCoords.y = this.boardOffsetY + coordY;
+	let newCoords = {
+		x: this.boardOffsetX + (this.stepsizeX * ossieCoords.x),
+		y: this.boardOffsetY + (this.stepsizeY * ossieCoords.y),
 	}
 
 	if (animate) {

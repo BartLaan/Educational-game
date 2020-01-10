@@ -35,3 +35,10 @@ Utils.turnDegrees = function(initDegrees, addDegrees) {
 
 	return newOrientation;
 }
+
+Utils.coordsToPixle = function(coords, pixleSize) {
+	return {
+		x: coords.x * pixleSize,
+		y: coords.y * pixleSize,
+	}
+}
