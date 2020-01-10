@@ -177,8 +177,8 @@ OssieGame.prototype.resetOssie = function() {
 
 OssieGame.prototype.step = function() {
 	if (this.spaceType === TYPE_SPACE_PIXLES) {
-		let unsafeNewX = this.ossiePos.nodeLocation + Math.sine(this.ossiePos.orientation);
-		let unsafeNewY = this.ossiePos.nodeLocation + Math.cosine(this.ossiePos.orientation);
+		let unsafeNewX = this.ossiePos.nodeLocation + Math.sin(this.ossiePos.orientation);
+		let unsafeNewY = this.ossiePos.nodeLocation + Math.cos(this.ossiePos.orientation);
 		let newX = Math.min(Math.max(0, newX), BOARD_PIXLESIZE_X);
 		let newY = Math.min(Math.max(0, newY), BOARD_PIXLESIZE_Y);
 		if (newX !== unsafeNewX || newY !== unsafeNewY) {

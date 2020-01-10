@@ -61,7 +61,6 @@ COMMON_OBJECTS = [
 	'player',
 	'reset',
 	'questionmark',
-	'step',
 	'stepcount',
 	'stepcount_slash',
 	'levelcomplete',
@@ -82,6 +81,7 @@ INIT_OBJECTS = [
 	'reset',
 	'questionmark',
 	'step',
+	'steppixles',
 	'stepcount',
 	'stepcount_slash',
 	'turndegrees',
@@ -102,9 +102,11 @@ OBJECTS_MULTIPLE = [
 	'turnleft',
 	'turnright',
 	'step',
+	'steppixles',
 ];
 OBJECTS_NUMBERCOMMAND = [
 	'for_x',
+	'steppixles',
 	'turndegrees',
 ];
 LEVELS = [

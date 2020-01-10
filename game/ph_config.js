@@ -213,12 +213,13 @@ OBJECT_CONF = {
 		offsetY: STEP_COUNT_DISPLAY_Y,
 		scaling: 0.9,
 	},
-	steppixels: {
-		command: { commandID: 'stepPixels', pixels: null },
-		interactive: true,
+	steppixles: {
+		command: { commandID: 'step-pixels', pixles: null },
+		depth: 2,
+		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.1,
 		offsetY: COMMAND_AREA_Y,
-		spriteID: 'steppixels',
+		spriteID: 'step',
 	},
 	turndegrees: {
 		command: { commandID: 'turnDegrees', degrees: null },

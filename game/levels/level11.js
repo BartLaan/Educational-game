@@ -6,7 +6,7 @@ Level11 = new Phaser.Class({
 	objects: COMMON_OBJECTS.concat([
 		'for_x',
 		'turndegrees',
-		'steppixels',
+		'steppixles',
 	]),
 	modals: COMMON_MODALS.concat([
 		'beforelvl11',

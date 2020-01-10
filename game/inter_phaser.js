@@ -173,10 +173,8 @@ InterPhaser.prototype.resetLevel = function() {
 	// this.setInteractions();
 }
 
+// Set event handlers and init drop zone
 InterPhaser.prototype.setInteractions = function() {
-	// ================================================================
-	// PREPARING DEFAULT GAME INTERACTIONS
-	// ================================================================
 	let myself = this
 	let phsr = this.phaser;
 	let pOjs = this.objects;
@@ -184,9 +182,6 @@ InterPhaser.prototype.setInteractions = function() {
 	// this.renderDropZone();
 	this.stackPos = { x: Utils.w(STACK_ZONE_POS_X), y: Utils.h(STACK_ZONE_POS_Y) };
 
-	// ================================================================
-	// handle click events for different buttons
-	// ================================================================
 	let firstDrag = true;
 	let newDrag = false
 
@@ -366,7 +361,8 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 
 	// First input the amount for commands that require it
 	let command = gameObject.getData('command');
-	let askForCounts = command.counts === null || command.degrees === null;
+	console.log(command);
+	let askForCounts = command.counts === null || command.degrees === null || command.pixles === null;
 	if (askForCounts) {
 		result = this.askCounts(gameObject);
 		if (result === false) {
@@ -392,8 +388,11 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 
 InterPhaser.prototype.askCounts = function(gameObject) {
 	let command = gameObject.getData('command');
-	let askForX = command.counts !== undefined;
-	let msg = askForX ? 'Hoe vaak herhalen?' : 'Hoeveel graden?';
+	let msg = {
+		'degrees': 'Hoeveel graden?',
+		'for': 'Hoe vaak herhalen?',
+		'step-pixles': 'Hoeveel pixels?',
+	}[command.commandID];
 
 	let promptForInput = function(wrongInput) {
 		let question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg;
@@ -410,7 +409,11 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 	let result = promptForInput();
 	if (result === false) { return false }
 
-	let key = askForX ? 'counts' : 'degrees';
+	let key = {
+		'degrees': 'degrees',
+		'for': 'counts',
+		'step-pixles': 'pixles',
+	}
 	command[key] = result;
 	Utils.renderNumber(this.phaser, gameObject, result);
 	return true;

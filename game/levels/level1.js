@@ -3,7 +3,9 @@ Level1 = new Phaser.Class({
 
 	levelName: 'level1',
 
-	objects: COMMON_OBJECTS,
+	objects: COMMON_OBJECTS.concat([
+		'step',
+	]),
 	modals: COMMON_MODALS.concat([
 		'intro',
 	]),

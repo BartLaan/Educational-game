@@ -4,6 +4,7 @@ Level10 = new Phaser.Class({
 	levelName: 'level10',
 
 	objects: COMMON_OBJECTS.concat([
+		'step',
 		'if_padlinks',
 		'if_padrechts',
 		'if_padvooruit',
