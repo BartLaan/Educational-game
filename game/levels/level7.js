@@ -33,7 +33,7 @@ Level7 = new Phaser.Class({
 			goalPosition: goalPosition,
 			initPosition: {
 				orientation: 90,
-				nodeLocation: '0,5',
+				nodeLocation: '0,6',
 			},
 			maxCommands: 6,
 			levelName: this.levelName,
