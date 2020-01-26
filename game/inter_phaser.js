@@ -114,6 +114,9 @@ InterPhaser.prototype.setDynamicObjects = function() {
 
 	let me = this;
 	objects.execute.on('pointerdown', function(pointer) {
+		if (me.running) {
+			return me.abortMission();
+		}
 		this.setTint(0xff0000);
 		if (me.stackObjects.length === 0) return;
 
@@ -122,11 +125,25 @@ InterPhaser.prototype.setDynamicObjects = function() {
 		me.running = true;
 	});
 
-	objects.reset.on('pointerdown', this.resetLevel.bind(this));
+	objects.reset.on('pointerdown', function() {
+		if (me.running) {
+			me.abortMission();
+		} else {
+			me.resetLevel();
+		}
+	})
 
 	objects.backButton.on('pointerdown', this.showIntro.bind(this));
 
 	this.updateOssiePos(this.levelConfig.initPosition);
+}
+
+InterPhaser.prototype.abortMission = function() {
+	// Stop execution and reset player position
+	this.updateOssiePos(this.levelConfig.initPosition);
+	this.updateCurrentCommand();
+	this.eventHandler(PHASER_STACK_RESET);
+	this.running = false;
 }
 
 InterPhaser.prototype.resetLevel = function() {
@@ -191,6 +208,8 @@ InterPhaser.prototype.setInteractions = function() {
 		if (myself.running === true) { return; }
 		// Only allow command objects to be dragged
 		if (gameObject.getData('commandID') === undefined) { return }
+		if (myself.maxedOut && !myself.inDropZone(pointer)) { return }
+
 		fastClick = true;
 		clearTimeout(fastClickTimeout);
 		fastClickTimeout = setTimeout(function() {
@@ -204,6 +223,7 @@ InterPhaser.prototype.setInteractions = function() {
 
 	phsr.input.on('drag', function (pointer, gameObject, dragX, dragY) {
 		if (myself.running === true) { return }
+		if (myself.maxedOut && !myself.inDropZone(pointer)) { return }
 		if (firstDrag) {
 			// First drag event doesn't count, as it fires on initial mouse click without any movement
 			return firstDrag = false;
@@ -474,7 +494,7 @@ InterPhaser.prototype.positionCommands = function(pointer) {
 				heightDiff = objectBottom - bracketSide.y;
 				let newScale = heightDiff / bracketSide.height;
 				// #magicnumbers (trial & error)
-				bracketSide.scaleY = Math.max(0.2, newScale);
+				bracketSide.scaleY = Math.max(0.15, newScale);
 				bracketSide.scaleX = 0.5
 				bracketSide.x = object.getTopLeft().x + Utils.w(0.01)
 				bracketSide.y += heightDiff / 2;
