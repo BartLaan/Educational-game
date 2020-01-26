@@ -408,8 +408,9 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 
 InterPhaser.prototype.askCounts = function(gameObject) {
 	let command = gameObject.getData('command');
+
 	let msg = {
-		'degrees': 'Hoeveel graden?',
+		'turnDegrees': 'Hoeveel graden?',
 		'for': 'Hoe vaak herhalen?',
 		'step-pixles': 'Hoeveel pixels?',
 	}[command.commandID];
