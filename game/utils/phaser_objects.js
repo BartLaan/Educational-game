@@ -13,7 +13,7 @@ Utils.setGameObject = function(phaser, config, id) {
 	let gameObject = phaser.add.sprite(0, 0, config.spriteID);
 
 	// we need to draw numbers for the amount of repeats for forX and degrees for turnDegrees
-	if (objectName === 'for_x' || objectName === 'turndegrees') {
+	if (OBJECTS_NUMBERCOMMAND.indexOf(objectName) !== -1) {
 		// SO this is a bit weird, we're replacing the gameObject with a container containing the gameObject.
 		// This is so that we can treat the container like an object, so it will take the number with it when dragging
 		let container = phaser.add.container(0, 0, [gameObject]);

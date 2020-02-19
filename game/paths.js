@@ -83,8 +83,10 @@ SPRITE_PATHS = {
 	'turnleft-crnt':				'assets/commands/draai-links-crnt.png',
 	'turnright':					'assets/commands/draai-rechts.png',
 	'turnright-crnt':				'assets/commands/draai-rechts-crnt.png',
-	'steppixles':					'assets/commands/ga-vooruit-pixels.png',
-	'steppixles-crnt':				'assets/commands/ga-vooruit-pixels-crnt.png',
+	'steppixles':					'assets/commands/stap-pixels.png',
+	'steppixles-crnt':				'assets/commands/stap-pixels-crnt.png',
+	'stepbackpixles':				'assets/commands/stap-terug-pixels.png',
+	'stepbackpixles-crnt':			'assets/commands/stap-terug-pixels-crnt.png',
 }
 SPRITESHEET_PATHS = {
 	'afterlvl10':			'assets/popups/hello-world.png',

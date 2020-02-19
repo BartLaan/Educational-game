@@ -177,10 +177,11 @@ OssieGame.prototype.resetOssie = function() {
 
 OssieGame.prototype.step = function() {
 	if (this.spaceType === TYPE_SPACE_PIXLES) {
+		// fix this
 		let unsafeNewX = this.ossiePos.nodeLocation + Math.sin(this.ossiePos.orientation);
 		let unsafeNewY = this.ossiePos.nodeLocation + Math.cos(this.ossiePos.orientation);
-		let newX = Math.min(Math.max(0, newX), BOARD_PIXLESIZE_X);
-		let newY = Math.min(Math.max(0, newY), BOARD_PIXLESIZE_Y);
+		let newX = Math.min(Math.max(0, unsafeNewX), BOARD_PIXLESIZE_X);
+		let newY = Math.min(Math.max(0, unsafeNewY), BOARD_PIXLESIZE_Y);
 		if (newX !== unsafeNewX || newY !== unsafeNewY) {
 			return this.eventHandler(STACK_WALKINTOWALL);
 		}
@@ -367,6 +368,9 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 		case "step":
 			this.step();
 			break;
+
+		case "stepPixles":
+			this.step(stackItem.pixles)
 
 		case "turnL":
 			this.turnL();

@@ -22,12 +22,12 @@ Level11 = new Phaser.Class({
 	create: function ()
 	{
 		let loadLevel = function(){
-			const goalPath = ['0,120', '100,120', '100,20', '0,20', '0,120'];
+			const goalPath = ['0,160', '100,160', '100,60', '0,60', '0,160'];
 			const levelConfig = {
 				goalPath: goalPath,
 				initPosition: {
 					orientation: 90,
-					nodeLocation: '0,120',
+					nodeLocation: '0,160',
 				},
 				maxCommands: 5,
 				levelName: this.levelName,
@@ -58,7 +58,7 @@ Level11 = new Phaser.Class({
 			}
 		}
 		let modal = Object.create(Modals.EventModal);
-		let timeout = 5000
+		let timeout = true ? 5 : 5000
 		modal.spawn(this, 'beforelvl11', timeout, loadLevel.bind(this));
 	}
 });

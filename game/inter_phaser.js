@@ -381,7 +381,6 @@ InterPhaser.prototype.dropObjectOnStack = function(gameObject) {
 
 	// First input the amount for commands that require it
 	let command = gameObject.getData('command');
-	console.log(command);
 	let askForCounts = command.counts === null || command.degrees === null || command.pixles === null;
 	if (askForCounts) {
 		result = this.askCounts(gameObject);
@@ -410,9 +409,9 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 	let command = gameObject.getData('command');
 
 	let msg = {
-		'turnDegrees': 'Hoeveel graden?',
 		'for': 'Hoe vaak herhalen?',
-		'step-pixles': 'Hoeveel pixels?',
+		'stepPixles': 'Hoeveel pixels?',
+		'turnDegrees': 'Hoeveel graden?',
 	}[command.commandID];
 
 	let promptForInput = function(wrongInput) {
@@ -431,9 +430,9 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 	if (result === false) { return false }
 
 	let key = {
-		'turnDegrees': 'degrees',
 		'for': 'counts',
-		'step-pixles': 'pixles',
+		'stepPixles': 'pixles',
+		'turnDegrees': 'degrees',
 	}
 	command[key[command.commandID]] = result;
 	Utils.renderNumber(this.phaser, gameObject, result);
