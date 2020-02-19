@@ -431,11 +431,11 @@ InterPhaser.prototype.askCounts = function(gameObject) {
 	if (result === false) { return false }
 
 	let key = {
-		'degrees': 'degrees',
+		'turnDegrees': 'degrees',
 		'for': 'counts',
 		'step-pixles': 'pixles',
 	}
-	command[key] = result;
+	command[key[command.commandID]] = result;
 	Utils.renderNumber(this.phaser, gameObject, result);
 	return true;
 }
