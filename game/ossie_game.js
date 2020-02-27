@@ -18,8 +18,8 @@ function OssieGame(levelConfig, phaser) {
 	this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this));
 
 	if (this.spaceType === TYPE_SPACE_PIXLES) {
-		this.boundaryX = Math.floor(this.levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_X);
-		this.boundaryY = Math.floor(this.levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_Y);
+		this.boundaryX = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_X);
+		this.boundaryY = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_Y);
 	}
 	if (window.debug) {
 		console.log(this, this.interPhaser);
@@ -200,8 +200,8 @@ OssieGame.prototype.stepPixles = function(pixles) {
 	let unsafeNewX = Math.round(coords.x + (pixles * Math.sin(radial)));
 	let unsafeNewY = Math.round(coords.y - (pixles * Math.cos(radial)));
 
-	let newX = Math.min(Math.max(0, unsafeNewX), BOARD_PIXLESIZE_X);
-	let newY = Math.min(Math.max(0, unsafeNewY), BOARD_PIXLESIZE_Y);
+	let newX = Math.min(Math.max(0, unsafeNewX), this.boundaryX);
+	let newY = Math.min(Math.max(0, unsafeNewY), this.boundaryY);
 	if (newX !== unsafeNewX || newY !== unsafeNewY) {
 		this.eventHandler(STACK_WALKINTOWALL);
 	}

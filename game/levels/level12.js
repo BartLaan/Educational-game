@@ -8,7 +8,7 @@ Level12 = new Phaser.Class({
 		'turndegrees',
 		'steppixles',
 	]),
-	modals: COMMON_MODAL,
+	modals: COMMON_MODALS,
 
 	initialize: function() { Utils.initializeLevel.bind(this)() },
 
@@ -24,7 +24,7 @@ Level12 = new Phaser.Class({
 			goalPath: goalPath,
 			initPosition: {
 				orientation: 90,
-				nodeLocation: '0,200',
+				nodeLocation: '120,50',
 			},
 			maxCommands: 5,
 			levelName: this.levelName,

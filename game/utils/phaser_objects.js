@@ -26,7 +26,6 @@ Utils.setGameObject = function(phaser, config, id) {
 	gameObject.setData('objectRef', id);
 	gameObject.name = objectName;
 
-
 	if (config.command !== undefined) {
 		let commandObject = Utils.deepCopy(config.command);
 		// This is a command object, we need a reference to itself for when we pass it to the stack
@@ -40,6 +39,8 @@ Utils.setGameObject = function(phaser, config, id) {
 		gameObject.x = Utils.w(config.offsetX);
 		gameObject.y = Utils.h(config.offsetY);
 	}
+
+	gameObject.setDepth(1);
 	if (config.depth !== undefined) {
 		gameObject.setDepth(config.depth);
 	}
@@ -77,6 +78,7 @@ Utils.renderNumber = function(phaser, object, num) {
 	for (let numI in numParts) {
 		let numberObj = phaser.add.sprite(numX - (numSpacing * numI), numY, numParts[numI]).setScale(NUM_SCALING);
 		numberObj.name = 'number' + numI;
+		numberObj.setDepth(1);
 		object.add(numberObj);
 	}
 }

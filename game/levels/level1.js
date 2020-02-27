@@ -4,6 +4,7 @@ Level1 = new Phaser.Class({
 	levelName: 'level1',
 
 	objects: COMMON_OBJECTS.concat([
+		'questionmark',
 		'step',
 	]),
 	modals: COMMON_MODALS.concat([
