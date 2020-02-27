@@ -255,8 +255,12 @@ InterPhaser.prototype.setInteractions = function() {
 		if (myself.running === true) { return }
 		myself.clearHoverTexture(gameObject);
 		gameObject.setDepth(2);
-		newDrag = false;
 		phsr.input.setDefaultCursor('default');
+
+		if (newDrag) {
+			newDrag = false;
+			if (!fastClick) { return }
+		}
 
 		if (fastClick) {
 			return myself.fastClick(pointer, gameObject);

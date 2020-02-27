@@ -16,6 +16,11 @@ function OssieGame(levelConfig, phaser) {
 
 	this.ossiePos = Utils.deepCopy(levelConfig.initPosition);
 	this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this));
+
+	if (this.spaceType === TYPE_SPACE_PIXLES) {
+		this.boundaryX = Math.floor(this.levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_X);
+		this.boundaryY = Math.floor(this.levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_Y);
+	}
 	if (window.debug) {
 		console.log(this, this.interPhaser);
 	}
@@ -29,12 +34,15 @@ OssieGame.prototype.orientationType = null;
 // Current position of the avatar
 OssieGame.prototype.ossiePos = null;
 OssieGame.prototype.interPhaser = null;
-// Timer used for the pacing of the "gamemplay"
+// Timer used for the pacing of the "gameplay"
 OssieGame.prototype.timer = null;
 // Internal representation of the commands that should be executed
 OssieGame.prototype.stack = null;
-// Array with nodes (or commands, I haven't figured that out yet) that the avatar has been to/executed
-OssieGame.prototype.pathTaken = [];
+// Array with nodes that the avatar has been to/executed, to check if they reached the goal path
+OssieGame.prototype.pathTaken = null;
+// For pixle levels: the computed boundaries for the board
+OssieGame.prototype.boundaryX
+OssieGame.prototype.boundaryY
 
 OssieGame.prototype.checkLevelConfig = function(levelConfig) {
 	let required = [
@@ -58,6 +66,7 @@ OssieGame.prototype.phaserHandler = function(eventCode, data) {
 	switch (eventCode) {
 		case PHASER_STACK_RESET:
 			clearTimeout(this.timer);
+			this.pathTaken = null;
 			this.resetOssie();
 			break;
 		case PHASER_STACK_START:
@@ -109,7 +118,7 @@ OssieGame.prototype.commandSpecs = {
 			'condition', // Function to evaluate truthiness of
 			'do', // Stack to execute if "condition" is evaluated as true
 		],
-		opional: [],
+		optional: [],
 	},
 	else: {
 		required: [
@@ -176,19 +185,6 @@ OssieGame.prototype.resetOssie = function() {
 }
 
 OssieGame.prototype.step = function() {
-	if (this.spaceType === TYPE_SPACE_PIXLES) {
-		// fix this
-		let unsafeNewX = this.ossiePos.nodeLocation + Math.sin(this.ossiePos.orientation);
-		let unsafeNewY = this.ossiePos.nodeLocation + Math.cos(this.ossiePos.orientation);
-		let newX = Math.min(Math.max(0, unsafeNewX), BOARD_PIXLESIZE_X);
-		let newY = Math.min(Math.max(0, unsafeNewY), BOARD_PIXLESIZE_Y);
-		if (newX !== unsafeNewX || newY !== unsafeNewY) {
-			return this.eventHandler(STACK_WALKINTOWALL);
-		}
-
-		return newX.toString() + ',' + newY.toString();
-	}
-
 	let newNode = this.nodes[this.ossiePos.nodeLocation][this.ossiePos.orientation];
 	if (newNode !== undefined) {
 		this.ossiePos.nodeLocation = newNode;
@@ -196,6 +192,23 @@ OssieGame.prototype.step = function() {
 	} else {
 		this.eventHandler(STACK_WALKINTOWALL);
 	}
+}
+
+OssieGame.prototype.stepPixles = function(pixles) {
+	let coords = Utils.strToCoord(this.ossiePos.nodeLocation)
+	let radial = this.ossiePos.orientation * Math.PI / 180;
+	let unsafeNewX = Math.round(coords.x + (pixles * Math.sin(radial)));
+	let unsafeNewY = Math.round(coords.y - (pixles * Math.cos(radial)));
+
+	let newX = Math.min(Math.max(0, unsafeNewX), BOARD_PIXLESIZE_X);
+	let newY = Math.min(Math.max(0, unsafeNewY), BOARD_PIXLESIZE_Y);
+	if (newX !== unsafeNewX || newY !== unsafeNewY) {
+		this.eventHandler(STACK_WALKINTOWALL);
+	}
+
+	this.ossiePos.nodeLocation = newX.toString() + ',' + newY.toString();
+	this.pathTaken.push(this.ossiePos.nodeLocation);
+	return this.eventHandler(STACK_OSSIEPOS_CHANGE);
 }
 
 OssieGame.prototype.facingWall = function() {
@@ -291,7 +304,7 @@ OssieGame.prototype.gameStart = function() {
 		return this.eventHandler(STACK_FORGOTOPEN);
 	}
 	if (this.spaceType === TYPE_SPACE_PIXLES) {
-		this.pathTaken = [];
+		this.pathTaken = [this.getPosition().nodeLocation];
 	}
 
 	this.stackExecute(stackToExecute, []);
@@ -370,7 +383,8 @@ OssieGame.prototype.executeStackItem = function(stack, callbackStacks) {
 			break;
 
 		case "stepPixles":
-			this.step(stackItem.pixles)
+			this.stepPixles(stackItem.pixles)
+			break;
 
 		case "turnL":
 			this.turnL();
