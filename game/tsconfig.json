@@ -1,0 +1,35 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"alwaysStrict": true,
+		"baseUrl": "./",
+		"forceConsistentCasingInFileNames": true,
+		"inlineSources": true,
+		"jsx": "react",
+		"keyofStringsOnly": true,
+		"lib": ["dom", "es2015", "scripthost"],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"noImplicitAny": false,
+		"outDir": "./dist/",
+		"paths": {
+			"~/*": ["src/*"],
+		},
+		"plugins": [
+			{
+				"name": "typescript-styled-plugin"
+			}
+		],
+		"pretty": true,
+		"removeComments": true,
+		"rootDir": "./",
+		"strictNullChecks": true,
+		"sourceMap": true,
+		"sourceRoot": "/",
+		"target": "esnext",
+		"allowSyntheticDefaultImports": true
+	},
+	"include": [
+		"./src/**/*",
+	]
+}

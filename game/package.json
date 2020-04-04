@@ -1,0 +1,35 @@
+{
+	"name": "ossie-game",
+	"description": "educational game",
+	"version": "0.1.0",
+	"author": "Bart Laan",
+	"private": true,
+	"sideEffects": false,
+	"scripts": {
+		"build": "webpack --config webpack.config.js --mode development",
+		"watch": "npm run build -- -w"
+	},
+	"dependencies": {
+		"core-js": "^2.6.5",
+		"phaser": "^3.20.1"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.2.3",
+		"@babel/core": "^7.4.0",
+		"@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+		"@babel/preset-env": "^7.4.2",
+		"awesome-typescript-loader": "^5.2.1",
+		"babel-loader": "^8.0.5",
+		"eslint": "^4.19.1",
+		"eslint-import-resolver-webpack": "^0.9.0",
+		"eslint-loader": "^2.0.0",
+		"eslint-plugin-import": "^2.7.0",
+		"tslint": "^5.14.0",
+		"tslint-consistent-codestyle": "^1.15.1",
+		"tslint-loader": "^3.5.4",
+		"typescript": "^3.6.4",
+		"webpack": "^4.29.6",
+		"webpack-bundle-analyzer": "^2.13.1",
+		"webpack-cli": "^3.1.2"
+	}
+}

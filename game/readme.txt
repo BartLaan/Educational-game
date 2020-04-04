@@ -9,7 +9,7 @@ Naming conventions:
 	- PascalCase for global/window objects (with functions)
 	- UPPERCASE for global/window constants and objects with constants
 	exceptions:
-		- snake_case for specific game objects in ph_config.js/OBJECT_CONF
+		- snake_case for specific game objects in ph_config.js/objectConfig
 
 Code overview:
 	- index.html loads init.js
