@@ -5,7 +5,7 @@ import { LevelConfigPixle, Space } from '~/types/game_config'
 import { initializeLevel, preloadLevel } from '~/utils/level_setup'
 
 export default class Level12 extends Phaser.Scene {
-	constructor(){
+	constructor() {
 		super('level12')
 	}
 

@@ -47,7 +47,7 @@ export default class OssieGame {
 				break
 			case StackEvent.fail:
 			case StackEvent.openEnd:
-				setTimeout(function(){
+				setTimeout(function() {
 					this.interPhaser.fail()
 					this.stackManager.resetOssie()
 				}.bind(this), 800)

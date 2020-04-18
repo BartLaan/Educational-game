@@ -203,7 +203,7 @@ export default class StackManager {
 		// Freeze game so player can see what's happening, but only for actions that change position
 		let timing = isBracketObject(stack[0].commandID) ? 0 : this.timing
 		let me = this
-		this.timer = setTimeout(function(){
+		this.timer = setTimeout(function() {
 			me.executeStackItem(stack, callbackStacks)
 		}, timing)
 	}

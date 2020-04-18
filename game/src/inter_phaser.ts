@@ -50,7 +50,7 @@ export default class InterPhaser {
 
 	// free to override
 	afterCommandExecute = function(commandReference){}
-	afterFail = function(){}
+	afterFail = function() {}
 
 	// phsr object, indicating the command that the character is executing
 	activeCommand: PhaserObject

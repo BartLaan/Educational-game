@@ -6,7 +6,7 @@ import { LevelConfigGrid, Space } from '~/types/game_config'
 import { boardToNodes, initializeLevel, preloadLevel } from '~/utils/level_setup'
 
 class Level2 extends Phaser.Scene {
-	constructor(){
+	constructor() {
 		super('level2')
 	}
 
@@ -34,7 +34,7 @@ class Level2 extends Phaser.Scene {
 			[0,1,1,1,0,1,0,0,0],
 			[0,1,0,1,1,1,0,0,0],
 			[0,1,0,0,0,0,0,0,0],
-			[1,1,0,0,0,0,0,0,0]
+			[1,1,0,0,0,0,0,0,0],
 		] as Board
 		const [nodes, goalPosition] = boardToNodes(gameboard)
 		const levelConfig: LevelConfigGrid = {

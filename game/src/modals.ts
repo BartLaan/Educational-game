@@ -162,7 +162,7 @@ LevelCompleteModal.renderButtons = function() {
 		nextButton.className = nextButton.className + ' active'
 	}.bind(this), VICTORY_TIMEOUT)
 }
-LevelCompleteModal.afterHide = function(){
+LevelCompleteModal.afterHide = function() {
 	let btns = document.querySelector('.prevButton, .nextButton')
 	if (!btns) { return }
 	btns.className = btns.className.replace('active', '')

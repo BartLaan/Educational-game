@@ -7,7 +7,7 @@ import { boardToNodes, initializeLevel, preloadLevel } from '~/utils/level_setup
 import { EventModal } from '~/modals'
 
 export default class Level10 extends Phaser.Scene {
-	constructor(){
+	constructor() {
 		super('level10')
 	}
 

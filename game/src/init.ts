@@ -106,7 +106,7 @@ function runLevelFromUrl() {
 }
 runLevelFromUrl()
 
-addEventListener("hashchange", function(){
+addEventListener("hashchange", function() {
 	let nextLevel = window.location.hash.replace('#', '')
 	if (nextLevel === window.activeLevel || LEVELS.indexOf(nextLevel) === undefined) {
 		return

@@ -8,7 +8,7 @@ import { InterPhaserEvent } from '~/types/interphaser'
 import { boardToNodes, initializeLevel, preloadLevel } from '~/utils/level_setup'
 
 class Level3b extends Phaser.Scene {
-	constructor(){
+	constructor() {
 		super('level3b')
 	}
 

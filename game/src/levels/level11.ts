@@ -7,7 +7,7 @@ import { SSKey } from '~/types/spritesheets'
 import { initializeLevel, loadSpritesheet, preloadLevel } from '~/utils/level_setup'
 
 export default class Level11 extends Phaser.Scene {
-	constructor(){
+	constructor() {
 		super('level11')
 	}
 
@@ -30,7 +30,7 @@ export default class Level11 extends Phaser.Scene {
 	}
 
 	create() {
-		let loadLevel = function(){
+		let loadLevel = function() {
 			const goalPath = ['0,160', '100,160', '100,60', '0,60', '0,160']
 			const levelConfig: LevelConfigPixle = {
 				goalPath,

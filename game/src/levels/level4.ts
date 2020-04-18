@@ -6,7 +6,7 @@ import { LevelConfigGrid, Space } from '~/types/game_config'
 import { boardToNodes, initializeLevel, preloadLevel } from '~/utils/level_setup'
 
 export default class Level4 extends Phaser.Scene {
-	constructor(){
+	constructor() {
 		super('level4')
 	}
 
