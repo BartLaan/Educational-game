@@ -35,10 +35,10 @@ export const modalConfig = {
 		buttons: [],
 		frameRate: 1,
 		mode: 'phaser',
-	}
+	},
 }
 
-for (let levelName of LEVELS) {
-	let instructionName = levelName.replace('level', 'instruction')
+for (const levelName of LEVELS) {
+	const instructionName = levelName.replace('level', 'instruction')
 	modalConfig[instructionName] = modalConfig.instruction
 }

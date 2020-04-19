@@ -1,19 +1,19 @@
-import { Stack, StackItem, StackItemFor, StackItemIf, StackItemElse } from '~/types/stack'
+import { Stack, StackItem, StackItemFor, StackItemIf, StackItemElse, CommandID } from '~/types/stack'
 
 // Convert the InterPhaser stacklist to a representation that the ossiegame stack can work with nicely.
 export function getStackRepresentation(stack: any[]): Stack[] {
 	// Recursive inner function
-	let stackRepresentationInner = function(startIndex: number) {
-		let result = [] as Stack
-		let ifObject = undefined
+	const stackRepresentationInner = (startIndex: number) => {
+		const result = [] as Stack
+		let ifObject: undefined | number
 
 		for (let i = startIndex; i < stack.length; i++) {
-			let object = stack[i]
-			let stackItem = object.getData('command')
+			const object = stack[i]
+			const stackItem = object.getData('command')
 			if (stackItem) {
 				stackItem.stackIndex = i
 			}
-			let commandID = object.getData('commandID')
+			const commandID: CommandID = object.getData('commandID')
 
 			switch (commandID) {
 				case undefined:
@@ -29,7 +29,7 @@ export function getStackRepresentation(stack: any[]): Stack[] {
 				case 'else':
 					stackItem.blockRef = commandID === 'else' ? ifObject : undefined // fallthrough of if case
 				case 'for':
-					let [newStack, newI] = stackRepresentationInner(i + 1) // RECURSION
+					const [newStack, newI] = stackRepresentationInner(i + 1) // RECURSION
 					if (typeof newI !== 'number') {
 						return [newStack]
 					}
@@ -52,16 +52,16 @@ export function isNestStackItem(stackItem: StackItem): stackItem is StackItemFor
 }
 
 export function getStackItem(stackIndex: number, stack: Stack): StackItem | undefined {
-	for (let object of stack) {
+	for (const object of stack) {
 		if (object.stackIndex === stackIndex) {
 			return object
 		}
 
-		if (isNestStackItem(object)) {
-			let foundObject = getStackItem(stackIndex, object.do)
-			if (foundObject !== undefined) {
-				return foundObject
-			}
+		if (!isNestStackItem(object)) { continue }
+
+		const foundObject = getStackItem(stackIndex, object.do)
+		if (foundObject !== undefined) {
+			return foundObject
 		}
 	}
 

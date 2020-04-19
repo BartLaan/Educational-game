@@ -14,7 +14,7 @@
     "member-ordering": false,
     "newline-before-return": false,
     "no-any": false,
-    "no-console": [true, "log", "debug"],
+    "no-console": [true, "debug"],
     "no-else-after-return": true,
     "no-empty-interface": false,
     "no-implicit-dependencies": false,

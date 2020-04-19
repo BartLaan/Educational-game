@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { COMMON_MODALS, COMMON_OBJECTS } from '~/constants/objects'
-import { EventModal } from '~/modals'
+import EventModal from '~/modals/event'
 import OssieGame from '~/ossie_game'
 import { Board } from '~/types/board'
 import { LevelConfigGrid, Space } from '~/types/game_config'
@@ -26,7 +26,7 @@ class Level1 extends Phaser.Scene {
 	preload() { preloadLevel(this) }
 
 	create() {
-		const startLevel1 = function() {
+		const startLevel1 = () => {
 			const gameboard = [
 				[0,0,0,0,0,0,0,0,0],
 				[0,0,0,0,0,0,0,0,0],
@@ -34,7 +34,7 @@ class Level1 extends Phaser.Scene {
 				[0,0,0,0,0,0,0,0,0],
 				[0,0,0,0,0,0,0,0,0],
 				[0,0,0,0,0,0,0,0,1],
-				[1,1,1,1,1,1,1,2,1]
+				[1,1,1,1,1,1,1,2,1],
 			] as Board
 			const [nodes, goalPosition] = boardToNodes(gameboard)
 			const levelConfig: LevelConfigGrid = {
@@ -52,7 +52,7 @@ class Level1 extends Phaser.Scene {
 
 			window.ossieGame = new OssieGame(levelConfig, this)
 		}
-		let introModal = Object.create(EventModal)
+		const introModal = Object.create(EventModal)
 		introModal.spawn(this, 'intro', 3000, startLevel1.bind(this))
 	}
 }

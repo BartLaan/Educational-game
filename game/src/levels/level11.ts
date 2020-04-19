@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { COMMON_MODALS, COMMON_OBJECTS } from '~/constants/objects'
-import { EventModal } from '~/modals'
+import EventModal from '~/modals/event'
 import OssieGame from '~/ossie_game'
 import { LevelConfigPixle, Space } from '~/types/game_config'
 import { SSKey } from '~/types/spritesheets'
@@ -30,7 +30,7 @@ export default class Level11 extends Phaser.Scene {
 	}
 
 	create() {
-		let loadLevel = function() {
+		const loadLevel = () => {
 			const goalPath = ['0,160', '100,160', '100,60', '0,60', '0,160']
 			const levelConfig: LevelConfigPixle = {
 				goalPath,
@@ -46,9 +46,9 @@ export default class Level11 extends Phaser.Scene {
 			}
 
 			window.ossieGame = new OssieGame(levelConfig, this)
-			let interPhaser = window.ossieGame.interPhaser
+			const interPhaser = window.ossieGame.interPhaser
 
-			let newBackground = interPhaser.phaser.add.sprite(0, 0, 'background11_ss', 0)
+			const newBackground = interPhaser.phaser.add.sprite(0, 0, 'background11_ss', 0)
 			interPhaser.objects.background.destroy()
 			interPhaser.objects.background = newBackground
 			newBackground.setOrigin(0, 0)
@@ -57,16 +57,16 @@ export default class Level11 extends Phaser.Scene {
 
 			this.anims.create({
 				key: 'background11_anim',
-				frames: this.anims.generateFrameNames("background11_ss"),
+				frames: this.anims.generateFrameNames('background11_ss'),
 				frameRate: 2,
 			})
 
-			interPhaser.afterIntro = function() {
+			interPhaser.afterIntro = () => {
 				newBackground.play('background11_anim')
 			}
 		}
-		let modal = Object.create(EventModal)
-		let timeout = true ? 5 : 5000
+		const modal = Object.create(EventModal)
+		const timeout = true ? 5 : 5000
 		modal.spawn(this, 'beforelvl11', timeout, loadLevel.bind(this))
 	}
 }

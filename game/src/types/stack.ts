@@ -15,38 +15,50 @@ export enum Conditional {
 	rightfree = 'rightfree',
 }
 
-export type CommandID = string
+export type CommandID =
+	| 'blockend'
+	| 'close'
+	| 'else'
+	| 'for'
+	| 'if'
+	| 'open'
+	| 'step'
+	| 'stepPixles'
+	| 'turnDegrees'
+	| 'turnL'
+	| 'turnR'
+
 type StackItemTemplate = {
-	objectRef: string
-	stackIndex: number
+	objectRef: string,
+	stackIndex: number,
 }
 export type StackItemNest = StackItemTemplate & {
-	do: StackItem[]
+	do: StackItem[],
 }
 export type StackItemBasic = StackItemTemplate & {
-	commandID: 'close' | 'open' | 'step' | 'turnL' | 'turnR'
+	commandID: 'close' | 'open' | 'step' | 'turnL' | 'turnR',
 }
 export type StackItemFor = StackItemNest & {
-	autoStop?: boolean
-	commandID: 'for'
-	counts: number
-	counter?: number
+	autoStop?: boolean,
+	commandID: 'for',
+	counts: number,
+	counter?: number,
 }
 export type StackItemIf = StackItemNest & {
-	condition: Conditional
-	commandID: 'if'
+	condition: Conditional,
+	commandID: 'if',
 }
 export type StackItemElse = StackItemNest & {
-	commandID: 'else'
-	blockRef: number // stackIndex of related If
+	commandID: 'else',
+	blockRef: number, // stackIndex of related If
 }
 export type StackItemTurnDegrees = StackItemTemplate & {
-	commandID: 'turnDegrees'
-	degrees: number
+	commandID: 'turnDegrees',
+	degrees: number,
 }
 export type StackItemStepPixles = StackItemTemplate & {
-	commandID: 'stepPixles'
-	pixles: number
+	commandID: 'stepPixles',
+	pixles: number,
 }
 export type StackItem =
 	StackItemBasic | StackItemFor | StackItemIf | StackItemElse | StackItemTurnDegrees | StackItemStepPixles

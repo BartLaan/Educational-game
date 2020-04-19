@@ -4,7 +4,7 @@ import OssieGame from '~/ossie_game'
 import { Board } from '~/types/board'
 import { LevelConfigGrid, Space } from '~/types/game_config'
 import { boardToNodes, initializeLevel, preloadLevel } from '~/utils/level_setup'
-import { EventModal } from '~/modals'
+import EventModal from '~/modals/event'
 
 export default class Level10 extends Phaser.Scene {
 	constructor() {
@@ -57,14 +57,15 @@ export default class Level10 extends Phaser.Scene {
 		}
 
 		window.ossieGame = new OssieGame(levelConfig, this)
-		let interPhaser = window.ossieGame.interPhaser
-		let callback = function() {
-			window.game.scene.stop(this.levelName)
-			window.game.scene.start(LEVELS[LEVELS.indexOf(this.levelName) + 1])
-		}.bind(this)
+		const interPhaser = window.ossieGame.interPhaser
+		const levelName = this.levelName
+		const callback = () => {
+			window.game.scene.stop(levelName)
+			window.game.scene.start(LEVELS[LEVELS.indexOf(levelName) + 1])
+		}
 
-		let intermezzoModal = Object.create(EventModal)
-		interPhaser.win = function() {
+		const intermezzoModal = Object.create(EventModal)
+		interPhaser.win = () => {
 			intermezzoModal.spawn(interPhaser.phaser, 'afterlvl10', 3000, callback)
 		}
 	}

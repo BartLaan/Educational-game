@@ -53,26 +53,29 @@ class Level3b extends Phaser.Scene {
 
 		window.ossieGame = new OssieGame(levelConfig, this)
 
-		let interPhaser = window.ossieGame.interPhaser
+		const interPhaser = window.ossieGame.interPhaser
 		let forCounter = 0
 		let goal = false
 		// Special handling of this level so we transition upon goal condition, namely:
 		// player is past question mark and had more than 7 for-loops
-		interPhaser.afterCommandExecute = function(objectRef) {
-			if (objectRef.indexOf('step') > -1, window.ossieGame.stackManager.hasReachedGoal()) {
+		interPhaser.afterCommandExecute = (objectRef) => {
+			if (objectRef.indexOf('step') > -1 && window.ossieGame.stackManager.hasReachedGoal()) {
 				goal = true
 			}
 
-			if (objectRef.indexOf('for') > -1) {
-				forCounter += 1
-				if (goal && forCounter > 7) {
-					window.ossieGame.phaserHandler(InterPhaserEvent.reset)
-					window.game.scene.stop('level3b')
-					window.game.scene.start('level3c')
-				}
+			if (objectRef.indexOf('for') === -1) {
+				return
 			}
+			forCounter += 1
+			if (goal && forCounter <= 7) {
+				return
+			}
+
+			window.ossieGame.phaserHandler(InterPhaserEvent.reset)
+			window.game.scene.stop('level3b')
+			window.game.scene.start('level3c')
 		}
-		interPhaser.fail = function() {
+		interPhaser.fail = () => {
 			InterPhaser.prototype.fail.bind(interPhaser)()
 			goal = false
 			forCounter = 0

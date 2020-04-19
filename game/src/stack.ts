@@ -31,13 +31,14 @@ export default class StackManager {
 
 		this.ossiePos = deepCopy(levelConfig.initPosition)
 
-		if (levelConfig.spaceType === Space.pixles) {
-			this.goalPath = levelConfig.goalPath
-			this.boundaryX = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_X)
-			this.boundaryY = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_Y)
-		} else {
+		if (levelConfig.spaceType === Space.grid) {
 			this.nodes = levelConfig.nodes
+			return
 		}
+
+		this.goalPath = levelConfig.goalPath
+		this.boundaryX = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_X)
+		this.boundaryY = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_Y)
 	}
 
 	getPosition() {
@@ -50,7 +51,7 @@ export default class StackManager {
 	}
 
 	step() {
-		let newNode = this.nodes[this.ossiePos.nodeLocation][this.ossiePos.orientation]
+		const newNode = this.nodes[this.ossiePos.nodeLocation][this.ossiePos.orientation]
 		if (newNode !== undefined) {
 			this.ossiePos.nodeLocation = newNode
 			this.eventHandler(StackEvent.ossieposChange)
@@ -60,31 +61,31 @@ export default class StackManager {
 	}
 
 	stepPixles(pixles: number) {
-		let coords = strToCoord(this.ossiePos.nodeLocation)
-		let radial = this.ossiePos.orientation * Math.PI / 180
-		let unsafeNewX = coords.x + (pixles * Math.sin(radial))
-		let unsafeNewY = coords.y - (pixles * Math.cos(radial))
+		const coords = strToCoord(this.ossiePos.nodeLocation)
+		const radial = this.ossiePos.orientation * Math.PI / 180
+		const unsafeNewX = coords.x + (pixles * Math.sin(radial))
+		const unsafeNewY = coords.y - (pixles * Math.cos(radial))
 
-		let newX = Math.min(Math.max(0, unsafeNewX), this.boundaryX)
-		let newY = Math.min(Math.max(0, unsafeNewY), this.boundaryY)
+		const newX = Math.min(Math.max(0, unsafeNewX), this.boundaryX)
+		const newY = Math.min(Math.max(0, unsafeNewY), this.boundaryY)
 		if (newX !== unsafeNewX || newY !== unsafeNewY) {
 			this.eventHandler(StackEvent.walkintowall)
 		}
 
-		this.ossiePos.nodeLocation = newX.toString() + ',' + newY.toString()
+		this.ossiePos.nodeLocation = `${newX.toString()},${newY.toString()}`
 		this.pathTaken.push(this.ossiePos.nodeLocation)
 		return this.eventHandler(StackEvent.ossieposChange)
 	}
 
 	facingWall() {
-		let node = this.nodes[this.ossiePos.nodeLocation]
+		const node = this.nodes[this.ossiePos.nodeLocation]
 		return node[this.ossiePos.orientation] === undefined
 	}
 
 	pathExistsTo(direction: 'right' | 'left') {
-		let node = this.nodes[this.ossiePos.nodeLocation]
-		let clockWise = direction === 'right'
-		let nodeDirection = turnClock(this.ossiePos.orientation, clockWise)
+		const node = this.nodes[this.ossiePos.nodeLocation]
+		const clockWise = direction === 'right'
+		const nodeDirection = turnClock(this.ossiePos.orientation, clockWise)
 		return node[nodeDirection] !== undefined
 	}
 
@@ -127,7 +128,7 @@ export default class StackManager {
 			return false
 		}
 		// Check if the player has passed all the checkpoints
-		for (let i in this.goalPath) {
+		for (const i in this.goalPath) {
 			if (this.goalPath[i] !== this.pathTaken[i]) {
 				return false
 			}
@@ -158,13 +159,13 @@ export default class StackManager {
 		}
 		callbackStacks.unshift(stack)
 
-		let forStack = deepCopy(stackItem.do)
+		const forStack = deepCopy(stackItem.do)
 		return this.stackExecute(forStack, callbackStacks)
 
 	}
 
 	stackStart() {
-		let stackToExecute = deepCopy(this.stack)
+		const stackToExecute = deepCopy(this.stack)
 		if (stackToExecute.shift().commandID !== 'open') {
 			return this.eventHandler(StackEvent.openEnd)
 		}
@@ -182,7 +183,8 @@ export default class StackManager {
 				console.log('won')
 			}
 			return
-		} else if (proper) {
+		}
+		if (proper) {
 			// this.eventHandler(StackEvent.fail)
 		}
 		this.eventHandler(StackEvent.openEnd)
@@ -195,22 +197,20 @@ export default class StackManager {
 		}
 		// Stack exhausted, continue with callbackStacks
 		if (stack.length === 0) {
-			let newStack = callbackStacks.shift()
+			const newStack = callbackStacks.shift()
 			return this.stackExecute(newStack || [], callbackStacks)
 		}
 
-
 		// Freeze game so player can see what's happening, but only for actions that change position
-		let timing = isBracketObject(stack[0].commandID) ? 0 : this.timing
-		let me = this
-		this.timer = setTimeout(function() {
-			me.executeStackItem(stack, callbackStacks)
+		const timing = isBracketObject(stack[0].commandID) ? 0 : this.timing
+		this.timer = setTimeout(() => {
+			this.executeStackItem(stack, callbackStacks)
 		}, timing)
 	}
 
 	// Execute a stack item. Returns true if player enters win condition
 	executeStackItem(stack: Stack, callbackStacks: Stack[]) {
-		let stackItem = stack[0]
+		const stackItem = stack[0]
 		// this.debugStackItem(stackItem)
 		console.log('executing command:', stackItem.commandID, this.ossiePos)
 
@@ -219,20 +219,20 @@ export default class StackManager {
 		// stackExecute(forStack, [currentStack, ...callbackStacks])
 		// Everytime this happens, the counter of the forloop updates and when it reaches 0, we continue
 		// with the currentStack
-		if (stackItem.commandID !== "for") {
+		if (stackItem.commandID !== 'for') {
 			stack.shift()
 		}
 
 		switch (stackItem.commandID) {
-			case "if":
+			case 'if':
 				if (this.conditional(stackItem.condition)) {
 					callbackStacks.unshift(stack)
 					return this.stackExecute(stackItem.do, callbackStacks)
 				}
 				break
 
-			case "else":
-				let ifObject = getStackItem(stackItem.blockRef, this.stack || [])
+			case 'else':
+				const ifObject = getStackItem(stackItem.blockRef, this.stack || [])
 				if (!ifObject || ifObject.commandID !== 'if') { break }
 				console.log('found ifobject for else:', ifObject)
 				if (this.conditional(ifObject.condition) === false) {
@@ -241,29 +241,29 @@ export default class StackManager {
 				}
 				break
 
-			case "for":
+			case 'for':
 				return this.executeFor(stackItem, stack, callbackStacks)
 
-			case "step":
+			case 'step':
 				this.step()
 				break
 
-			case "stepPixles":
+			case 'stepPixles':
 				this.stepPixles(stackItem.pixles)
 				break
 
-			case "turnL":
+			case 'turnL':
 				this.turnL()
 				break
-			case "turnR":
+			case 'turnR':
 				this.turnR()
 				break
 
-			case "turnDegrees":
+			case 'turnDegrees':
 				this.turnDegrees(stackItem.degrees)
 				break
 
-			case "close":
+			case 'close':
 				return this.stackEnd(true)
 
 			default:

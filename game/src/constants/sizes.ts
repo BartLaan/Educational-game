@@ -1,4 +1,5 @@
 import { Conditional } from '~/types/stack'
+import { ObjectKey, ObjectConfig } from '~/types/interphaser'
 
 // SIZES
 export const BOARD_SIZE_REL_TO_PIXLE_X = 163850.5
@@ -41,9 +42,11 @@ export const SCALING_FACTOR_DIV = 1024
 export const VICTORY_TIMEOUT = 1500 // ms
 export const WH_RATIO = 1.3333333333
 
-
 // Initial configuration for objects
-export const OBJECT_CONFIG = {
+type ObjectConfigs = {
+	[key in ObjectKey]: ObjectConfig
+}
+export const OBJECT_CONFIG: ObjectConfigs = {
 	againButton: {
 		depth: 11,
 		interactive: true,
@@ -95,7 +98,7 @@ export const OBJECT_CONFIG = {
 		spriteID: 'execute',
 	},
 	for: {
-		command: { commandID: "for", counts: 9999 },
+		command: { commandID: 'for', counts: 9999 },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.43,
@@ -113,7 +116,7 @@ export const OBJECT_CONFIG = {
 		spriteID: 'for-till',
 	},
 	for_x: {
-		command: { commandID: "for", counts: null },
+		command: { commandID: 'for', counts: null },
 		depth: 2,
 		draggable: true,
 		numOffsetX: 0.01,
@@ -124,7 +127,7 @@ export const OBJECT_CONFIG = {
 		spriteID: 'for-x',
 	},
 	if_padlinks: {
-		command: { commandID: "if", condition: Conditional.leftfree },
+		command: { commandID: 'if', condition: Conditional.leftfree },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.124,
@@ -133,7 +136,7 @@ export const OBJECT_CONFIG = {
 		spriteID: 'if-padlinks',
 	},
 	if_padrechts: {
-		command: { commandID: "if", condition: Conditional.rightfree },
+		command: { commandID: 'if', condition: Conditional.rightfree },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.230,
@@ -142,7 +145,7 @@ export const OBJECT_CONFIG = {
 		spriteID: 'if-padrechts',
 	},
 	if_padvooruit: {
-		command: { commandID: "if", condition: Conditional.forwardfree },
+		command: { commandID: 'if', condition: Conditional.forwardfree },
 		depth: 2,
 		draggable: true,
 		offsetX: COMMAND_AREA_X + 0.337,

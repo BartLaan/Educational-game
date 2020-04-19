@@ -22,43 +22,43 @@ declare global {
 	interface Window {
 		activeLevel: string
 		debug?: boolean
-		init() : void
-		ossieGame: OssieGame
 		game: any
 		gameHeight: number
 		gameScale: number
 		gameWidth: number
+		init(): void
+		ossieGame: OssieGame
 		selectLevel(levelName: string): void
 	}
 }
 
-window.selectLevel = function(nextLevel) {
+window.selectLevel = (nextLevel) => {
 	if (nextLevel === undefined) {
-		let levelName = window.prompt("Select level:")
+		const levelName = window.prompt('Select level:')
 		nextLevel = 'level' + levelName
 	}
-	if (LEVELS.indexOf(nextLevel) !== undefined) {
-		console.log('Starting level "' + nextLevel + '"')
-		window.game.scene.stop('intro')
-		window.game.scene.stop('level1')
-		setTimeout(function() {
-			window.game.scene.start(nextLevel)
-		}, 100)
-	} else {
-		console.log('Could not find level "' + nextLevel + '"')
+	if (LEVELS.indexOf(nextLevel) === undefined) {
+		console.log(`Could not find level "${nextLevel}"`)
 	}
+
+	console.log(`Starting level "${nextLevel}"`)
+	window.game.scene.stop('intro')
+	window.game.scene.stop('level1')
+	setTimeout(() => {
+		window.game.scene.start(nextLevel)
+	}, 100)
 }
 
-let widthThatWillFit = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
+const widthThatWillFit = Math.min(window.innerWidth, window.innerHeight * WH_RATIO)
 window.gameWidth = widthThatWillFit
 window.gameHeight = widthThatWillFit / WH_RATIO
 window.gameScale = widthThatWillFit / BASE_SIZE_X
 
-// let modalEl = document.getElementById('modal')
+// const modalEl = document.getElementById('modal')
 // modalEl.style.width = widthThatWillFit
 // modalEl.style.height = widthThatWillFit / WH_RATIO
 
-var config = {
+const config = {
 	type: Phaser.WEBGL,
 	parent: 'phaser-example',
 	width: window.gameWidth,
@@ -85,29 +85,29 @@ var config = {
 		// Level14,
 		// Level15,
 		// Level16,
-	]
+	],
 }
 
 function runLevelFromUrl() {
-	let level = location.hash.replace('#', '')
-	if (level === "") {
+	const level = location.hash.replace('#', '')
+	if (level === '') {
 		return
 	}
 	// Phaser runs the first scene in the config array, so in order to change the loaded level,
 	// we find the levelIndex and move it to the front of the array
-	let levelIndex = LEVELS.indexOf(level)
+	const levelIndex = LEVELS.indexOf(level)
 	if (levelIndex === undefined) {
-		return console.log('Could not find level "' + level + '"')
+		return console.error(`Could not find level "${level}"`)
 	}
 	console.log('Loading level', level, 'from url')
-	let scene = config.scene[levelIndex]
+	const scene = config.scene[levelIndex]
 	config.scene.splice(levelIndex, 1)
 	config.scene.unshift(scene)
 }
 runLevelFromUrl()
 
-addEventListener("hashchange", function() {
-	let nextLevel = window.location.hash.replace('#', '')
+addEventListener('hashchange', () => {
+	const nextLevel = window.location.hash.replace('#', '')
 	if (nextLevel === window.activeLevel || LEVELS.indexOf(nextLevel) === undefined) {
 		return
 	}

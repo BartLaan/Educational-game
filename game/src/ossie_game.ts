@@ -7,7 +7,7 @@ import InterPhaser from './inter_phaser'
 // Constructor for OssieGame instance. See OssieGame.checkLevelConfig for details on levelConfig.
 export default class OssieGame {
 	constructor(levelConfig: LevelConfig, phaser: Phaser.Scene) {
-		if (window.activeLevel == levelConfig.levelName) {
+		if (window.activeLevel === levelConfig.levelName) {
 			return
 		}
 		window.activeLevel = levelConfig.levelName
@@ -47,10 +47,10 @@ export default class OssieGame {
 				break
 			case StackEvent.fail:
 			case StackEvent.openEnd:
-				setTimeout(function() {
+				setTimeout(() => {
 					this.interPhaser.fail()
 					this.stackManager.resetOssie()
-				}.bind(this), 800)
+				}, 800)
 				break
 			case StackEvent.ossieposChange:
 				this.interPhaser.updateOssiePos(this.stackManager.getPosition(), true)
@@ -59,7 +59,7 @@ export default class OssieGame {
 				// this.interPhaser.disableStackInteraction()
 				break
 			case StackEvent.walkintowall:
-				console.log("BONK, you walked into a wall")
+				console.log('BONK, you walked into a wall')
 				break
 			case StackEvent.win:
 				this.interPhaser.win()

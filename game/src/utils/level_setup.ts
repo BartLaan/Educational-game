@@ -9,11 +9,11 @@ import { isBracketObject } from './phaser_objects'
 
 // WIDTH/COLUMNS FIRST, START AT 0,0
 export function coordToStr(x: number, y: number): string {
-	return x.toString() + ',' + y.toString()
+	return `${x.toString()},${y.toString()}`
 }
 
 export function strToCoord(coordStr: string): Coords {
-	let coords = coordStr.split(',')
+	const coords = coordStr.split(',')
 	return {
 		x: parseFloat(coords[0]),
 		y: parseFloat(coords[1]),
@@ -31,7 +31,7 @@ enum OrientationCode {
 	nw = 'nw',
 }
 export function cardinalName(orientationCode: OrientationCode, orientationType: Orientation) {
-	let useDegrees = orientationType === Orientation.degrees
+	const useDegrees = orientationType === Orientation.degrees
 	switch (orientationCode) {
 		case OrientationCode.n:
 			return useDegrees ? 0 : 0
@@ -55,50 +55,50 @@ export function cardinalName(orientationCode: OrientationCode, orientationType: 
 // The game uses this function to get from a human readable/customizable board
 // representation to a usable internal representation
 export function boardToNodes(board: Board): [Nodes, string] {
-	let nodes = {}
+	const nodes = {}
 	let goal = ''
 
-	for (let yStr in board) {
-		let y = parseInt(yStr, 10)
-		for (let xStr in board[y]) {
-			let x = parseInt(xStr, 10)
-			if (board[y][x] == 0) {
+	for (const yStr in board) {
+		const y = parseInt(yStr, 10)
+		for (const xStr in board[y]) {
+			const x = parseInt(xStr, 10)
+			if (board[y][x] === 0) {
 				continue
 			}
-			let nodeName = coordToStr(x, y)
-			let node = {} as BoardNode
-			let xMin = x > 0
-			let yMin = y > 0
-			let xPlus = x + 1 < board[y].length
-			let yPlus = y + 1 < board.length
+			const nodeName = coordToStr(x, y)
+			const node: BoardNode = {}
+			const xMin = x > 0
+			const yMin = y > 0
+			const xPlus = x + 1 < board[y].length
+			const yPlus = y + 1 < board.length
 
-			if (board[y][x] == 2) {
+			if (board[y][x] === 2) {
 				node.goal = true
 				goal = nodeName
 			}
-			if (yMin && board[y - 1][x] != 0) {
+			if (yMin && board[y - 1][x] !== 0) {
 				node[0] = coordToStr(x, y - 1)
 			}
-			if (xPlus && board[y][x + 1] != 0) {
+			if (xPlus && board[y][x + 1] !== 0) {
 				node[90] = coordToStr(x + 1, y)
 			}
-			if (yPlus && board[y + 1][x] != 0) {
+			if (yPlus && board[y + 1][x] !== 0) {
 				node[180] = coordToStr(x, y + 1)
 			}
-			if (xMin && board[y][x - 1] != 0) {
+			if (xMin && board[y][x - 1] !== 0) {
 				node[270] = coordToStr(x - 1, y)
 			}
 
-			if (xPlus && yMin && board[y - 1][x + 1] != 0) {
+			if (xPlus && yMin && board[y - 1][x + 1] !== 0) {
 				node[45] = coordToStr(x + 1, y - 1)
 			}
-			if (xPlus && yPlus && board[y + 1][x + 1] != 0) {
+			if (xPlus && yPlus && board[y + 1][x + 1] !== 0) {
 				node[135] = coordToStr(x + 1, y + 1)
 			}
-			if (xMin && yPlus && board[y + 1][x - 1] != 0) {
+			if (xMin && yPlus && board[y + 1][x - 1] !== 0) {
 				node[225] = coordToStr(x - 1, y + 1)
 			}
-			if (xMin && yMin && board[y - 1][x - 1] != 0) {
+			if (xMin && yMin && board[y - 1][x - 1] !== 0) {
 				node[315] = coordToStr(x - 1, y - 1)
 			}
 
@@ -111,9 +111,9 @@ export function boardToNodes(board: Board): [Nodes, string] {
 // Expands the board when needed
 export function resizeBoard(board: Board, minSize: Coords) {
 
-	let size = {
+	const size = {
 		x: board[0].length - 1,
-		y: board.length - 1
+		y: board.length - 1,
 	}
 
 	while (minSize[1] > size.y) {
@@ -125,7 +125,7 @@ export function resizeBoard(board: Board, minSize: Coords) {
 	}
 	while (minSize[0] > size[0]) {
 		size.x = size.x + 1
-		for (let row in board) {
+		for (const row in board) {
 			board[row].push(0)
 		}
 	}
@@ -137,8 +137,8 @@ export function resizeBoard(board: Board, minSize: Coords) {
 // I think this is not used anymore but it can be handy for debugging.
 export function nodesToBoard(nodes: string[]): Board {
 	let board = [[0]] as Board
-	for (let node of nodes) {
-		let tile = strToCoord(node)
+	for (const node of nodes) {
+		const tile = strToCoord(node)
 		// Resize board if necessary
 		board = resizeBoard(board, tile)
 		board[tile[1]][tile[0]] = 1
@@ -148,14 +148,13 @@ export function nodesToBoard(nodes: string[]): Board {
 
 // Preloads sprites for a phaser scene
 export function loadSprites(phaser) {
-	let spriteArray = [] as string[]
-	spriteArray = spriteArray.concat(COMMON_SPRITES)
+	const spriteArray = ([] as string[]).concat(COMMON_SPRITES)
 
-	let levelID = phaser.levelName.replace('level', '')
+	const levelID = phaser.levelName.replace('level', '')
 	spriteArray.push('background' + levelID.replace(/a|b|c/g, ''))
 
-	for (let objName of phaser.objects) {
-		let objConfig = OBJECT_CONFIG[objName]
+	for (const objName of phaser.objects) {
+		const objConfig = OBJECT_CONFIG[objName]
 		if (
 			objConfig !== undefined
 			&& objConfig.spriteID !== undefined
@@ -164,14 +163,14 @@ export function loadSprites(phaser) {
 
 			spriteArray.push(objConfig.spriteID)
 			if (objConfig.interactive === true || objConfig.draggable === true) {
-				spriteArray.push(objConfig.spriteID + "-hover")
+				spriteArray.push(objConfig.spriteID + '-hover')
 			}
 			if (
 				objConfig.command !== undefined && objConfig.command.commandID !== undefined
 				&& !isBracketObject(objConfig.command.commandID)
 			) {
-				spriteArray.push(objConfig.spriteID + "-crnt")
-				spriteArray.push(objConfig.spriteID + "-crnt-hover")
+				spriteArray.push(objConfig.spriteID + '-crnt')
+				spriteArray.push(objConfig.spriteID + '-crnt-hover')
 			}
 
 			// Brackets
@@ -179,7 +178,7 @@ export function loadSprites(phaser) {
 				objConfig.command && isBracketObject(objConfig.command.commandID)
 				&& spriteArray.indexOf('bracket-bottom') === -1
 			) {
-				spriteArray = spriteArray.concat('bracket-bottom', 'bracket-middle', 'bracket-top')
+				spriteArray.push(...['bracket-bottom', 'bracket-middle', 'bracket-top'])
 			}
 
 		} else if (SPRITE_PATHS[objName] !== undefined && spriteArray.indexOf(objName) === -1) {
@@ -187,9 +186,9 @@ export function loadSprites(phaser) {
 		}
 	}
 
-	let missingSprites = [] as string[ ]
-	for (let spriteID of spriteArray) {
-		let spriteLocation = SPRITE_PATHS[spriteID]
+	const missingSprites = [] as string[ ]
+	for (const spriteID of spriteArray) {
+		const spriteLocation = SPRITE_PATHS[spriteID]
 		if (spriteLocation !== undefined) {
 			phaser.load.image(spriteID, spriteLocation)
 		} else if (spriteID.indexOf('hover') === -1) {
@@ -208,19 +207,19 @@ export function preloadLevel(phaser) {
 	loadSprites(phaser)
 	loadModals(phaser)
 }
-export function loadSpritesheet(phaser, ssKey: SSKey) {
-	console.log(ssKey + "_ss")
+export function loadSpritesheet(phaser: Phaser.Scene, ssKey: SSKey) {
+	console.log(`${ssKey}_ss`)
 	phaser.load.spritesheet(
 		ssKey + '_ss',
 		SPRITESHEET_PATHS[ssKey],
-		{ frameHeight: 768, frameWidth: 1024 }
+		{ frameHeight: 768, frameWidth: 1024 },
 	)
 }
 export function loadModals(phaser) {
-	let instructionModalKey = phaser.levelName.replace('level', 'instruction')
+	const instructionModalKey = phaser.levelName.replace('level', 'instruction')
 	phaser.modals.push(instructionModalKey)
 
-	for (let modalKey of phaser.modals) {
+	for (const modalKey of phaser.modals) {
 		if (modalConfig[modalKey].mode === 'html') {
 			loadHTMLModal(modalKey)
 		} else {
@@ -230,20 +229,20 @@ export function loadModals(phaser) {
 }
 // Preload modal gifs to work around loading times
 export function loadHTMLModal(modalKey: string) {
-	let modalContainer = document.getElementById('modalContainer')
-	let modalElId = modalKey + '_modal'
-	if (document.getElementById(modalElId) !== null || modalContainer === null) return
+	const modalContainer = document.getElementById('modalContainer')
+	const modalElId = modalKey + '_modal'
+	if (document.getElementById(modalElId) !== null || modalContainer === null) { return }
 
-	let modalEl = document.createElement('div')
+	const modalEl = document.createElement('div')
 	modalEl.id = modalElId
 	modalEl.className = 'modal'
 
-	let modalBg = document.createElement('img')
+	const modalBg = document.createElement('img')
 	modalBg.src = GIF_PATHS[modalKey]
 	modalBg.className = 'fullscreenGif'
 	modalEl.appendChild(modalBg)
-	for (let buttonName of modalConfig[modalKey].buttons) {
-		let buttonEl = document.createElement('div')
+	for (const buttonName of modalConfig[modalKey].buttons) {
+		const buttonEl = document.createElement('div')
 		buttonEl.className = 'modalButton ' + buttonName
 		modalEl.appendChild(buttonEl)
 	}
@@ -251,6 +250,6 @@ export function loadHTMLModal(modalKey: string) {
 	modalContainer.appendChild(modalEl)
 }
 export function initializeLevel() {
-	console.log('Initializing level "' + this.levelName + '"')
+	console.log(`Initializing level "${this.levelName}}"`)
 	Phaser.Scene.call(this, { key: this.levelName })
 }
