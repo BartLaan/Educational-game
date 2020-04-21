@@ -6,6 +6,7 @@ import { SSKey } from '~/types/spritesheets'
 import { COMMON_SPRITES } from '~/constants/objects'
 import { OBJECT_CONFIG } from '~/constants/sizes'
 import { isBracketObject } from './phaser_objects'
+import { PhaserLevel } from '~/types'
 
 // WIDTH/COLUMNS FIRST, START AT 0,0
 export function coordToStr(x: number, y: number): string {
@@ -59,8 +60,12 @@ export function boardToNodes(board: Board): [Nodes, string] {
 	let goal = ''
 
 	for (const yStr in board) {
+		if (!board.hasOwnProperty(yStr)) { continue }
+
 		const y = parseInt(yStr, 10)
 		for (const xStr in board[y]) {
+			if (!board.hasOwnProperty(xStr)) { continue }
+
 			const x = parseInt(xStr, 10)
 			if (board[y][x] === 0) {
 				continue
@@ -110,7 +115,6 @@ export function boardToNodes(board: Board): [Nodes, string] {
 
 // Expands the board when needed
 export function resizeBoard(board: Board, minSize: Coords) {
-
 	const size = {
 		x: board[0].length - 1,
 		y: board.length - 1,
@@ -126,6 +130,7 @@ export function resizeBoard(board: Board, minSize: Coords) {
 	while (minSize[0] > size[0]) {
 		size.x = size.x + 1
 		for (const row in board) {
+			if (!board.hasOwnProperty(row)) { continue }
 			board[row].push(0)
 		}
 	}
@@ -147,7 +152,7 @@ export function nodesToBoard(nodes: string[]): Board {
 }
 
 // Preloads sprites for a phaser scene
-export function loadSprites(phaser) {
+export function loadSprites(phaser: PhaserLevel) {
 	const spriteArray = ([] as string[]).concat(COMMON_SPRITES)
 
 	const levelID = phaser.levelName.replace('level', '')
@@ -202,12 +207,12 @@ export function loadSprites(phaser) {
 
 // These are here so we have to write as little boilerplate code for the level files
 // as possible
-export function preloadLevel(phaser) {
+export function preloadLevel(phaser: PhaserLevel) {
 	console.log('loading', phaser.levelName)
 	loadSprites(phaser)
 	loadModals(phaser)
 }
-export function loadSpritesheet(phaser: Phaser.Scene, ssKey: SSKey) {
+export function loadSpritesheet(phaser: PhaserLevel, ssKey: SSKey) {
 	console.log(`${ssKey}_ss`)
 	phaser.load.spritesheet(
 		ssKey + '_ss',
@@ -215,8 +220,8 @@ export function loadSpritesheet(phaser: Phaser.Scene, ssKey: SSKey) {
 		{ frameHeight: 768, frameWidth: 1024 },
 	)
 }
-export function loadModals(phaser) {
-	const instructionModalKey = phaser.levelName.replace('level', 'instruction')
+export function loadModals(phaser: PhaserLevel) {
+	const instructionModalKey = SSKey[phaser.levelName.replace('level', 'instruction')]
 	phaser.modals.push(instructionModalKey)
 
 	for (const modalKey of phaser.modals) {
@@ -248,8 +253,4 @@ export function loadHTMLModal(modalKey: string) {
 	}
 
 	modalContainer.appendChild(modalEl)
-}
-export function initializeLevel() {
-	console.log(`Initializing level "${this.levelName}}"`)
-	Phaser.Scene.call(this, { key: this.levelName })
 }

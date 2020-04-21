@@ -1,5 +1,6 @@
 export enum SSKey {
 	afterlvl10 = 'afterlvl10',
+	beforelvl11 = 'beforelvl11',
 	background11 = 'background11',
 	background12 = 'background12',
 	fail = 'fail',

@@ -1,4 +1,5 @@
 import OssieGame from '~/ossie_game'
+import { SSKey } from './spritesheets';
 
 declare global {
 	interface Window {
@@ -12,4 +13,10 @@ declare global {
 		gameWidth: number
 		selectLevel(levelName: string): void
 	}
+}
+
+export interface PhaserLevel extends Phaser.Scene {
+	levelName: string
+	objects: string[]
+	modals: SSKey[]
 }

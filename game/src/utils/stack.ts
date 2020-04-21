@@ -10,14 +10,16 @@ export function getStackRepresentation(stack: any[]): Stack[] {
 		for (let i = startIndex; i < stack.length; i++) {
 			const object = stack[i]
 			const stackItem = object.getData('command')
-			if (stackItem) {
-				stackItem.stackIndex = i
+			if (!stackItem) {
+				// Ignore bracketside/brackettop
+				continue
 			}
+
+			stackItem.stackIndex = i
 			const commandID: CommandID = object.getData('commandID')
 
 			switch (commandID) {
 				case undefined:
-					// Bracketside/brackettop
 					break
 
 				case 'blockend':
@@ -25,20 +27,23 @@ export function getStackRepresentation(stack: any[]): Stack[] {
 					return [result, i]
 
 				case 'if':
-					ifObject = stackItem.stackIndex
 				case 'else':
-					stackItem.blockRef = commandID === 'else' ? ifObject : undefined // fallthrough of if case
 				case 'for':
+					if (commandID === 'if') {
+						ifObject = stackItem.stackIndex
+					} else if (commandID === 'else') {
+						stackItem.blockRef = ifObject
+					}
+
 					const [newStack, newI] = stackRepresentationInner(i + 1) // RECURSION
 					if (typeof newI !== 'number') {
 						return [newStack]
 					}
 					stackItem.do = newStack
 					i = newI
-
-				default:
-					result.push(stackItem)
+					break
 			}
+			result.push(stackItem)
 		}
 
 		return result

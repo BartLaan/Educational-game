@@ -1,3 +1,5 @@
+import { SSKey } from '~/types/spritesheets'
+
 export const COMMON_SPRITES = [
 	'-',
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21',
@@ -16,9 +18,9 @@ export const COMMON_SPRITES = [
 	'step',
 	'step-crnt',
 ]
-export const COMMON_MODALS = [
-	'fail',
-	'levelcomplete',
+export const COMMON_MODALS: SSKey[] = [
+	SSKey.fail,
+	SSKey.levelcomplete,
 ]
 
 export const BRACKET_OBJECTS = [ 'if', 'else', 'for' ]

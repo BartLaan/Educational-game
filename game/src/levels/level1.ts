@@ -2,11 +2,13 @@ import Phaser from 'phaser'
 import { COMMON_MODALS, COMMON_OBJECTS } from '~/constants/objects'
 import EventModal from '~/modals/event'
 import OssieGame from '~/ossie_game'
+import { PhaserLevel } from '~/types'
 import { Board } from '~/types/board'
 import { LevelConfigGrid, Space } from '~/types/game_config'
-import { boardToNodes, initializeLevel, preloadLevel } from '~/utils/level_setup'
+import { SSKey } from '~/types/spritesheets'
+import { boardToNodes, preloadLevel } from '~/utils/level_setup'
 
-class Level1 extends Phaser.Scene {
+class Level1 extends Phaser.Scene implements PhaserLevel {
 	constructor() {
 		super('level1')
 	}
@@ -18,10 +20,10 @@ class Level1 extends Phaser.Scene {
 		'step',
 	])
 	modals = COMMON_MODALS.concat([
-		'intro',
+		SSKey.intro,
 	])
 
-	initialize() { initializeLevel.bind(this)() }
+	initialize() { Phaser.Scene.call(this, { key: this.levelName }) }
 
 	preload() { preloadLevel(this) }
 
