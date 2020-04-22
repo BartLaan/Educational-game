@@ -1,7 +1,7 @@
 import { modalConfig } from './constants/modals'
-import { setGameObject } from './utils/phaser_objects'
 import { OBJECT_CONFIG } from './constants/sizes'
-import { ModalKey } from './types/modals'
+import { SSKey } from './types/spritesheets'
+import { setGameObject } from './utils/phaser_objects'
 
 window.modalVisible = null
 declare global {
@@ -16,21 +16,20 @@ export default class Modal {
 	afterHide?: () => void
 	afterRender?: () => void
 	dismissCallback?: () => void
-	key: ModalKey
+	key: SSKey
 	isVisible = false
 	modalEl: HTMLElement | null = null
 	modalParts: any[] = []
 	mode = ModalMode.html
 	phaser: Phaser.Scene
 
-	constructor(phaser: Phaser.Scene, key: ModalKey, dismissCallback?: () => void) {
+	constructor(phaser: Phaser.Scene, key: SSKey, dismissCallback?: () => void) {
 		this.phaser = phaser
 		this.key = key
 		if (modalConfig[key] !== undefined) {
 			this.mode = modalConfig[key].mode
 		}
 		this.dismissCallback = dismissCallback
-		this.render()
 	}
 
 	render() {
@@ -106,7 +105,9 @@ export default class Modal {
 	}
 
 	hide() {
-		if (!this.isVisible) { return }
+		console.log(this)
+		window.modalVisible = null
+		if (!this || !this.isVisible) { return }
 
 		for (const object of this.modalParts) {
 			object.destroy()
@@ -116,7 +117,6 @@ export default class Modal {
 			this.modalEl.className = newClass
 		}
 		this.isVisible = false
-		window.modalVisible = null
 
 		if (this.afterHide) { this.afterHide() }
 	}

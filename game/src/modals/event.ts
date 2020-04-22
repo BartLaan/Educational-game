@@ -1,11 +1,11 @@
 import Modal from '~/modal'
-import { ModalKey } from '~/types/modals'
+import { SSKey } from '~/types/spritesheets'
 
 export default class EventModal extends Modal {
 	timeout: number
 	timer: number
 
-	constructor(phaser: Phaser.Scene, key: ModalKey, timeout: number, dismissCallback?: () => void) {
+	constructor(phaser: Phaser.Scene, key: SSKey, timeout: number, dismissCallback?: () => void) {
 		super(phaser, key, dismissCallback)
 		this.timeout = timeout
 	}
@@ -16,7 +16,7 @@ export default class EventModal extends Modal {
 			const zone = this.phaser.add.zone(0, 0, window.gameWidth, window.gameHeight)
 			zone.setOrigin(0, 0)
 			zone.setInteractive()
-			zone.on('pointerdown', this.dismissHandler.bind(this))
+			zone.on('pointerdown', this.dismissHandler, this)
 			console.log(zone)
 			this.modalParts.push(zone)
 		}, this.timeout)

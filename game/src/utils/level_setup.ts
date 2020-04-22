@@ -64,7 +64,7 @@ export function boardToNodes(board: Board): [Nodes, string] {
 
 		const y = parseInt(yStr, 10)
 		for (const xStr in board[y]) {
-			if (!board.hasOwnProperty(xStr)) { continue }
+			if (!board[y].hasOwnProperty(xStr)) { continue }
 
 			const x = parseInt(xStr, 10)
 			if (board[y][x] === 0) {

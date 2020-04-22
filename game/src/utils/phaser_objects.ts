@@ -2,18 +2,25 @@ import { Coords } from '~/types/board'
 import { deepCopy } from './etc'
 import { NUMBER_COMMANDS, BRACKET_OBJECTS } from '~/constants/objects'
 import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS } from '~/constants/sizes'
-import { GameObject, ObjectConfig } from '~/types/interphaser'
+import { GameObject, ObjectConfig, Container, Sprite, ObjectKey } from '~/types/interphaser'
 import { CommandID } from '~/types/stack'
 
 // Helpers for converting height/width units to pixel values
 export function h(heightInUnits: number) { return window.gameHeight * heightInUnits }
 export function w(widthInUnits: number) { return window.gameWidth * widthInUnits }
 
+export function isSprite(gameObject: GameObject): gameObject is Sprite {
+	return gameObject.type === 'sprite'
+}
+export function isContainer(gameObject: GameObject): gameObject is Container {
+	return gameObject.type === 'container'
+}
+
 export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: string) {
 	const scaling = (config.scaling || 1) * window.gameScale
-	const objectName = id.split('-')[0]
+	const objectName = id.split('-')[0] as ObjectKey
 
-	let gameObject: GameObject = phaser.add.sprite(0, 0, config.spriteID)
+	let gameObject: Phaser.GameObjects.Sprite | Phaser.GameObjects.Container = phaser.add.sprite(0, 0, config.spriteID)
 
 	// we need to draw numbers for the amount of repeats for forX and degrees for turnDegrees
 	if (NUMBER_COMMANDS.indexOf(objectName) !== -1) {
@@ -26,8 +33,8 @@ export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: st
 	} else {
 		gameObject.setDisplaySize(gameObject.width * scaling, gameObject.height * scaling)
 	}
-	gameObject.setData('objectRef', id)
 	gameObject.name = objectName
+	gameObject.setData('objectRef', id)
 
 	if (config.command !== undefined) {
 		const commandObject = deepCopy(config.command)
@@ -54,7 +61,7 @@ export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: st
 		phaser.input.setDraggable(gameObject)
 	}
 
-	return gameObject
+	return gameObject as GameObject
 }
 
 // This should probably be moved to somewhere else, but is common to ossieGame/interPhaser

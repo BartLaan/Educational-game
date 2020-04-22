@@ -1,26 +1,23 @@
 import { LEVELS } from '~/constants/objects'
 import { VICTORY_TIMEOUT } from '~/constants/sizes'
 import Modal from '~/modal'
-import { ModalKey } from '~/types/modals'
+import { SSKey } from '~/types/spritesheets'
 
 // Win modal
 export default class LevelCompleteModal extends Modal {
 	levelName: string
 
 	constructor(phaser: Phaser.Scene, levelName: string, dismissCallback: () => void) {
-		super(phaser, ModalKey.levelComplete, dismissCallback)
+		super(phaser, SSKey.levelcomplete, dismissCallback)
 		this.levelName = levelName
 	}
 
 	timer: number
 	renderButtons() {
-		const hideFunc = this.hide
-		const levelName = this.levelName
-
 		const nextHandler = () => {
-			hideFunc()
-			window.game.scene.stop(levelName)
-			const nextLevel = LEVELS[LEVELS.indexOf(levelName) + 1]
+			this.hide()
+			window.game.scene.stop(this.levelName)
+			const nextLevel = LEVELS[LEVELS.indexOf(this.levelName) + 1]
 			if (nextLevel === undefined) {
 				console.error('Trying to start undefined level')
 			}

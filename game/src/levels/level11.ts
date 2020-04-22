@@ -66,8 +66,8 @@ export default class Level11 extends Phaser.Scene implements PhaserLevel {
 				newBackground.play('background11_anim')
 			}
 		}
-		const modal = Object.create(EventModal)
 		const timeout = true ? 5 : 5000
-		modal.spawn(this, 'beforelvl11', timeout, loadLevel.bind(this))
+		const modal = new EventModal(this, SSKey.beforelvl11, timeout, loadLevel.bind(this))
+		modal.render()
 	}
 }

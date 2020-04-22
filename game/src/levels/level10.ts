@@ -66,9 +66,9 @@ export default class Level10 extends Phaser.Scene implements PhaserLevel {
 			window.game.scene.start(LEVELS[LEVELS.indexOf(levelName) + 1])
 		}
 
-		const intermezzoModal = Object.create(EventModal)
+		const intermezzoModal = new EventModal(interPhaser.phaser, SSKey.afterlvl10, 3000, callback)
 		interPhaser.win = () => {
-			intermezzoModal.spawn(interPhaser.phaser, 'afterlvl10', 3000, callback)
+			intermezzoModal.render()
 		}
 	}
 }

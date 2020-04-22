@@ -39,23 +39,24 @@ class Level1 extends Phaser.Scene implements PhaserLevel {
 				[1,1,1,1,1,1,1,2,1],
 			] as Board
 			const [nodes, goalPosition] = boardToNodes(gameboard)
+			console.log(nodes, goalPosition)
 			const levelConfig: LevelConfigGrid = {
-				goalPosition: goalPosition,
+				goalPosition,
 				initPosition: {
 					orientation: 90,
 					nodeLocation: '0,6',
 				},
 				maxCommands: 9,
 				levelName: this.levelName,
-				nodes: nodes,
+				nodes,
 				objects: this.objects,
 				spaceType: Space.grid,
 			}
 
 			window.ossieGame = new OssieGame(levelConfig, this)
 		}
-		const introModal = Object.create(EventModal)
-		introModal.spawn(this, 'intro', 3000, startLevel1.bind(this))
+		const eventModal = new EventModal(this, SSKey.intro, 3000, startLevel1)
+		eventModal.render()
 	}
 }
 

@@ -1,6 +1,18 @@
 import { COMMON_OBJECTS, NUMBER_COMMANDS, INIT_OBJECTS, OBJECTS_MULTIPLE } from './constants/objects'
 import { SPRITE_PATHS } from './constants/paths'
-import {
+import * as SIZES from './constants/sizes'
+import Modal from './modal'
+import FailModal from './modals/fail'
+import LevelCompleteModal from './modals/level_complete'
+import { Coords, OssiePos } from './types/board'
+import { LevelConfig, Space } from './types/game_config'
+import { InterPhaserEvent, GameObject, Pointer, Sprite } from './types/interphaser'
+import { strToCoord } from './utils/level_setup'
+import * as phaser_objects from './utils/phaser_objects'
+import { getStackRepresentation } from './utils/stack'
+import { SSKey } from './types/spritesheets'
+
+const {
 	BOARD_OFFSET_X,
 	BOARD_OFFSET_Y,
 	BOARD_STEPSIZE_X,
@@ -19,19 +31,10 @@ import {
 	STACK_ZONE_POS_Y,
 	STACK_ZONE_WIDTH,
 	WH_RATIO,
-} from './constants/sizes'
-import Modal from './modal'
-import FailModal from './modals/fail'
-import LevelCompleteModal from './modals/level_complete'
-import { Coords, OssiePos } from './types/board'
-import { LevelConfig, Space } from './types/game_config'
-import { InterPhaserEvent } from './types/interphaser'
-import { strToCoord } from './utils/level_setup'
-import { h, isBracketObject, renderNumber, setGameObject, w, animateMovement } from './utils/phaser_objects'
-import { getStackRepresentation } from './utils/stack'
+} = SIZES
+const { h, isBracketObject, renderNumber, setGameObject, w, animateMovement, isSprite, isContainer } = phaser_objects
 
 type ObjectKey = string
-type PhaserObject = any
 export type InterPhaserHandler = (stackEvent: InterPhaserEvent, data?: any) => void
 
 export default class InterPhaser {
@@ -51,11 +54,12 @@ export default class InterPhaser {
 	}
 
 	// free to override
-	afterCommandExecute = function(commandReference){}
-	afterFail = () => {}
+	afterCommandExecute?(commandReference: string): void
+	afterFail?(): void
+	afterIntro?(): void
 
 	// phsr object, indicating the command that the character is executing
-	activeCommand: PhaserObject
+	activeCommand: GameObject | null
 	// number, offsets for the playing field/space that the avatar can move in
 	boardOffsetX: number
 	boardOffsetY: number
@@ -79,7 +83,7 @@ export default class InterPhaser {
 	// number, indicating the stack position that the pointer is hovering over
 	stackIndex: number | null
 	// list of phaser objects representing the commands in the command stack
-	stackObjects: any[]
+	stackObjects: GameObject[]
 	// number, indicating the size of a grid element
 	stepsizeX: number
 	stepsizeY: number
@@ -87,14 +91,19 @@ export default class InterPhaser {
 	width: number
 
 	showIntro() {
-		const instructionName = this.levelConfig.levelName.replace('level', 'instruction')
-		const instructionModal = Object.create(Modal)
+		const instructionName = SSKey[this.levelConfig.levelName.replace('level', 'instruction')]
+		const instructionModal = new Modal(this.phaser, instructionName)
 
-		// Hack: use anonymous function so that we can replace the afterIntro function after creating the InterPhaser instance. This is necessary because showIntro is called in the constructor.
-		instructionModal.afterHide = this.afterIntro.bind(this)
-		instructionModal.spawn(this.phaser, instructionName)
+		// Hack: use anonymous function so that we can replace the afterIntro
+		// function after creating the InterPhaser instance. This is necessary
+		// because showIntro is called in the constructor.
+		instructionModal.afterHide = () => {
+			if (this.afterIntro) {
+				this.afterIntro()
+			}
+		}
+		instructionModal.render()
 	}
-	afterIntro() {}
 
 	initLevel() {
 		this.objects = {}
@@ -137,7 +146,7 @@ export default class InterPhaser {
 
 			} else { // draggable commands can have multiple versions
 				objects[objectName] = {}
-				const objectRef = objectName + '-' + 0
+				const objectRef = `${objectName}-${0}`
 				const object = setGameObject(this.phaser, objConfig, objectRef)
 				object.setData('i', 0)
 				objects[objectName][0] = object
@@ -152,24 +161,23 @@ export default class InterPhaser {
 			objects.questionmark.y += this.stepsizeY * questionmarkCoords.y
 		}
 
-		const me = this
-		objects.execute.on('pointerdown', function(pointer) {
-			if (me.running) {
-				return me.abortMission()
+		objects.execute.on('pointerdown', () => {
+			if (this.running) {
+				return this.abortMission()
 			}
-			this.setTint(0xff0000)
-			if (me.stackObjects.length === 0) { return }
+			objects.execute.setTint(0xff0000)
+			if (this.stackObjects.length === 0) { return }
 
-			const repr = getStackRepresentation(me.stackObjects)
-			me.eventHandler(InterPhaserEvent.start, { stack: repr })
-			me.running = true
+			const repr = getStackRepresentation(this.stackObjects)
+			this.eventHandler(InterPhaserEvent.start, { stack: repr })
+			this.running = true
 		})
 
 		objects.reset.on('pointerdown', () => {
-			if (me.running) {
-				me.abortMission()
+			if (this.running) {
+				this.abortMission()
 			} else {
-				me.resetLevel()
+				this.resetLevel()
 			}
 		})
 
@@ -189,7 +197,7 @@ export default class InterPhaser {
 	resetLevel() {
 		if (window.modalVisible) { return }
 
-		console.log("restarting level")
+		console.log('restarting level')
 		this.eventHandler(InterPhaserEvent.reset)
 		this.activeCommand = null
 		this.stackIndex = null
@@ -209,9 +217,8 @@ export default class InterPhaser {
 					object.destroy()
 				}
 			} else {
-				for (const objectKey in this.objects[objectName]) {
-					const object = this.objects[objectName][objectKey]
-					if (object === undefined || object.scene === undefined) { continue }
+				for (const object of this.objects[objectName]) {
+					if (object.scene === undefined) { continue }
 
 					if (isBracketObject(object) && this.stackObjects.indexOf(object) > -1) {
 						this.clearBracketObject(object)
@@ -232,7 +239,6 @@ export default class InterPhaser {
 
 	// Set event handlers and init drop zone
 	setInteractions() {
-		const myself = this
 		const phsr = this.phaser
 
 		// this.renderDropZone()
@@ -242,11 +248,11 @@ export default class InterPhaser {
 
 		let fastClickTimeout: number | undefined
 		let fastClick = false
-		phsr.input.on('gameobjectdown', function(pointer: Coords, gameObject: PhaserObject) {
-			if (myself.running === true) { return }
+		phsr.input.on('gameobjectdown', (pointer: Coords, gameObject: GameObject) => {
+			if (this.running === true) { return }
 			// Only allow command objects to be dragged
 			if (gameObject.getData('commandID') === undefined) { return }
-			if (myself.maxedOut && !myself.inDropZone(pointer)) { return }
+			if (this.maxedOut && !this.inDropZone(pointer)) { return }
 
 			fastClick = true
 			clearTimeout(fastClickTimeout)
@@ -259,21 +265,21 @@ export default class InterPhaser {
 			phsr.input.setDefaultCursor('grabbing')
 		})
 
-		phsr.input.on('drag', function (pointer: Coords, gameObject: PhaserObject, dragX: number, dragY: number) {
-			if (myself.running === true) { return }
-			if (myself.maxedOut && !myself.inDropZone(pointer)) { return }
+		phsr.input.on('drag', (pointer: Coords, gameObject: GameObject, dragX: number, dragY: number) => {
+			if (this.running === true) { return }
+			if (this.maxedOut && !this.inDropZone(pointer)) { return }
 			if (firstDrag) {
 				// First drag event doesn't count, as it fires on initial mouse click without any movement
 				return firstDrag = false
 			}
 			if (newDrag) {
 				// Drag/remove command from the command queue
-				if (myself.inDropZone(pointer)) {
-					myself.removeFromStack(gameObject)
+				if (this.inDropZone(pointer)) {
+					this.removeFromStack(gameObject)
 
-				} else if (!myself.maxedOut) {
+				} else if (!this.maxedOut) {
 					// Dragging from original position, so create another one under the hood
-					myself.duplicateObject(gameObject)
+					this.duplicateObject(gameObject)
 				}
 				newDrag = false
 				fastClick = false
@@ -284,14 +290,14 @@ export default class InterPhaser {
 			gameObject.x = dragX
 			gameObject.y = dragY
 
-			if (myself.inDropZone(pointer)) {
-				myself.positionCommands(pointer)
+			if (this.inDropZone(pointer)) {
+				this.positionCommands(pointer)
 			}
 		})
 
-		phsr.input.on('dragend', function (pointer, gameObject: PhaserObject) {
-			if (myself.running === true) { return }
-			myself.clearHoverTexture(gameObject)
+		phsr.input.on('dragend', (pointer: Pointer, gameObject: GameObject) => {
+			if (this.running === true) { return }
+			this.clearHoverTexture(gameObject)
 			gameObject.setDepth(2)
 			phsr.input.setDefaultCursor('default')
 
@@ -301,86 +307,85 @@ export default class InterPhaser {
 			}
 
 			if (fastClick) {
-				return myself.fastClick(pointer, gameObject)
+				return this.fastClick(pointer, gameObject)
 			}
 
-			const shouldDrop = myself.inDropZone(pointer) && !pointer.isDown
-			if (!myself.maxedOut && shouldDrop) {
-				return myself.dropObjectOnStack(gameObject)
+			const shouldDrop = this.inDropZone(pointer) && !pointer.isDown
+			if (!this.maxedOut && shouldDrop) {
+				return this.dropObjectOnStack(gameObject)
 			}
-			if (myself.maxedOut) { return }
+			if (this.maxedOut) { return }
 
-			myself.positionCommands()
+			this.positionCommands()
 			// Dragged outside of drop zone -> delete this object
-			myself.objects[gameObject.name][gameObject.getData('i')] = undefined
+			this.objects[gameObject.name][gameObject.getData('i')] = undefined
 			gameObject.destroy()
 		})
 
-		phsr.input.on('pointerover', function (event, gameObjectList) {
+		phsr.input.on('pointerover', (__: Pointer, gameObjectList: GameObject[]) => {
 			const object = gameObjectList[0]
 			if (object !== undefined) {
-				myself.setHoverTexture(object)
+				this.setHoverTexture(object)
 			}
 		})
 
-		phsr.input.on('pointerout', function (event, gameObjectList) {
+		phsr.input.on('pointerout', (__: Pointer, gameObjectList: GameObject[]) => {
 			if (gameObjectList.length > 0) {
-				myself.clearHoverTexture(gameObjectList[0])
+				this.clearHoverTexture(gameObjectList[0])
 			}
 		})
 	}
 
 	// Used to make a new command in the command area to replace the one that the user is dragging
-	duplicateObject(gameObject: PhaserObject) {
+	duplicateObject(gameObject: GameObject) {
 		const newObjectI = gameObject.getData('i') + 1
-		const newObjectRef = gameObject.name + '-' + newObjectI.toString()
+		const newObjectRef = `${gameObject.name}-${newObjectI}`
 		const newObject = setGameObject(this.phaser, OBJECT_CONFIG[gameObject.name], newObjectRef)
 		newObject.setData('i', newObjectI)
 		this.objects[gameObject.name][newObjectI] = newObject
 	}
 
-	setHoverTexture(gameObject: PhaserObject) {
-		if (gameObject.scene === undefined) { return }
+	setHoverTexture(gameObject: GameObject) {
+		if (!gameObject.active) { return }
 		const objConfig = OBJECT_CONFIG[gameObject.name]
 		if (objConfig === undefined || gameObject.getData('hover')) { return }
 
 		gameObject.setData('hover', true)
 		this.phaser.input.setDefaultCursor('pointer')
-		const hoverTexture = gameObject.texture ? gameObject.texture.key + "-hover" : ''
 
-		if (SPRITE_PATHS[hoverTexture] === undefined) {
-			const newScale = (objConfig.scaling || 1) * HOVER_SCALING * this.scalingFactor
-			gameObject.setScale(newScale)
-			return
+		const hoverTexture = isSprite(gameObject) ? gameObject.texture.key + '-hover' : ''
+		if (isSprite(gameObject) && SPRITE_PATHS[hoverTexture] !== undefined) {
+			return gameObject.setTexture(hoverTexture)
 		}
 
-		gameObject.setTexture(hoverTexture)
+		const newScale = (objConfig.scaling || 1) * HOVER_SCALING * this.scalingFactor
+		gameObject.setScale(newScale)
 	}
 
-	clearHoverTexture(gameObject: PhaserObject) {
+	clearHoverTexture(gameObject: GameObject) {
 		const objConfig = OBJECT_CONFIG[gameObject.name]
 		if (objConfig === undefined || !gameObject.getData('hover')) { return }
 
 		gameObject.setData('hover', false)
 		this.phaser.input.setDefaultCursor('default')
 
-		if (!gameObject.texture || gameObject.texture.key.indexOf('hover') === -1) {
+		if (!isSprite(gameObject) || gameObject.texture.key.indexOf('hover') === -1) {
 			const newScale = (objConfig.scaling || 1) * this.scalingFactor
 			gameObject.setScale(newScale)
 			return
 		}
 		const newTexture = gameObject.texture.key.replace('-hover', '')
 
-		if (gameObject.scene === undefined) return // is being deleted
+		if (!gameObject.active) { return } // is being deleted
 		gameObject.setTexture(newTexture)
 
 	}
-	fastClick(pointer, gameObject: PhaserObject) {
+	fastClick(pointer: Pointer, gameObject: GameObject) {
 		this.stackIndex = null
 		const inDropZone = this.inDropZone(pointer)
 
 		// fastClick in DropZone to ask for new input for numbers
-		if (inDropZone && NUMBER_COMMANDS.indexOf(gameObject.name) > -1) {
+		if (inDropZone && NUMBER_COMMANDS.indexOf(gameObject.name) > -1 && isContainer(gameObject)) {
 			return this.askCounts(gameObject)
 		}
 		if (inDropZone || this.maxedOut) { return }
@@ -419,13 +424,13 @@ export default class InterPhaser {
 		)
 	}
 
-	dropObjectOnStack(gameObject: PhaserObject) {
+	dropObjectOnStack(gameObject: GameObject) {
 		console.log('Drop object', gameObject, 'stackIndex:', this.stackIndex, 'stackObjects', this.stackObjects)
 
 		// First input the amount for commands that require it
 		const command = gameObject.getData('command')
-		const askForCounts = command.counts === null || command.degrees === null || command.pixles === null
-		if (askForCounts) {
+		const askForCounts = NUMBER_COMMANDS.indexOf(gameObject.name) > -1
+		if (askForCounts && isContainer(gameObject)) {
 			const result = this.askCounts(gameObject)
 			if (result === false) {
 				// user cancelled input
@@ -448,7 +453,7 @@ export default class InterPhaser {
 		this.updateStepcount()
 	}
 
-	askCounts(gameObject: PhaserObject) {
+	askCounts(gameObject: Phaser.GameObjects.Container) {
 		const command = gameObject.getData('command')
 
 		const msg = {
@@ -492,9 +497,8 @@ export default class InterPhaser {
 		// The coordinates for the top-left aligned position for the next object
 		let stackX = w(STACK_ZONE_POS_X)
 		let stackY = h(STACK_ZONE_POS_Y) + avgCommandSize
-		for (const i in this.stackObjects) {
-			const object = this.stackObjects[i]
 
+		for (const object of this.stackObjects) {
 			// should be set in first if
 			let bracketSide: any
 			let heightDiff = 0
@@ -507,7 +511,7 @@ export default class InterPhaser {
 			// add half of the object width/height to stackX/stackY
 			object.y = object.name === 'bracketSide' ? stackY : stackY + halfObjectHeight
 			if (object.name === 'bracketBottom') {
-				let bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')]
+				bracketSide = this.objects['bracketSide-for:' + object.getData('blockRef')]
 				heightDiff = object.y - bracketSide.y
 				if (heightDiff < avgCommandSize) {
 					object.y += avgCommandSize
@@ -522,7 +526,7 @@ export default class InterPhaser {
 			const bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop'
 			const tryTempSpace = this.stackIndex === null && pointer !== undefined && !bracketSideOrTop
 			if (tryTempSpace && pointer && pointer.y < (object.y + halfObjectHeight)) {
-				this.stackIndex = parseInt(i, 10)
+				this.stackIndex = this.stackObjects.indexOf(object)
 				object.y += avgCommandSize
 			}
 
@@ -543,7 +547,8 @@ export default class InterPhaser {
 					// #magicnumbers (trial & error)
 					bracketSide.scaleY = Math.max(0.15, newScale)
 					bracketSide.scaleX = 0.5
-					bracketSide.x = object.getTopLeft().x + w(0.01)
+					const leftCoord = isContainer(object) ? object.getBounds().left : object.getTopLeft().x
+					bracketSide.x = leftCoord + w(0.01)
 					bracketSide.y += heightDiff / 2
 
 					stackY = objectBottom + h(0.002)
@@ -553,23 +558,24 @@ export default class InterPhaser {
 				case 'for_till':
 					stackY = objectBottom - h(0.002)
 					break
-				case 'open':
-					stackX += bracketIndent
 				default:
+					if (object.name === 'open') {
+						stackX += bracketIndent
+					}
 					stackY = objectBottom + commandSpacing
 			}
 		}
 	}
 
 	/**
-	* Position the for command and the corresponding bracket in the commandzone
-	*/
-	insertBrackets(gameObject) {
+	 * Position the for command and the corresponding bracket in the commandzone
+	 */
+	insertBrackets(gameObject: GameObject) {
 		if (this.stackIndex === null) { return }
 
 		const insertIn = this.stackIndex + 1
 		for (const objectName of ['bracketBottom', 'bracketSide', 'bracketTop']) {
-			const objID = objectName + '-for:' + gameObject.getData('objectRef')
+			const objID = `${objectName}-for:${gameObject.getData('objectRef')}`
 			const object = setGameObject(this.phaser, OBJECT_CONFIG[objectName], objID)
 			this.objects[objID] = object
 			this.stackObjects.splice(insertIn, 0, object)
@@ -580,7 +586,7 @@ export default class InterPhaser {
 		}
 	}
 
-	clearBracketObject(bracketObject) {
+	clearBracketObject(bracketObject: GameObject) {
 		const commandRef = bracketObject.getData('objectRef')
 		const deleteStart = this.stackObjects.indexOf(bracketObject) + 1
 		let i: number
@@ -589,7 +595,7 @@ export default class InterPhaser {
 			const selfRef = object.getData('objectRef')
 			const blockRef = object.getData('blockRef')
 
-			if (object.scene !== undefined) {
+			if (object.active) {
 				object.destroy()
 				delete this.objects[selfRef]
 			}
@@ -598,21 +604,21 @@ export default class InterPhaser {
 		this.stackObjects.splice(deleteStart, 1 + i - deleteStart)
 	}
 
-	removeFromStack(object) {
+	removeFromStack(object: GameObject) {
 		const objectIndex = this.stackObjects.indexOf(object)
-		if (objectIndex !== -1) {
-			if (isBracketObject(object)) {
-				this.clearBracketObject(object)
-			}
-			this.stackObjects.splice(objectIndex, 1)
-			this.positionCommands()
-			this.updateStepcount()
+		if (objectIndex === -1) { return }
+
+		if (isBracketObject(object)) {
+			this.clearBracketObject(object)
 		}
+		this.stackObjects.splice(objectIndex, 1)
+		this.positionCommands()
+		this.updateStepcount()
 	}
 
 	updateStepcount() {
 		const stepCounter = this.objects.stepcount
-		const commandTotal = this.stackObjects.reduce(function(counter, stackObject) {
+		const commandTotal = this.stackObjects.reduce((counter, stackObject) => {
 			const commandID = stackObject.getData('commandID')
 			const isCommand = commandID !== undefined && commandID !== 'blockend'
 			return isCommand ? counter + 1 : counter
@@ -630,17 +636,19 @@ export default class InterPhaser {
 
 	fail() {
 		this.running = false
-		const modal = Object.create(FailModal)
-		modal.spawn(this.phaser)
+		const modal = new FailModal(this.phaser)
+		modal.render()
 		this.updateCurrentCommand()
-		this.afterFail()
+		if (this.afterFail) {
+			this.afterFail()
+		}
 	}
 	/**
-	* displays a levelcomplete image on screen when victory event is fired
-	*/
+	 * displays a levelcomplete image on screen when victory event is fired
+	 */
 	win() {
-		const modal = Object.create(LevelCompleteModal)
-		modal.spawn(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this))
+		const modal = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this))
+		modal.render()
 	}
 
 	updateOssiePos(ossiePos: OssiePos, animate?: boolean) {
@@ -674,32 +682,35 @@ export default class InterPhaser {
 		player.y = newCoords.y
 	}
 
-	onCommandExecute(commandReference) {
+	onCommandExecute(commandReference: string) {
 		const [commandName, commandI] = commandReference.split('-')
 		const commandObject = this.objects[commandName][commandI]
 		if (!isBracketObject(commandObject)) {
 			this.updateCurrentCommand(commandObject)
 		}
-		this.afterCommandExecute(commandReference)
+		if (this.afterCommandExecute) {
+			this.afterCommandExecute(commandReference)
+		}
 	}
 
-	updateCurrentCommand(commandObject?: PhaserObject) {
+	updateCurrentCommand(commandObject?: GameObject) {
+		let sprite: Sprite
 		const activeCommand = this.activeCommand
 		// Reset texture of previous activeCommand
-		if (activeCommand && activeCommand.scene && !isBracketObject(activeCommand)) {
+		if (activeCommand && activeCommand.active && !isBracketObject(activeCommand)) {
 			// .add exists for phaser groups, I think
-			const sprite = activeCommand.add !== undefined ? activeCommand.getAt(0) : activeCommand
+			sprite = isContainer(activeCommand) ? activeCommand.getAt(0) as Sprite : activeCommand
 			sprite.setTexture(OBJECT_CONFIG[activeCommand.name].spriteID)
 			this.positionCommands()
 		}
 
-		this.activeCommand = commandObject
+		this.activeCommand = commandObject || null
 
 		if (commandObject === undefined) { return }
 
 		// Show custom "current" sprite if applicable.
 		// The command is a container if it has numbers (turnDegrees), so we need to get the sprite from it
-		const sprite = commandObject.add !== undefined ? commandObject.getAt(0) : commandObject
+		sprite = isContainer(commandObject) ? commandObject.getAt(0) as Sprite : commandObject
 		const crntTexture = sprite.texture.key + '-crnt'
 		if (SPRITE_PATHS[crntTexture] !== undefined) {
 			sprite.setTexture(crntTexture)
