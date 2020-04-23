@@ -58,6 +58,12 @@ export default class Modal {
 
 			const newClass = this.modalEl.className + ' active'
 			this.modalEl.className = newClass
+
+			const backgroundEl = document.querySelector(`#${modalElId} .fullscreenGif`) as HTMLImageElement | null
+			if (!backgroundEl) { return console.error('cant find fullscreenGif for', modalElId) }
+			const imgSrc = backgroundEl.src
+			backgroundEl.src = ''
+			backgroundEl.src = imgSrc
 			return
 		}
 		const spritesheetId = this.key + '_ss'
@@ -105,9 +111,7 @@ export default class Modal {
 	}
 
 	hide() {
-		console.log(this)
-		window.modalVisible = null
-		if (!this || !this.isVisible) { return }
+		if (!this.isVisible) { return }
 
 		for (const object of this.modalParts) {
 			object.destroy()
@@ -117,6 +121,7 @@ export default class Modal {
 			this.modalEl.className = newClass
 		}
 		this.isVisible = false
+		window.modalVisible = null
 
 		if (this.afterHide) { this.afterHide() }
 	}

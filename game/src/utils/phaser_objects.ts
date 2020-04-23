@@ -10,10 +10,10 @@ export function h(heightInUnits: number) { return window.gameHeight * heightInUn
 export function w(widthInUnits: number) { return window.gameWidth * widthInUnits }
 
 export function isSprite(gameObject: GameObject): gameObject is Sprite {
-	return gameObject.type === 'sprite'
+	return gameObject.type === 'Sprite'
 }
 export function isContainer(gameObject: GameObject): gameObject is Container {
-	return gameObject.type === 'container'
+	return gameObject.type === 'Container'
 }
 
 export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: string) {

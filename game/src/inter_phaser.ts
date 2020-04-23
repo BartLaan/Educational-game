@@ -204,10 +204,9 @@ export default class InterPhaser {
 		this.running = false
 		this.maxedOut = false
 
-		// Lots of prior knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
+		// Lots of implied knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
 		for (const objectName of INIT_OBJECTS) {
 			if (this.objects[objectName] === undefined) { continue }
-			console.log('resetting object', objectName)
 			if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
 				const object = this.objects[objectName]
 				if (object !== undefined) {
@@ -217,7 +216,9 @@ export default class InterPhaser {
 					object.destroy()
 				}
 			} else {
-				for (const object of this.objects[objectName]) {
+				for (const i in this.objects[objectName]) {
+					if (!this.objects[objectName].hasOwnProperty(i)) { continue }
+					const object = this.objects[objectName][i]
 					if (object.scene === undefined) { continue }
 
 					if (isBracketObject(object) && this.stackObjects.indexOf(object) > -1) {

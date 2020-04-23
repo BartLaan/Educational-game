@@ -34,7 +34,7 @@ export default class LevelCompleteModal extends Modal {
 		if (!nextButton) { return console.error() }
 
 		this.timer = setTimeout(() => {
-			againButton.addEventListener('click', this.dismissHandler, { once: true })
+			againButton.addEventListener('click', this.dismissHandler.bind(this), { once: true })
 			nextButton.addEventListener('click', nextHandler, { once: true })
 
 			againButton.className = againButton.className + ' active'
@@ -43,8 +43,10 @@ export default class LevelCompleteModal extends Modal {
 	}
 
 	afterHide = () => {
-		const btns = document.querySelector('.prevButton, .nextButton')
-		if (!btns) { return }
-		btns.className = btns.className.replace('active', '')
+		const prevButton = document.querySelector('.prevButton')
+		const nextButton = document.querySelector('.nextButton')
+		if (!prevButton || !nextButton) { return }
+		prevButton.className = prevButton.className.replace('active', '')
+		nextButton.className = nextButton.className.replace('active', '')
 	}
 }
