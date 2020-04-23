@@ -6,7 +6,7 @@ import FailModal from './modals/fail'
 import LevelCompleteModal from './modals/level_complete'
 import { Coords, OssiePos } from './types/board'
 import { LevelConfig, Space } from './types/game_config'
-import { InterPhaserEvent, GameObject, Pointer, Sprite } from './types/interphaser'
+import { InterPhaserEvent, GameObject, Pointer, Sprite, Container } from './types/interphaser'
 import { strToCoord } from './utils/level_setup'
 import * as phaser_objects from './utils/phaser_objects'
 import { getStackRepresentation } from './utils/stack'
@@ -454,7 +454,7 @@ export default class InterPhaser {
 		this.updateStepcount()
 	}
 
-	askCounts(gameObject: Phaser.GameObjects.Container) {
+	askCounts(gameObject: Container) {
 		const command = gameObject.getData('command')
 
 		const msg = {
@@ -546,8 +546,8 @@ export default class InterPhaser {
 					heightDiff = objectBottom - bracketSide.y
 					const newScale = heightDiff / bracketSide.height
 					// #magicnumbers (trial & error)
-					bracketSide.scaleY = Math.max(0.15, newScale)
-					bracketSide.scaleX = 0.5
+					bracketSide.scaleY = Math.max(0.15 * window.gameScale, newScale)
+					bracketSide.scaleX = 0.5 * window.gameScale
 					const leftCoord = isContainer(object) ? object.getBounds().left : object.getTopLeft().x
 					bracketSide.x = leftCoord + w(0.01)
 					bracketSide.y += heightDiff / 2

@@ -1,11 +1,11 @@
 import { Coords } from '~/types/board'
 import { deepCopy } from './etc'
 import { NUMBER_COMMANDS, BRACKET_OBJECTS } from '~/constants/objects'
-import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS } from '~/constants/sizes'
+import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS, BASE_SIZE_X, BASE_SIZE_Y } from '~/constants/sizes'
 import { GameObject, ObjectConfig, Container, Sprite, ObjectKey } from '~/types/interphaser'
 import { CommandID } from '~/types/stack'
 
-// Helpers for converting height/width units to pixel values
+// Helpers for converting height/width units to pixel values, so the whole game is scalable
 export function h(heightInUnits: number) { return window.gameHeight * heightInUnits }
 export function w(widthInUnits: number) { return window.gameWidth * widthInUnits }
 
@@ -73,25 +73,29 @@ export function isBracketObject(gameObject: GameObject | CommandID) {
 }
 
 // Render number for commands that need it (forX, turnDegrees)
-export function renderNumber(phaser: Phaser.Scene, object: Phaser.GameObjects.Container, num: number) {
+export function renderNumber(phaser: Phaser.Scene, object: Container, num: number) {
 	object.each((sprite: Phaser.GameObjects.Sprite) => {
 		if (sprite.name.indexOf('number') > -1) {
 			object.remove(sprite, true)
 		}
 	})
 	const config = OBJECT_CONFIG[object.name]
+	// no usage of w() or h() here, as we're in the realm of the container which is scaled on its own
 	const numScale = config.numScale || NUM_SCALING
-	const numSpacing = w(NUM_SPACING) * numScale
-	const numX = w(config.numOffsetX)
-	const numY = h(config.numOffsetY)
+	const numSpacing = NUM_SPACING * BASE_SIZE_X
+
+	if (!(config.numOffsetX && config.numOffsetY)) { return console.error('missing numOffsetX for', object) }
+	const numX = config.numOffsetX * BASE_SIZE_X
+	const numY = config.numOffsetY * BASE_SIZE_Y
+
 	// get array of decreasing order of magnitude (-123 > ['3','2','1','-'])
 	const numParts = num.toString().split('').reverse()
 	for (const numIStr in numParts) {
 		if (!numParts.hasOwnProperty(numIStr)) { continue }
 
 		const numI = parseInt(numIStr, 10)
-		const numberObj = phaser.add.sprite(numX - (numSpacing * (numI + 1)), numY, numParts[numI])
-		numberObj.setOrigin(0,0)
+		const numberObj = phaser.add.sprite(numX - (numSpacing * (numI)), numY, numParts[numI])
+		numberObj.setOrigin(1, 0)
 		numberObj.setScale(numScale)
 		numberObj.name = 'number' + numI
 		numberObj.setDepth(1)

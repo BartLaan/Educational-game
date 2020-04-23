@@ -15,7 +15,7 @@ export const COMMAND_AREA_Y = 0.78
 export const FAILBUTTON_X = 0.4
 export const FAILBUTTON_Y = 0.6
 export const HOVER_SCALING = 1.04
-export const NUM_SPACING = 0.02
+export const NUM_SPACING = 0.015
 export const NUM_SCALING = 0.6
 export const PIXLESIZE = 0.001953
 export const STACK_AVG_CMD_SIZE = 0.04
@@ -119,8 +119,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'for', counts: null },
 		depth: 2,
 		draggable: true,
-		numOffsetX: 0.01,
-		numOffsetY: 0.005,
+		numOffsetX: 0.028,
+		numOffsetY: 0.002,
 		offsetX: COMMAND_AREA_X + 0.44,
 		offsetY: COMMAND_AREA_Y,
 		scaling: 0.9,
