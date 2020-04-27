@@ -32,7 +32,7 @@ declare global {
 	}
 }
 
-window.selectLevel = (nextLevel) => {
+window.selectLevel = (nextLevel: string) => {
 	if (nextLevel === undefined) {
 		const levelName = window.prompt('Select level:')
 		nextLevel = 'level' + levelName

@@ -1,8 +1,8 @@
 import { Coords } from '~/types/board'
 import { deepCopy } from './etc'
-import { NUMBER_COMMANDS, BRACKET_OBJECTS } from '~/constants/objects'
+import { NUMBER_COMMANDS, BRACKET_OBJECTS, OBJECTS_MULTIPLE } from '~/constants/objects'
 import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS, BASE_SIZE_X, BASE_SIZE_Y } from '~/constants/sizes'
-import { GameObject, ObjectConfig, Container, Sprite, ObjectKey } from '~/types/interphaser'
+import { GameObject, ObjectConfig, Container, Sprite, ObjectKey, DuplicableObject } from '~/types/interphaser'
 import { CommandID } from '~/types/stack'
 
 // Helpers for converting height/width units to pixel values, so the whole game is scalable
@@ -14,6 +14,9 @@ export function isSprite(gameObject: GameObject): gameObject is Sprite {
 }
 export function isContainer(gameObject: GameObject): gameObject is Container {
 	return gameObject.type === 'Container'
+}
+export function isDuplicableObject(objectKey: ObjectKey): objectKey is DuplicableObject {
+	return OBJECTS_MULTIPLE.indexOf(objectKey) > -1
 }
 
 export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: string) {
@@ -84,7 +87,9 @@ export function renderNumber(phaser: Phaser.Scene, object: Container, num: numbe
 	const numScale = config.numScale || NUM_SCALING
 	const numSpacing = NUM_SPACING * BASE_SIZE_X
 
-	if (!(config.numOffsetX && config.numOffsetY)) { return console.error('missing numOffsetX for', object) }
+	if (config.numOffsetX === undefined || config.numOffsetY === undefined) {
+		return console.error('missing numOffsetX for', object)
+	}
 	const numX = config.numOffsetX * BASE_SIZE_X
 	const numY = config.numOffsetY * BASE_SIZE_Y
 
@@ -95,7 +100,7 @@ export function renderNumber(phaser: Phaser.Scene, object: Container, num: numbe
 
 		const numI = parseInt(numIStr, 10)
 		const numberObj = phaser.add.sprite(numX - (numSpacing * (numI)), numY, numParts[numI])
-		numberObj.setOrigin(1, 0)
+		numberObj.setOrigin(1, 0.5)
 		numberObj.setScale(numScale)
 		numberObj.name = 'number' + numI
 		numberObj.setDepth(1)

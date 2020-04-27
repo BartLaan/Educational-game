@@ -1,4 +1,4 @@
-import { COMMON_OBJECTS, NUMBER_COMMANDS, INIT_OBJECTS, OBJECTS_MULTIPLE } from './constants/objects'
+import { COMMON_OBJECTS, NUMBER_COMMANDS, INIT_OBJECTS } from './constants/objects'
 import { SPRITE_PATHS } from './constants/paths'
 import * as SIZES from './constants/sizes'
 import Modal from './modal'
@@ -6,7 +6,7 @@ import FailModal from './modals/fail'
 import LevelCompleteModal from './modals/level_complete'
 import { Coords, OssiePos } from './types/board'
 import { LevelConfig, Space } from './types/game_config'
-import { InterPhaserEvent, GameObject, Pointer, Sprite, Container } from './types/interphaser'
+import { InterPhaserEvent, GameObject, Pointer, Sprite, Container, PhaserImage, GameObjects } from './types/interphaser'
 import { strToCoord } from './utils/level_setup'
 import * as phaser_objects from './utils/phaser_objects'
 import { getStackRepresentation } from './utils/stack'
@@ -32,7 +32,17 @@ const {
 	STACK_ZONE_WIDTH,
 	WH_RATIO,
 } = SIZES
-const { h, isBracketObject, renderNumber, setGameObject, w, animateMovement, isSprite, isContainer } = phaser_objects
+const {
+	animateMovement,
+	h,
+	isBracketObject,
+	isDuplicableObject,
+	isSprite,
+	isContainer,
+	renderNumber,
+	setGameObject,
+	w,
+} = phaser_objects
 
 type ObjectKey = string
 export type InterPhaserHandler = (stackEvent: InterPhaserEvent, data?: any) => void
@@ -73,7 +83,7 @@ export default class InterPhaser {
 	// boolean, indicates whether the player has reached the maximum number of commands
 	maxedOut: boolean = false
 	// object with object names as keys, phaser objects/object lists as values
-	objects: any
+	objects: GameObjects
 	// the phaser instance (I think it's actually a scene)
 	phaser: Phaser.Scene
 	// boolean, indicates the gamestate, i.e. whether the character is executing the commands
@@ -106,7 +116,6 @@ export default class InterPhaser {
 	}
 
 	initLevel() {
-		this.objects = {}
 		this.stackObjects = []
 		if (this.levelConfig.spaceType === Space.pixles) {
 			this.stepsizeX = w(this.levelConfig.pixleSize)
@@ -118,54 +127,60 @@ export default class InterPhaser {
 		this.boardOffsetX = w(BOARD_OFFSET_X)
 		this.boardOffsetY = h(BOARD_OFFSET_Y)
 
+		this.setDynamicObjects()
+
 		// Set static objects
 		const backgroundName = 'background' + this.levelConfig.levelName.replace(/[A-Za-z]/g, '')
-		this.objects.background = this.phaser.add.image(0, 0, backgroundName).setOrigin(0, 0)
-		this.objects.background.name = 'background'
-		this.objects.background.setDisplaySize(this.width, this.height)
+		const background = this.phaser.add.image(0, 0, backgroundName).setOrigin(0, 0)
+		background.name = 'background'
+		background.setDisplaySize(this.width, this.height)
+		this.objects.background = background as PhaserImage
 
 		const maxCommands = this.levelConfig.maxCommands
 		OBJECT_CONFIG.stepcount_total.spriteID = maxCommands.toString()
-		this.objects.stepcount_total = setGameObject(this.phaser, OBJECT_CONFIG.stepcount_total, 'stepcount_total')
+		const stepCountTotal = setGameObject(this.phaser, OBJECT_CONFIG.stepcount_total, 'stepcount_total')
+		this.objects.stepcount_total = stepCountTotal as Sprite
 
-		this.setDynamicObjects()
 		this.setInteractions()
 	}
 
 	setDynamicObjects() {
-		const objects = this.objects
+		const objects = {}
 
 		for (const objectName of INIT_OBJECTS) {
 			if (!this.hasObject(objectName)) { continue }
 			const objConfig = OBJECT_CONFIG[objectName]
 
 			// normal objects
-			if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
-				objects[objectName] = setGameObject(this.phaser, objConfig, objectName)
-				objects[objectName].name = objectName
+			if (!isDuplicableObject(objectName)) {
+				const object = setGameObject(this.phaser, objConfig, objectName)
+				object.name = objectName
+				objects[objectName] = object as Sprite
 
 			} else { // draggable commands can have multiple versions
-				objects[objectName] = {}
+				const objectMap = {}
 				const objectRef = `${objectName}-${0}`
 				const object = setGameObject(this.phaser, objConfig, objectRef)
 				object.setData('i', 0)
-				objects[objectName][0] = object
+				objectMap[0] = object
+				objects[objectName] = objectMap
 			}
 		}
+		this.objects = objects as GameObjects
 
 		if (this.levelConfig.spaceType === Space.grid && this.hasObject('questionmark')) {
 			const questionmarkCoords = strToCoord(this.levelConfig.goalPosition)
-			objects.questionmark.x += this.boardOffsetX
-			objects.questionmark.y += this.boardOffsetY
-			objects.questionmark.x += this.stepsizeX * questionmarkCoords.x
-			objects.questionmark.y += this.stepsizeY * questionmarkCoords.y
+			this.objects.questionmark.x += this.boardOffsetX
+			this.objects.questionmark.y += this.boardOffsetY
+			this.objects.questionmark.x += this.stepsizeX * questionmarkCoords.x
+			this.objects.questionmark.y += this.stepsizeY * questionmarkCoords.y
 		}
 
-		objects.execute.on('pointerdown', () => {
+		this.objects.execute.on('pointerdown', () => {
 			if (this.running) {
 				return this.abortMission()
 			}
-			objects.execute.setTint(0xff0000)
+			this.objects.execute.setTint(0xff0000)
 			if (this.stackObjects.length === 0) { return }
 
 			const repr = getStackRepresentation(this.stackObjects)
@@ -173,7 +188,7 @@ export default class InterPhaser {
 			this.running = true
 		})
 
-		objects.reset.on('pointerdown', () => {
+		this.objects.reset.on('pointerdown', () => {
 			if (this.running) {
 				this.abortMission()
 			} else {
@@ -181,7 +196,7 @@ export default class InterPhaser {
 			}
 		})
 
-		objects.backButton.on('pointerdown', this.showIntro.bind(this))
+		this.objects.backButton.on('pointerdown', this.showIntro.bind(this))
 
 		this.updateOssiePos(this.levelConfig.initPosition)
 	}
@@ -207,7 +222,8 @@ export default class InterPhaser {
 		// Lots of implied knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
 		for (const objectName of INIT_OBJECTS) {
 			if (this.objects[objectName] === undefined) { continue }
-			if (OBJECTS_MULTIPLE.indexOf(objectName) === -1) {
+
+			if (!isDuplicableObject(objectName)) {
 				const object = this.objects[objectName]
 				if (object !== undefined) {
 					if (isBracketObject(object) && this.stackObjects.indexOf(object) > -1) {
@@ -219,7 +235,7 @@ export default class InterPhaser {
 				for (const i in this.objects[objectName]) {
 					if (!this.objects[objectName].hasOwnProperty(i)) { continue }
 					const object = this.objects[objectName][i]
-					if (object.scene === undefined) { continue }
+					if (!object.active) { continue }
 
 					if (isBracketObject(object) && this.stackObjects.indexOf(object) > -1) {
 						this.clearBracketObject(object)
@@ -228,7 +244,7 @@ export default class InterPhaser {
 					object.destroy()
 				}
 			}
-			this.objects[objectName] = undefined
+			// this.objects[objectName] = undefined
 		}
 		delete this.stackObjects
 		this.stackObjects = []
@@ -319,7 +335,7 @@ export default class InterPhaser {
 
 			this.positionCommands()
 			// Dragged outside of drop zone -> delete this object
-			this.objects[gameObject.name][gameObject.getData('i')] = undefined
+			// this.objects[gameObject.name][gameObject.getData('i')] = undefined
 			gameObject.destroy()
 		})
 
@@ -430,7 +446,8 @@ export default class InterPhaser {
 
 		// First input the amount for commands that require it
 		const command = gameObject.getData('command')
-		const askForCounts = NUMBER_COMMANDS.indexOf(gameObject.name) > -1
+		const noExistingInput = !command.counts && !command.pixles && !command.degrees
+		const askForCounts = NUMBER_COMMANDS.indexOf(gameObject.name) > -1 && noExistingInput
 		if (askForCounts && isContainer(gameObject)) {
 			const result = this.askCounts(gameObject)
 			if (result === false) {
@@ -504,7 +521,8 @@ export default class InterPhaser {
 			let bracketSide: any
 			let heightDiff = 0
 
-			const halfObjectHeight = object.displayHeight / 2
+			const halfObjectWidth = (isContainer(object) ? object.getBounds().width : object.displayWidth) / 2
+			const halfObjectHeight = (isContainer(object) ? object.getBounds().height : object.displayHeight) / 2
 			// Set height for the object
 			// Note about how this works: stackX/stackY is defined as the top-left position of an object, but
 			// the objects's y coordinate is set in the middle of the object so that the hovering effect
@@ -521,7 +539,7 @@ export default class InterPhaser {
 			if (object.name === 'bracketBottom' || object.name === 'close') {
 				stackX -= bracketIndent
 			}
-			object.x = Math.ceil(stackX + (object.displayWidth / 2))
+			object.x = (stackX + halfObjectWidth)
 
 			// See if we should add temporary space around the pointer (when dragging command)
 			const bracketSideOrTop = object.name === 'bracketSide' || object.name === 'bracketTop'
@@ -618,7 +636,7 @@ export default class InterPhaser {
 	}
 
 	updateStepcount() {
-		const stepCounter = this.objects.stepcount
+		const stepCounter = this.objects.stepcount as Sprite
 		const commandTotal = this.stackObjects.reduce((counter, stackObject) => {
 			const commandID = stackObject.getData('commandID')
 			const isCommand = commandID !== undefined && commandID !== 'blockend'
@@ -657,7 +675,7 @@ export default class InterPhaser {
 			animate = false
 		}
 
-		const player = this.objects.player
+		const player = this.objects.player as Sprite
 
 		player.angle = ossiePos.orientation - 90
 
@@ -700,7 +718,7 @@ export default class InterPhaser {
 		// Reset texture of previous activeCommand
 		if (activeCommand && activeCommand.active && !isBracketObject(activeCommand)) {
 			// .add exists for phaser groups, I think
-			sprite = isContainer(activeCommand) ? activeCommand.getAt(0) as Sprite : activeCommand
+			sprite = isContainer(activeCommand) ? activeCommand.getAt(0) as Sprite : activeCommand as Sprite
 			sprite.setTexture(OBJECT_CONFIG[activeCommand.name].spriteID)
 			this.positionCommands()
 		}
@@ -711,7 +729,7 @@ export default class InterPhaser {
 
 		// Show custom "current" sprite if applicable.
 		// The command is a container if it has numbers (turnDegrees), so we need to get the sprite from it
-		sprite = isContainer(commandObject) ? commandObject.getAt(0) as Sprite : commandObject
+		sprite = isContainer(commandObject) ? commandObject.getAt(0) as Sprite : commandObject as Sprite
 		const crntTexture = sprite.texture.key + '-crnt'
 		if (SPRITE_PATHS[crntTexture] !== undefined) {
 			sprite.setTexture(crntTexture)

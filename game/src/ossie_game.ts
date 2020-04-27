@@ -6,7 +6,7 @@ import InterPhaser from './inter_phaser'
 
 // Constructor for OssieGame instance. See OssieGame.checkLevelConfig for details on levelConfig.
 export default class OssieGame {
-	constructor(levelConfig: LevelConfig, phaser: Phaser.Scene) {
+	constructor(levelConfig: LevelConfig, scene: Phaser.Scene) {
 		if (window.activeLevel === levelConfig.levelName) {
 			return
 		}
@@ -14,7 +14,7 @@ export default class OssieGame {
 		window.location.hash = levelConfig.levelName
 
 		this.stackManager = new StackManager(levelConfig, this.stackHandler.bind(this))
-		this.interPhaser = new InterPhaser(phaser, levelConfig, this.phaserHandler.bind(this))
+		this.interPhaser = new InterPhaser(scene, levelConfig, this.phaserHandler.bind(this))
 		if (window.debug) {
 			console.log(this)
 		}

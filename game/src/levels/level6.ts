@@ -17,8 +17,7 @@ export default class Level6 extends Phaser.Scene implements PhaserLevel {
 		'questionmark',
 		'step',
 		'for_x',
-		'turnleft',
-		'turnright',
+		'turndegrees',
 	])
 	modals = COMMON_MODALS
 

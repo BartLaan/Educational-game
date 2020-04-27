@@ -45,7 +45,7 @@ export default class LevelCompleteModal extends Modal {
 	afterHide = () => {
 		const prevButton = document.querySelector('.prevButton')
 		const nextButton = document.querySelector('.nextButton')
-		if (!prevButton || !nextButton) { return }
+		if (!prevButton || !nextButton) { return console.error() }
 		prevButton.className = prevButton.className.replace('active', '')
 		nextButton.className = nextButton.className.replace('active', '')
 	}

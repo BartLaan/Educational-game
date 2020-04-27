@@ -4,6 +4,7 @@ import EventModal from '~/modals/event'
 import OssieGame from '~/ossie_game'
 import { PhaserLevel } from '~/types'
 import { LevelConfigPixle, Space } from '~/types/game_config'
+import { PhaserImage } from '~/types/interphaser'
 import { SSKey } from '~/types/spritesheets'
 import { loadSpritesheet, preloadLevel } from '~/utils/level_setup'
 
@@ -50,11 +51,11 @@ export default class Level11 extends Phaser.Scene implements PhaserLevel {
 			const interPhaser = window.ossieGame.interPhaser
 
 			const newBackground = interPhaser.phaser.add.sprite(0, 0, 'background11_ss', 0)
-			interPhaser.objects.background.destroy()
-			interPhaser.objects.background = newBackground
-			newBackground.setOrigin(0, 0)
 			newBackground.name = 'background'
+			newBackground.setOrigin(0, 0)
 			newBackground.setDisplaySize(interPhaser.width, interPhaser.height)
+			interPhaser.objects.background.destroy()
+			interPhaser.objects.background = newBackground as PhaserImage
 
 			this.anims.create({
 				key: 'background11_anim',

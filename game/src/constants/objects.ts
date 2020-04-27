@@ -1,4 +1,6 @@
 import { SSKey } from '~/types/spritesheets'
+import { ObjectKey, InitObject } from '~/types/interphaser'
+import { CommandID } from '~/types/stack'
 
 export const COMMON_SPRITES = [
 	'-',
@@ -23,8 +25,8 @@ export const COMMON_MODALS: SSKey[] = [
 	SSKey.levelcomplete,
 ]
 
-export const BRACKET_OBJECTS = [ 'if', 'else', 'for' ]
-export const COMMON_OBJECTS = [
+export const BRACKET_OBJECTS: CommandID[] = [ 'if', 'else', 'for' ]
+export const COMMON_OBJECTS: Array<ObjectKey | string> = [
 	'backButton',
 	'close',
 	'execute',
@@ -40,7 +42,8 @@ export const COMMON_OBJECTS = [
 	'stepcount_slash',
 	'levelcomplete',
 ]
-export const INIT_OBJECTS = [
+
+export const INIT_OBJECTS: InitObject[] = [
 	'backButton',
 	'close',
 	'else',
@@ -63,7 +66,7 @@ export const INIT_OBJECTS = [
 	'turnleft',
 	'turnright',
 ]
-export const OBJECTS_MULTIPLE = [
+export const OBJECTS_MULTIPLE: ObjectKey[] = [
 	'close',
 	'else',
 	'for',
@@ -73,13 +76,13 @@ export const OBJECTS_MULTIPLE = [
 	'if_padrechts',
 	'if_padvooruit',
 	'open',
+	'step',
+	'steppixles',
 	'turndegrees',
 	'turnleft',
 	'turnright',
-	'step',
-	'steppixles',
 ]
-export const NUMBER_COMMANDS = [
+export const NUMBER_COMMANDS: ObjectKey[] = [
 	'for_x',
 	'steppixles',
 	'turndegrees',

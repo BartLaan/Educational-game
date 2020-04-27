@@ -37,7 +37,7 @@ export default class Modal {
 
 		if (window.modalVisible !== null) {
 			console.log(`Warning: trying to open a new popup "${this.key}"
-				when popup "' + window.modalVisible + '" is still open!`)
+				when popup "${window.modalVisible.key}" is still open!`)
 			window.modalVisible.hide()
 		}
 

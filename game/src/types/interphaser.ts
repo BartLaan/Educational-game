@@ -7,13 +7,6 @@ export enum InterPhaserEvent {
 	start = 'start',
 }
 
-type GameObjectExtras = { name: ObjectKey }
-export type Sprite = Phaser.GameObjects.Sprite & GameObjectExtras
-export type Container = Phaser.GameObjects.Container & GameObjectExtras
-export type GameObject = Sprite | Container
-
-export type Pointer = Phaser.Input.Pointer
-
 export type Command = {
 	autoStop?: boolean,
 	commandID: CommandID,
@@ -36,8 +29,55 @@ export type ObjectConfig = {
 	spriteID: string,
 }
 
+export type Pointer = Phaser.Input.Pointer
+
+type GameObjectExtras = {
+	name: ObjectKey,
+}
+export type Sprite = Phaser.GameObjects.Sprite & GameObjectExtras
+export type Container = Phaser.GameObjects.Container & GameObjectExtras
+export type PhaserImage = Phaser.GameObjects.Image & GameObjectExtras
+export type GameObject = Sprite | Container | PhaserImage
+
+type GameObjectMap<T> = { [k: string]: T }
+export type GameObjects = {
+	againButton: Sprite,
+	background: PhaserImage,
+	backButton: Sprite,
+	bracketBottom: Sprite,
+	bracketSide: Sprite,
+	bracketTop: Sprite,
+	close: GameObjectMap<Sprite>,
+	else: GameObjectMap<Sprite>,
+	execute: Sprite,
+	for: GameObjectMap<Sprite>,
+	for_till: GameObjectMap<Sprite>,
+	for_x: GameObjectMap<Container>,
+	if_padlinks: GameObjectMap<Sprite>,
+	if_padrechts: GameObjectMap<Sprite>
+	if_padvooruit: GameObjectMap<Sprite>,
+	nextButton: Sprite,
+	okButton: Sprite,
+	open: GameObjectMap<Sprite>,
+	player: Sprite,
+	questionmark: Sprite,
+	reset: Sprite,
+	step: GameObjectMap<Sprite>,
+	stepcount: Sprite,
+	stepcount_slash: Sprite,
+	stepcount_total: Sprite,
+	steppixles: GameObjectMap<Container>,
+	turndegrees: GameObjectMap<Container>,
+	turnleft: GameObjectMap<Sprite>,
+	turnright: GameObjectMap<Sprite>,
+}
+export type InterPhaserObjects =
+	{ [key in InitObject]: GameObjects[key] }
+	& { [key in ObjectKey]?: GameObjects[key] }
+
 export type ObjectKey =
 	| 'againButton'
+	| 'background'
 	| 'backButton'
 	| 'bracketBottom'
 	| 'bracketSide'
@@ -62,6 +102,45 @@ export type ObjectKey =
 	| 'stepcount_slash'
 	| 'stepcount_total'
 	| 'steppixles'
+	| 'turndegrees'
+	| 'turnleft'
+	| 'turnright'
+
+export type DuplicableObject =
+	| 'close'
+	| 'else'
+	| 'for'
+	| 'for_till'
+	| 'for_x'
+	| 'if_padlinks'
+	| 'if_padrechts'
+	| 'if_padvooruit'
+	| 'open'
+	| 'step'
+	| 'steppixles'
+	| 'turndegrees'
+	| 'turnleft'
+	| 'turnright'
+
+export type InitObject =
+	| 'backButton'
+	| 'close'
+	| 'else'
+	| 'execute'
+	| 'for'
+	| 'for_till'
+	| 'for_x'
+	| 'if_padlinks'
+	| 'if_padrechts'
+	| 'if_padvooruit'
+	| 'open'
+	| 'player'
+	| 'reset'
+	| 'questionmark'
+	| 'step'
+	| 'steppixles'
+	| 'stepcount'
+	| 'stepcount_slash'
 	| 'turndegrees'
 	| 'turnleft'
 	| 'turnright'
