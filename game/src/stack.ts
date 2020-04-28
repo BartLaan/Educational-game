@@ -3,7 +3,7 @@ import { Nodes, OssiePos } from './types/board'
 import { LevelConfig, Space } from './types/game_config'
 import { Conditional, Stack, StackEvent, StackItemFor } from './types/stack'
 import { deepCopy } from './utils/etc'
-import { strToCoord } from './utils/level_setup'
+import { strToCoord, coordToStr } from './utils/level_setup'
 import { isBracketObject } from './utils/phaser_objects'
 import { turnClock, turnDegrees } from './utils/positioning'
 import { getStackItem } from './utils/stack'
@@ -72,8 +72,16 @@ export default class StackManager {
 			this.eventHandler(StackEvent.walkintowall)
 		}
 
-		this.ossiePos.nodeLocation = `${newX.toString()},${newY.toString()}`
-		this.pathTaken.push(this.ossiePos.nodeLocation)
+		this.ossiePos.nodeLocation = coordToStr(newX, newY)
+		// track goal completion
+		if (this.goalPath) {
+			const nextRequiredNode = this.goalPath[this.pathTaken.length]
+			const roundedLocation = coordToStr(Math.round(newX), Math.round(newY))
+			if (roundedLocation === nextRequiredNode) {
+				this.pathTaken.push(roundedLocation)
+			}
+		}
+
 		return this.eventHandler(StackEvent.ossieposChange)
 	}
 
@@ -123,7 +131,7 @@ export default class StackManager {
 			return this.nodes[this.ossiePos.nodeLocation].goal === true
 		}
 		if (this.goalPath === undefined) { return false }
-		// else
+
 		if (this.pathTaken.length < this.goalPath.length) {
 			return false
 		}
@@ -170,7 +178,7 @@ export default class StackManager {
 			return this.eventHandler(StackEvent.openEnd)
 		}
 		if (this.spaceType === Space.pixles) {
-			this.pathTaken = [this.getPosition().nodeLocation]
+			this.pathTaken = []
 		}
 
 		this.stackExecute(stackToExecute, [])

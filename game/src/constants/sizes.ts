@@ -15,7 +15,7 @@ export const COMMAND_AREA_Y = 0.78
 export const FAILBUTTON_X = 0.4
 export const FAILBUTTON_Y = 0.6
 export const HOVER_SCALING = 1.04
-export const NUM_SPACING = 0.015
+export const NUM_SPACING = 0.013
 export const NUM_SCALING = 0.6
 export const PIXLESIZE = 0.001953
 export const STACK_AVG_CMD_SIZE = 0.04
@@ -229,7 +229,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		draggable: true,
 		numOffsetX: -0.005,
 		numOffsetY: 0,
-		numScale: 0.55,
+		numScale: 0.45,
 		offsetX: COMMAND_AREA_X + 0.207,
 		offsetY: COMMAND_AREA_Y + 0.05,
 		spriteID: 'steppixles',

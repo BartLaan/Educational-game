@@ -10,7 +10,7 @@ import { PhaserLevel } from '~/types'
 
 // WIDTH/COLUMNS FIRST, START AT 0,0
 export function coordToStr(x: number, y: number): string {
-	return `${x.toString()},${y.toString()}`
+	return `${x},${y}`
 }
 
 export function strToCoord(coordStr: string): Coords {

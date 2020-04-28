@@ -85,7 +85,7 @@ export function renderNumber(phaser: Phaser.Scene, object: Container, num: numbe
 	const config = OBJECT_CONFIG[object.name]
 	// no usage of w() or h() here, as we're in the realm of the container which is scaled on its own
 	const numScale = config.numScale || NUM_SCALING
-	const numSpacing = NUM_SPACING * BASE_SIZE_X
+	const numSpacing = (NUM_SPACING * BASE_SIZE_X) * (numScale / NUM_SCALING)
 
 	if (config.numOffsetX === undefined || config.numOffsetY === undefined) {
 		return console.error('missing numOffsetX for', object)

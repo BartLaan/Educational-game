@@ -5,12 +5,13 @@ import { PhaserLevel } from '~/types'
 import { LevelConfigPixle, Space } from '~/types/game_config'
 import { preloadLevel } from '~/utils/level_setup'
 
-export default class Level12 extends Phaser.Scene implements PhaserLevel {
+const LEVELNAME = 'level13'
+export default class Level13 extends Phaser.Scene implements PhaserLevel {
 	constructor() {
-		super('level12')
+		super(LEVELNAME)
 	}
 
-	levelName = 'level12'
+	levelName = LEVELNAME
 
 	objects = COMMON_OBJECTS.concat([
 		'for_x',
@@ -31,14 +32,13 @@ export default class Level12 extends Phaser.Scene implements PhaserLevel {
 			goalPath,
 			initPosition: {
 				orientation: 90,
-				nodeLocation: '130,60',
+				nodeLocation: '220,200',
 			},
-			maxCommands: 5,
+			maxCommands: 6,
 			levelName: this.levelName,
 			objects: this.objects,
-			pixleSize: 0.002514,
+			pixleSize: 0.00135,
 			spaceType: Space.pixles,
-			timing: 80,
 		}
 
 		window.ossieGame = new OssieGame(levelConfig, this)
