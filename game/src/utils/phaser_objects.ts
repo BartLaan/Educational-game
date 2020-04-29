@@ -6,8 +6,8 @@ import { GameObject, ObjectConfig, Container, Sprite, ObjectKey, DuplicableObjec
 import { CommandID } from '~/types/stack'
 
 // Helpers for converting height/width units to pixel values, so the whole game is scalable
-export function h(heightInUnits: number) { return window.gameHeight * heightInUnits }
-export function w(widthInUnits: number) { return window.gameWidth * widthInUnits }
+export function h(heightInUnits: number) { return window.gameHeight * (heightInUnits / 100) }
+export function w(widthInUnits: number) { return window.gameWidth * (widthInUnits / 100) }
 
 export function isSprite(gameObject: GameObject): gameObject is Sprite {
 	return gameObject.type === 'Sprite'
@@ -85,13 +85,13 @@ export function renderNumber(phaser: Phaser.Scene, object: Container, num: numbe
 	const config = OBJECT_CONFIG[object.name]
 	// no usage of w() or h() here, as we're in the realm of the container which is scaled on its own
 	const numScale = config.numScale || NUM_SCALING
-	const numSpacing = (NUM_SPACING * BASE_SIZE_X) * (numScale / NUM_SCALING)
+	const numSpacing = (NUM_SPACING * BASE_SIZE_X / 100) * (numScale / NUM_SCALING)
 
 	if (config.numOffsetX === undefined || config.numOffsetY === undefined) {
 		return console.error('missing numOffsetX for', object)
 	}
-	const numX = config.numOffsetX * BASE_SIZE_X
-	const numY = config.numOffsetY * BASE_SIZE_Y
+	const numX = config.numOffsetX * BASE_SIZE_X / 100
+	const numY = config.numOffsetY * BASE_SIZE_Y / 100
 
 	// get array of decreasing order of magnitude (-123 > ['3','2','1','-'])
 	const numParts = num.toString().split('').reverse()

@@ -43,7 +43,7 @@ export default class Level11 extends Phaser.Scene implements PhaserLevel {
 				maxCommands: 5,
 				levelName: this.levelName,
 				objects: this.objects,
-				pixleSize: 0.001953,
+				pixleSize: 0.1953,
 				spaceType: Space.pixles,
 			}
 

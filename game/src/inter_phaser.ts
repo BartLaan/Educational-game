@@ -442,7 +442,7 @@ export default class InterPhaser {
 	}
 
 	dropObjectOnStack(gameObject: GameObject) {
-		console.log('Drop object', gameObject, 'stackIndex:', this.stackIndex, 'stackObjects', this.stackObjects)
+		// console.log('Drop object', gameObject, 'stackIndex:', this.stackIndex, 'stackObjects', this.stackObjects)
 
 		// First input the amount for commands that require it
 		const command = gameObject.getData('command')
@@ -523,6 +523,8 @@ export default class InterPhaser {
 
 			const halfObjectWidth = (isContainer(object) ? object.getBounds().width : object.displayWidth) / 2
 			const halfObjectHeight = (isContainer(object) ? object.getBounds().height : object.displayHeight) / 2
+			// console.log((object as Container).getBounds())
+			// FIXXXXX ^^^^
 			// Set height for the object
 			// Note about how this works: stackX/stackY is defined as the top-left position of an object, but
 			// the objects's y coordinate is set in the middle of the object so that the hovering effect
@@ -567,15 +569,15 @@ export default class InterPhaser {
 					bracketSide.scaleY = Math.max(0.15 * window.gameScale, newScale)
 					bracketSide.scaleX = 0.5 * window.gameScale
 					const leftCoord = isContainer(object) ? object.getBounds().left : object.getTopLeft().x
-					bracketSide.x = leftCoord + w(0.01)
+					bracketSide.x = leftCoord + w(1)
 					bracketSide.y += heightDiff / 2
 
-					stackY = objectBottom + h(0.002)
+					stackY = objectBottom + h(0.2)
 					break
 				case 'for':
 				case 'for_x':
 				case 'for_till':
-					stackY = objectBottom - h(0.002)
+					stackY = objectBottom - h(0.2)
 					break
 				default:
 					if (object.name === 'open') {
