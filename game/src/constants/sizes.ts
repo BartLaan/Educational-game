@@ -36,6 +36,9 @@ export const BASE_SIZE_X = 1024
 export const BASE_SIZE_Y = 768
 // etc
 export const ANIMATION_FPS = 30
+export const PATH_COLOR = 0xf40977
+export const PATH_DRAW_PER_SECOND = 1.5
+export const PATH_THICKNESS = 3
 export const MOVEMENT_DURATION = 250 // ms
 export const COMMAND_TIMING = 400 // ms
 export const SCALING_FACTOR_DIV = 1024
@@ -227,18 +230,29 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'stepPixles', pixles: null },
 		depth: 2,
 		draggable: true,
-		numOffsetX: -0.5,
+		numOffsetX: -1,
 		numOffsetY: 0,
 		numScale: 0.45,
 		offsetX: COMMAND_AREA_X + 20.7,
 		offsetY: COMMAND_AREA_Y + 5,
 		spriteID: 'steppixles',
 	},
+	steppixles_back: {
+		command: { commandID: 'stepPixlesBack', pixles: null },
+		depth: 2,
+		draggable: true,
+		numOffsetX: -1.5,
+		numOffsetY: 0,
+		numScale: 0.45,
+		offsetX: COMMAND_AREA_X + 35,
+		offsetY: COMMAND_AREA_Y + 5,
+		spriteID: 'steppixles-back',
+	},
 	turndegrees: {
 		command: { commandID: 'turnDegrees', degrees: null },
 		depth: 2,
 		draggable: true,
-		numOffsetX: 5.3,
+		numOffsetX: 4.5,
 		numOffsetY: 0,
 		offsetX: COMMAND_AREA_X + 20,
 		offsetY: COMMAND_AREA_Y,

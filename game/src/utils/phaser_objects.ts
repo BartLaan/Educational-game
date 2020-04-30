@@ -108,11 +108,14 @@ export function renderNumber(phaser: Phaser.Scene, object: Container, num: numbe
 	}
 }
 
-export function animateMovement(object: GameObject, newCoords: Coords, duration: number) {
-	const existingAnimation = object.getData('animatedMovement')
-	if (existingAnimation !== undefined) {
-		clearInterval(existingAnimation)
+type MovementCallback = (oldCoords: Coords, newCoords: Coords) => void
+export function animateMovement(object: GameObject, newCoords: Coords, duration: number, callback?: MovementCallback) {
+	// nothing to animate
+	if (object.x === newCoords.x && object.y === newCoords.y) {
+		return
 	}
+
+	cancelAnimations(object)
 
 	const frameDuration = 1000 / ANIMATION_FPS
 	const frameAmount = Math.ceil(duration / frameDuration)
@@ -139,9 +142,28 @@ export function animateMovement(object: GameObject, newCoords: Coords, duration:
 			clearInterval(interval)
 			return
 		}
+
+		const oldCoords = { x: object.x, y: object.y }
 		object.x = potentialNewX
 		object.y = potentialNewY
+		if (callback) {
+			callback(oldCoords, { x: object.x, y: object.y })
+		}
 
 	}, frameDuration)
-	object.setData('animatedMovement', interval)
+
+	if (object.getData('animatedMovement') === undefined) {
+		object.setData('animatedMovement', [])
+	}
+	const existingAnimations = object.getData('animatedMovement')
+	existingAnimations.push(interval)
+}
+
+export function cancelAnimations(object: GameObject) {
+	if (object.getData('animatedMovement') === undefined) { return }
+
+	const existingAnimations = object.getData('animatedMovement')
+	while (existingAnimations.length) {
+		clearInterval(existingAnimations.shift())
+	}
 }

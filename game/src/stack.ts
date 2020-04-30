@@ -1,4 +1,4 @@
-import { BOARD_SIZE_REL_TO_PIXLE_X, BOARD_SIZE_REL_TO_PIXLE_Y, COMMAND_TIMING } from './constants/sizes'
+import { BOARD_SIZE_REL_TO_PIXLE_X, BOARD_SIZE_REL_TO_PIXLE_Y, COMMAND_TIMING, PIXLESIZE } from './constants/sizes'
 import { Nodes, OssiePos } from './types/board'
 import { LevelConfig, Space } from './types/game_config'
 import { Conditional, Stack, StackEvent, StackItemFor } from './types/stack'
@@ -37,8 +37,8 @@ export default class StackManager {
 		}
 
 		this.goalPath = levelConfig.goalPath
-		this.boundaryX = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_X)
-		this.boundaryY = Math.floor(levelConfig.pixleSize * BOARD_SIZE_REL_TO_PIXLE_Y)
+		this.boundaryX = Math.floor((PIXLESIZE * PIXLESIZE / levelConfig.pixleSize) * BOARD_SIZE_REL_TO_PIXLE_X)
+		this.boundaryY = Math.floor((PIXLESIZE * PIXLESIZE / levelConfig.pixleSize) * BOARD_SIZE_REL_TO_PIXLE_Y)
 	}
 
 	getPosition() {
@@ -71,7 +71,6 @@ export default class StackManager {
 		if (newX !== unsafeNewX || newY !== unsafeNewY) {
 			this.eventHandler(StackEvent.walkintowall)
 		}
-
 		this.ossiePos.nodeLocation = coordToStr(newX, newY)
 		// track goal completion
 		if (this.goalPath) {
@@ -220,7 +219,7 @@ export default class StackManager {
 	executeStackItem(stack: Stack, callbackStacks: Stack[]) {
 		const stackItem = stack[0]
 		// this.debugStackItem(stackItem)
-		console.log('executing command:', stackItem.commandID, this.ossiePos)
+		// console.log('executing command:', stackItem.commandID, this.ossiePos)
 
 		this.eventHandler(StackEvent.executeCommand, stackItem.objectRef)
 		// For loops prepend the current stack to callbackStacks and call stackExecute with the for stack:
@@ -242,7 +241,7 @@ export default class StackManager {
 			case 'else':
 				const ifObject = getStackItem(stackItem.blockRef, this.stack || [])
 				if (!ifObject || ifObject.commandID !== 'if') { break }
-				console.log('found ifobject for else:', ifObject)
+				// console.log('found ifobject for else:', ifObject)
 				if (this.conditional(ifObject.condition) === false) {
 					callbackStacks.unshift(stack)
 					return this.stackExecute(stackItem.do, callbackStacks)
@@ -258,6 +257,10 @@ export default class StackManager {
 
 			case 'stepPixles':
 				this.stepPixles(stackItem.pixles)
+				break
+
+			case 'stepPixlesBack':
+				this.stepPixles(-stackItem.pixles)
 				break
 
 			case 'turnL':

@@ -5,8 +5,8 @@ import { PhaserLevel } from '~/types'
 import { LevelConfigPixle, Space } from '~/types/game_config'
 import { preloadLevel } from '~/utils/level_setup'
 
-const LEVELNAME = 'level13'
-export default class Level13 extends Phaser.Scene implements PhaserLevel {
+const LEVELNAME = 'level15'
+export default class Level15 extends Phaser.Scene implements PhaserLevel {
 	constructor() {
 		super(LEVELNAME)
 	}
@@ -17,7 +17,6 @@ export default class Level13 extends Phaser.Scene implements PhaserLevel {
 		'for_x',
 		'turndegrees',
 		'steppixles',
-		'steppixles_back',
 	])
 	modals = COMMON_MODALS
 
@@ -28,37 +27,72 @@ export default class Level13 extends Phaser.Scene implements PhaserLevel {
 	}
 
 	create() {
-		const goalPath = [
-			'320,200',
-			'220,200', // 1
-			'291,271',
-			'220,200', // 2
-			'220,300',
-			'220,200', // 3
-			'149,271',
-			'220,200', // 4
-			'120,200',
-			'220,200', // 5
-			'149,129',
-			'220,200', // 6
-			'220,100',
-			'220,200', // 7
-			'291,129',
-			'220,200', // 8
-		]
 		const levelConfig: LevelConfigPixle = {
+			animate: false,
 			goalPath,
 			initPosition: {
 				orientation: 90,
 				nodeLocation: '220,200',
 			},
-			maxCommands: 6,
+			maxCommands: 7,
 			levelName: this.levelName,
 			objects: this.objects,
 			pixleSize: 0.135,
 			spaceType: Space.pixles,
+			timing: 5,
 		}
-
 		window.ossieGame = new OssieGame(levelConfig, this)
 	}
 }
+
+const goalPath = [
+	'278,256',
+	'222,315',
+	'163,259',
+	'219,200',
+	'242,277',
+	'164,300',
+	'141,223',
+	'219,200',
+	'201,278',
+	'122,259',
+	'141,180',
+	'219,199',
+	'164,258',
+	'105,202',
+	'161,143',
+	'220,199',
+	'143,222',
+	'120,144',
+	'197,121',
+	'220,199',
+	'142,181',
+	'161,102',
+	'240,121',
+	'221,199',
+	'162,144',
+	'218,85',
+	'277,141',
+	'221,200',
+	'198,123',
+	'276,100',
+	'299,177',
+	'221,200',
+	'239,122',
+	'318,141',
+	'299,220',
+	'221,201',
+	'276,142',
+	'335,198',
+	'279,257',
+	'220,201',
+	'297,178',
+	'320,256',
+	'243,279',
+	'220,201',
+	'298,219',
+	'279,298',
+	'200,279',
+	'219,201',
+	'220,200',
+]

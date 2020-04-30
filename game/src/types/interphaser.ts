@@ -59,6 +59,7 @@ export type GameObjects = {
 	nextButton: Sprite,
 	okButton: Sprite,
 	open: GameObjectMap<Sprite>,
+	path: Phaser.GameObjects.Polygon[],
 	player: Sprite,
 	questionmark: Sprite,
 	reset: Sprite,
@@ -67,6 +68,7 @@ export type GameObjects = {
 	stepcount_slash: Sprite,
 	stepcount_total: Sprite,
 	steppixles: GameObjectMap<Container>,
+	steppixles_back: GameObjectMap<Container>,
 	turndegrees: GameObjectMap<Container>,
 	turnleft: GameObjectMap<Sprite>,
 	turnright: GameObjectMap<Sprite>,
@@ -102,6 +104,7 @@ export type ObjectKey =
 	| 'stepcount_slash'
 	| 'stepcount_total'
 	| 'steppixles'
+	| 'steppixles_back'
 	| 'turndegrees'
 	| 'turnleft'
 	| 'turnright'
@@ -118,6 +121,7 @@ export type DuplicableObject =
 	| 'open'
 	| 'step'
 	| 'steppixles'
+	| 'steppixles_back'
 	| 'turndegrees'
 	| 'turnleft'
 	| 'turnright'
@@ -139,6 +143,7 @@ export type InitObject =
 	| 'questionmark'
 	| 'step'
 	| 'steppixles'
+	| 'steppixles_back'
 	| 'stepcount'
 	| 'stepcount_slash'
 	| 'turndegrees'

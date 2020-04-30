@@ -20,6 +20,9 @@ const {
 	HOVER_SCALING,
 	MOVEMENT_DURATION,
 	OBJECT_CONFIG,
+	PATH_COLOR,
+	PATH_DRAW_PER_SECOND,
+	PATH_THICKNESS,
 	SCALING_FACTOR_DIV,
 	STACK_AVG_CMD_SIZE,
 	STACK_BRACKET_INDENT,
@@ -34,6 +37,7 @@ const {
 } = SIZES
 const {
 	animateMovement,
+	cancelAnimations,
 	h,
 	isBracketObject,
 	isDuplicableObject,
@@ -168,6 +172,8 @@ export default class InterPhaser {
 		}
 		this.objects = objects as GameObjects
 
+		this.objects.path = []
+
 		if (this.levelConfig.spaceType === Space.grid && this.hasObject('questionmark')) {
 			const questionmarkCoords = strToCoord(this.levelConfig.goalPosition)
 			this.objects.questionmark.x += this.boardOffsetX
@@ -203,10 +209,11 @@ export default class InterPhaser {
 
 	abortMission() {
 		// Stop execution and reset player position
-		this.updateOssiePos(this.levelConfig.initPosition)
-		this.updateCurrentCommand()
-		this.eventHandler(InterPhaserEvent.reset)
 		this.running = false
+		cancelAnimations(this.objects.player)
+		this.eventHandler(InterPhaserEvent.reset)
+		this.updateCurrentCommand()
+		this.clearPath()
 	}
 
 	resetLevel() {
@@ -219,7 +226,7 @@ export default class InterPhaser {
 		this.running = false
 		this.maxedOut = false
 
-		// Lots of implied knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
+		// Lots of implicit knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
 		for (const objectName of INIT_OBJECTS) {
 			if (this.objects[objectName] === undefined) { continue }
 
@@ -246,6 +253,7 @@ export default class InterPhaser {
 			}
 			// this.objects[objectName] = undefined
 		}
+		this.clearPath()
 		delete this.stackObjects
 		this.stackObjects = []
 
@@ -407,6 +415,11 @@ export default class InterPhaser {
 		}
 		if (inDropZone || this.maxedOut) { return }
 
+		const lastStackI = this.stackObjects.length-1
+		const lastEmptyBracket = this.stackObjects[lastStackI] && this.stackObjects[lastStackI].name === 'bracketBottom'
+		if (lastEmptyBracket && gameObject.name !== 'close') {
+			this.stackIndex = lastStackI
+		}
 		// Add command to stack
 		this.dropObjectOnStack(gameObject)
 		this.duplicateObject(gameObject)
@@ -477,6 +490,7 @@ export default class InterPhaser {
 		const msg = {
 			'for': 'Hoe vaak herhalen?',
 			'stepPixles': 'Hoeveel pixels?',
+			'stepPixlesBack': 'Hoeveel pixels?',
 			'turnDegrees': 'Hoeveel graden?',
 		}[command.commandID]
 
@@ -486,9 +500,11 @@ export default class InterPhaser {
 			if (promptResult === null) { return false } // Cancel
 
 			const counts = parseInt(promptResult, 10)
-			if (!isNaN(counts) && counts < 1000 && counts > -1000) {
+			const minRange = command.commandID === 'turnDegrees' ? -1000 : 0
+			if (!isNaN(counts) && counts < 1000 && counts > minRange) {
 				return counts
 			}
+
 			return promptForInput(true)
 		}
 
@@ -498,6 +514,7 @@ export default class InterPhaser {
 		const key = {
 			'for': 'counts',
 			'stepPixles': 'pixles',
+			'stepPixlesBack': 'pixles',
 			'turnDegrees': 'degrees',
 		}
 		command[key[command.commandID]] = result
@@ -523,8 +540,6 @@ export default class InterPhaser {
 
 			const halfObjectWidth = (isContainer(object) ? object.getBounds().width : object.displayWidth) / 2
 			const halfObjectHeight = (isContainer(object) ? object.getBounds().height : object.displayHeight) / 2
-			// console.log((object as Container).getBounds())
-			// FIXXXXX ^^^^
 			// Set height for the object
 			// Note about how this works: stackX/stackY is defined as the top-left position of an object, but
 			// the objects's y coordinate is set in the middle of the object so that the hovering effect
@@ -610,19 +625,22 @@ export default class InterPhaser {
 	clearBracketObject(bracketObject: GameObject) {
 		const commandRef = bracketObject.getData('objectRef')
 		const deleteStart = this.stackObjects.indexOf(bracketObject) + 1
-		let i: number
-		for (i=deleteStart; i < this.stackObjects.length; i++) {
+		const deleted: number[] = []
+
+		for (let i=deleteStart; i < this.stackObjects.length; i++) {
 			const object = this.stackObjects[i]
 			const selfRef = object.getData('objectRef')
 			const blockRef = object.getData('blockRef')
 
-			if (object.active) {
-				object.destroy()
+			if (object.active && selfRef.indexOf(commandRef) > -1) {
+				deleted.push(i)
 				delete this.objects[selfRef]
+				object.destroy()
 			}
 			if (blockRef === commandRef) { break }
 		}
-		this.stackObjects.splice(deleteStart, 1 + i - deleteStart)
+		this.stackObjects = this.stackObjects.filter((_, i) => deleted.indexOf(i) === -1)
+		this.positionCommands()
 	}
 
 	removeFromStack(object: GameObject) {
@@ -660,6 +678,9 @@ export default class InterPhaser {
 		const modal = new FailModal(this.phaser)
 		modal.render()
 		this.updateCurrentCommand()
+		if (this.levelConfig.spaceType === Space.pixles) {
+			this.clearPath()
+		}
 		if (this.afterFail) {
 			this.afterFail()
 		}
@@ -673,10 +694,6 @@ export default class InterPhaser {
 	}
 
 	updateOssiePos(ossiePos: OssiePos, animate?: boolean) {
-		if (animate === undefined) {
-			animate = false
-		}
-
 		const player = this.objects.player as Sprite
 
 		player.angle = ossiePos.orientation - 90
@@ -695,12 +712,59 @@ export default class InterPhaser {
 			y: this.boardOffsetY + (this.stepsizeY * ossieCoords.y),
 		}
 
-		if (animate) {
-			animateMovement(player, newCoords, MOVEMENT_DURATION)
+		if (animate && this.running) {
+			const movementCallback = this.levelConfig.spaceType === Space.pixles ? this.drawPath.bind(this) : undefined
+			animateMovement(player, newCoords, MOVEMENT_DURATION, movementCallback)
 			return
+		}
+		if (this.running && this.levelConfig.spaceType === Space.pixles) {
+			this.drawPath(player, newCoords)
 		}
 		player.x = newCoords.x
 		player.y = newCoords.y
+	}
+
+	prevPathDrawTime?: number
+	drawPath(oldCoords: Coords, newCoords: Coords) {
+		if (!this.prevPathDrawTime) {
+			this.prevPathDrawTime = Date.now()
+			return
+		}
+
+		if (Date.now() - this.prevPathDrawTime < (60 / PATH_DRAW_PER_SECOND)) {
+			return
+		}
+		this.prevPathDrawTime = Date.now()
+
+		const originX = ((newCoords.x - oldCoords.x) / 2) + oldCoords.x
+		const originY = ((newCoords.y - oldCoords.y) / 2) + oldCoords.y
+
+		const relNewX = newCoords.x - originX
+		const relOldX = oldCoords.x - originX
+		const relNewY = newCoords.y - originY
+		const relOldY = oldCoords.y - originY
+		const skewNormal = Math.abs(relNewX) + Math.abs(relNewY)
+		const skewX = relNewY / skewNormal
+		const skewY = relNewX / skewNormal
+		const offsetX = skewX * PATH_THICKNESS
+		const offsetY = skewY * PATH_THICKNESS
+
+		const points = [
+			{ x: (relOldX - offsetX) + 2 * Math.random(), y: (relOldY + offsetY) + 2 * Math.random() },
+			{ x: (relOldX + offsetX) + 2 * Math.random(), y: (relOldY - offsetY) + 2 * Math.random() },
+			{ x: (relNewX + offsetX) + 2 * Math.random(), y: (relNewY - offsetY) + 2 * Math.random() },
+			{ x: (relNewX - offsetX) + 2 * Math.random(), y: (relNewY + offsetY) + 2 * Math.random() },
+		]
+
+		const polygon = this.phaser.add.polygon(originX, originY, points, PATH_COLOR, 0.7)
+		this.objects.path.push(polygon)
+	}
+
+	clearPath() {
+		for (const polygon of this.objects.path) {
+			if (!polygon.active) { continue }
+			polygon.destroy()
+		}
 	}
 
 	onCommandExecute(commandReference: string) {

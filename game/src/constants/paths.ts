@@ -85,8 +85,8 @@ export const SPRITE_PATHS = {
 	'turnright-crnt':				'assets/commands/draai-rechts-crnt.png',
 	'steppixles':					'assets/commands/stap-pixels.png',
 	'steppixles-crnt':				'assets/commands/stap-pixels-crnt.png',
-	'stepbackpixles':				'assets/commands/stap-terug-pixels.png',
-	'stepbackpixles-crnt':			'assets/commands/stap-terug-pixels-crnt.png',
+	'steppixles-back':				'assets/commands/stap-terug.png',
+	'steppixles-back-crnt':			'assets/commands/stap-terug-crnt.png',
 }
 export const SPRITESHEET_PATHS = {
 	'afterlvl10':			'assets/popups/hello-world.png',
@@ -107,7 +107,7 @@ export const SPRITESHEET_PATHS = {
 	'instruction11':		'assets/instructies/instructie-11.png',
 	'instruction12':		'assets/instructies/instructie-12.png',
 	'instruction13':		'assets/instructies/instructie-13.png',
-	'instruction14a':		'assets/instructies/instructie-14a.png',
+	'instruction14':		'assets/instructies/instructie-14a.png',
 	'instruction14b':		'assets/instructies/instructie-14b.png',
 	'instruction15':		'assets/instructies/instructie-15.png',
 	'instruction16':		'assets/instructies/instructie-16.png',
@@ -134,7 +134,7 @@ export const GIF_PATHS = {
 	'instruction11':		'assets/instructies/instructie-11.gif',
 	'instruction12':		'assets/instructies/instructie-12.gif',
 	'instruction13':		'assets/instructies/instructie-13.gif',
-	'instruction14a':		'assets/instructies/instructie-14a.gif',
+	'instruction14':		'assets/instructies/instructie-14a.gif',
 	'instruction14b':		'assets/instructies/instructie-14b.gif',
 	'instruction15':		'assets/instructies/instructie-15.gif',
 	'instruction16':		'assets/instructies/instructie-16.gif',

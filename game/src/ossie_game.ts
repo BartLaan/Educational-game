@@ -18,8 +18,12 @@ export default class OssieGame {
 		if (window.debug) {
 			console.log(this)
 		}
+		if (levelConfig.animate !== undefined) {
+			this.animate = levelConfig.animate
+		}
 	}
 
+	animate = true
 	interPhaser: InterPhaser
 	stackManager: StackManager
 
@@ -53,7 +57,7 @@ export default class OssieGame {
 				}, 800)
 				break
 			case StackEvent.ossieposChange:
-				this.interPhaser.updateOssiePos(this.stackManager.getPosition(), true)
+				this.interPhaser.updateOssiePos(this.stackManager.getPosition(), this.animate)
 				break
 			case StackEvent.start:
 				// this.interPhaser.disableStackInteraction()

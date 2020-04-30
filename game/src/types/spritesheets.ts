@@ -19,7 +19,7 @@ export enum SSKey {
 	instruction11 = 'instruction11',
 	instruction12 = 'instruction12',
 	instruction13 = 'instruction13',
-	instruction14a = 'instruction14a',
+	instruction14 = 'instruction14',
 	instruction14b = 'instruction14b',
 	instruction15 = 'instruction15',
 	instruction16 = 'instruction16',

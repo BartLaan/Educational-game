@@ -60,6 +60,7 @@ export const INIT_OBJECTS: InitObject[] = [
 	'questionmark',
 	'step',
 	'steppixles',
+	'steppixles_back',
 	'stepcount',
 	'stepcount_slash',
 	'turndegrees',
@@ -78,6 +79,7 @@ export const OBJECTS_MULTIPLE: ObjectKey[] = [
 	'open',
 	'step',
 	'steppixles',
+	'steppixles_back',
 	'turndegrees',
 	'turnleft',
 	'turnright',
@@ -85,6 +87,7 @@ export const OBJECTS_MULTIPLE: ObjectKey[] = [
 export const NUMBER_COMMANDS: ObjectKey[] = [
 	'for_x',
 	'steppixles',
+	'steppixles_back',
 	'turndegrees',
 ]
 export const LEVELS = [
@@ -103,8 +106,7 @@ export const LEVELS = [
 	'level11',
 	'level12',
 	'level13',
-	'level14a',
-	'level14b',
+	'level14',
 	'level15',
 	'level16',
 ]
