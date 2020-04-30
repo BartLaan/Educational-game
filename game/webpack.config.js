@@ -1,5 +1,6 @@
 var path = require('path')
 var webpack = require('webpack')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 function resolve(dir) {
 	return path.join(__dirname, dir)
@@ -73,6 +74,32 @@ module.exports = {
 				test: /\.(j|t)sx?$/,
 			},
 		],
+	},
+	optimization: {
+		minimizer: [new UglifyJsPlugin({
+			parallel: true,
+			sourceMap: true,
+			uglifyOptions: {
+				comments: false,
+				compress: {
+					booleans: true,
+					conditionals: true,
+					dead_code: true,
+					drop_debugger: true,
+					evaluate: true,
+					if_return: false,
+					join_vars: true,
+					passes: 2,
+					pure_getters: true,
+					sequences: true,
+					unused: true,
+					warnings: false,
+				},
+				mangle: true,
+				sourceMap: true,
+				toplevel: true,
+			},
+		})],
 	},
 	watchOptions: {
 		ignored: /node_modules/,
