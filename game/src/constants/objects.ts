@@ -19,6 +19,8 @@ export const COMMON_SPRITES = [
 	'slash',
 	'step',
 	'step-crnt',
+	'stop',
+	'stop-hover',
 ]
 export const COMMON_MODALS: SSKey[] = [
 	SSKey.fail,
@@ -88,6 +90,7 @@ export const NUMBER_COMMANDS: ObjectKey[] = [
 	'for_x',
 	'steppixles',
 	'steppixles_back',
+	'skippixles',
 	'turndegrees',
 ]
 export const LEVELS = [

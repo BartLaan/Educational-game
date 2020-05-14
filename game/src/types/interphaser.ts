@@ -63,6 +63,7 @@ export type GameObjects = {
 	player: Sprite,
 	questionmark: Sprite,
 	reset: Sprite,
+	skippixles: GameObjectMap<Container>,
 	step: GameObjectMap<Sprite>,
 	stepcount: Sprite,
 	stepcount_slash: Sprite,
@@ -99,6 +100,7 @@ export type ObjectKey =
 	| 'player'
 	| 'questionmark'
 	| 'reset'
+	| 'skippixles'
 	| 'step'
 	| 'stepcount'
 	| 'stepcount_slash'
@@ -119,6 +121,7 @@ export type DuplicableObject =
 	| 'if_padrechts'
 	| 'if_padvooruit'
 	| 'open'
+	| 'skippixles'
 	| 'step'
 	| 'steppixles'
 	| 'steppixles_back'
@@ -141,6 +144,7 @@ export type InitObject =
 	| 'player'
 	| 'reset'
 	| 'questionmark'
+	| 'skippixles'
 	| 'step'
 	| 'steppixles'
 	| 'steppixles_back'

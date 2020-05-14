@@ -191,7 +191,7 @@ export default class InterPhaser {
 
 			const repr = getStackRepresentation(this.stackObjects)
 			this.eventHandler(InterPhaserEvent.start, { stack: repr })
-			this.running = true
+			this.setRunning(true)
 		})
 
 		this.objects.reset.on('pointerdown', () => {
@@ -209,11 +209,19 @@ export default class InterPhaser {
 
 	abortMission() {
 		// Stop execution and reset player position
-		this.running = false
+		this.setRunning(false)
 		cancelAnimations(this.objects.player)
 		this.eventHandler(InterPhaserEvent.reset)
 		this.updateCurrentCommand()
 		this.clearPath()
+	}
+
+	setRunning(running: boolean) {
+		this.running = running
+		const executeTexture = running ? 'stop' : 'execute'
+		console.log(this.objects.execute.texture)
+		this.objects.execute.setTexture(executeTexture)
+		console.log(this.objects.execute.texture)
 	}
 
 	resetLevel() {
@@ -223,7 +231,7 @@ export default class InterPhaser {
 		this.eventHandler(InterPhaserEvent.reset)
 		this.activeCommand = null
 		this.stackIndex = null
-		this.running = false
+		this.setRunning(false)
 		this.maxedOut = false
 
 		// Lots of implicit knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
@@ -259,7 +267,6 @@ export default class InterPhaser {
 
 		// Cleaned up old data, now we need to reinitialize. That's easy:
 		this.setDynamicObjects()
-		// this.setInteractions()
 	}
 
 	// Set event handlers and init drop zone
@@ -674,7 +681,7 @@ export default class InterPhaser {
 	}
 
 	fail() {
-		this.running = false
+		this.setRunning(false)
 		const modal = new FailModal(this.phaser)
 		modal.render()
 		this.updateCurrentCommand()
@@ -685,6 +692,7 @@ export default class InterPhaser {
 			this.afterFail()
 		}
 	}
+
 	/**
 	 * displays a levelcomplete image on screen when victory event is fired
 	 */

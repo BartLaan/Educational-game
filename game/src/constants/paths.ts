@@ -28,6 +28,7 @@ export const SPRITE_PATHS = {
 	'close': 				'assets/commands/sluit.png',
 	'execute': 				'assets/buttons/uitvoeren.png',
 	'execute-hover':		'assets/buttons/uitvoeren-hover.png',
+	'levelcomplete': 		'assets/popups/goed-gedaan.gif',
 	'nextlevel': 			'assets/buttons/volgende-opdracht.png',
 	'ok':					'assets/buttons/ok.png',
 	'ok-hover':				'assets/buttons/ok-hover.png',
@@ -36,10 +37,13 @@ export const SPRITE_PATHS = {
 	'playagain': 			'assets/buttons/opnieuw-spelen.png',
 	'questionmark':			'assets/vraagteken.png',
 	'reset': 				'assets/buttons/opnieuw.png',
+	'skip-pixles':			'assets/commands/spring-pixels',
+	'skip-pixles-crnt':		'assets/commands/spring-pixels-crnt',
 	'slash': 				'assets/integers/slash.png',
 	'step': 				'assets/commands/stap.png',
 	'step-crnt': 			'assets/commands/stap-crnt.png',
-	'levelcomplete': 				'assets/popups/goed-gedaan.gif',
+	'stop': 				'assets/buttons/stop.png',
+	'stop-hover': 			'assets/buttons/stop-hover.png',
 
 	// level specific
 	'background1':					'assets/backgrounds/1.jpg',
@@ -116,7 +120,7 @@ export const SPRITESHEET_PATHS = {
 }
 export const GIF_PATHS = {
 	'afterlvl10':			'assets/popups/hello-world.gif',
-	'afterlvl20':			'assets/popups/wow-binair.gif',
+	'afterlvl15':			'assets/popups/wow-binair.gif',
 	'beforelvl11':			'assets/popups/ossie-spin.gif',
 	'fail': 				'assets/popups/oeps.gif',
 	'instruction1':			'assets/instructies/instructie-1.gif',

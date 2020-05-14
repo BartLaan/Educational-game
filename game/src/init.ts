@@ -7,6 +7,7 @@ import Level12 from './levels/level12'
 import Level13 from './levels/level13'
 import Level14 from './levels/level14'
 import Level15 from './levels/level15'
+import Level16 from './levels/level16'
 import Level2 from './levels/level2'
 import Level3a from './levels/level3a'
 import Level3b from './levels/level3b'
@@ -87,7 +88,7 @@ const config = {
 		Level13,
 		Level14,
 		Level15,
-		// Level16,
+		Level16,
 	],
 }
 

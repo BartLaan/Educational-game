@@ -198,6 +198,17 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		scaling: 0.9,
 		spriteID: 'reset',
 	},
+	skippixles: {
+		command: { commandID: 'skipPixles', pixles: null },
+		depth: 2,
+		draggable: true,
+		numOffsetX: -1,
+		numOffsetY: 0,
+		numScale: 0.45,
+		offsetX: COMMAND_AREA_X + 20.7,
+		offsetY: COMMAND_AREA_Y + 10,
+		spriteID: 'skippixles',
+	},
 	step: {
 		command: { commandID: 'step' },
 		depth: 2,

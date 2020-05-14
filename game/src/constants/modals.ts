@@ -5,7 +5,7 @@ export const modalConfig = {
 		buttons: [ 'invisibleButton' ],
 		mode: 'html',
 	},
-	'afterlvl20': {
+	'afterlvl15': {
 		buttons: [ 'invisibleButton' ],
 		mode: 'html',
 	},

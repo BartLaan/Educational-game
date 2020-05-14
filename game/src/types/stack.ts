@@ -22,6 +22,7 @@ export type CommandID =
 	| 'for'
 	| 'if'
 	| 'open'
+	| 'skipPixles'
 	| 'step'
 	| 'stepPixles'
 	| 'stepPixlesBack'
@@ -57,6 +58,10 @@ export type StackItemTurnDegrees = StackItemTemplate & {
 	commandID: 'turnDegrees',
 	degrees: number,
 }
+export type StackItemSkipPixles = StackItemTemplate & {
+	commandID: 'skipPixles',
+	pixles: number,
+}
 export type StackItemStepPixles = StackItemTemplate & {
 	commandID: 'stepPixles',
 	pixles: number,
@@ -72,5 +77,6 @@ export type StackItem =
 	| StackItemElse
 	| StackItemTurnDegrees
 	| StackItemStepPixles
+	| StackItemSkipPixles
 	| StackItemStepPixlesBack
 export type Stack = StackItem[]
