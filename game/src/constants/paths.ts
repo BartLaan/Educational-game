@@ -37,8 +37,8 @@ export const SPRITE_PATHS = {
 	'playagain': 			'assets/buttons/opnieuw-spelen.png',
 	'questionmark':			'assets/vraagteken.png',
 	'reset': 				'assets/buttons/opnieuw.png',
-	'skip-pixles':			'assets/commands/spring-pixels',
-	'skip-pixles-crnt':		'assets/commands/spring-pixels-crnt',
+	'skip-pixles':			'assets/commands/spring-pixels.png',
+	'skip-pixles-crnt':		'assets/commands/spring-pixels-crnt.png',
 	'slash': 				'assets/integers/slash.png',
 	'step': 				'assets/commands/stap.png',
 	'step-crnt': 			'assets/commands/stap-crnt.png',
@@ -120,7 +120,7 @@ export const SPRITESHEET_PATHS = {
 }
 export const GIF_PATHS = {
 	'afterlvl10':			'assets/popups/hello-world.gif',
-	'afterlvl15':			'assets/popups/wow-binair.gif',
+	'beforelvl16':			'assets/popups/wow-binair.gif',
 	'beforelvl11':			'assets/popups/ossie-spin.gif',
 	'fail': 				'assets/popups/oeps.gif',
 	'instruction1':			'assets/instructies/instructie-1.gif',

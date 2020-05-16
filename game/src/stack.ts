@@ -60,7 +60,7 @@ export default class StackManager {
 		}
 	}
 
-	stepPixles(pixles: number) {
+	stepPixles(pixles: number, drawPath: boolean = true) {
 		const coords = strToCoord(this.ossiePos.nodeLocation)
 		const radial = this.ossiePos.orientation * Math.PI / 180
 		const unsafeNewX = coords.x + (pixles * Math.sin(radial))
@@ -81,7 +81,7 @@ export default class StackManager {
 			}
 		}
 
-		return this.eventHandler(StackEvent.ossieposChange)
+		return this.eventHandler(StackEvent.ossieposChange, drawPath)
 	}
 
 	facingWall() {
@@ -148,12 +148,12 @@ export default class StackManager {
 		if (stackItem.autoStop) {
 			if (this.hasReachedGoal()) {
 				stack.shift()
-				return this.stackExecute(stack, callbackStacks)
+				return this.cueStackItem(stack, callbackStacks)
 			}
 		} else if (stackItem.counts !== undefined && stackItem.counts <= 0) {
 			// Only take forloop serious if it has at least 1
 			stack.shift()
-			return this.stackExecute(stack, callbackStacks)
+			return this.cueStackItem(stack, callbackStacks)
 		} else {
 			if (stackItem.counter === undefined) {
 				stackItem.counter = stackItem.counts
@@ -167,7 +167,7 @@ export default class StackManager {
 		callbackStacks.unshift(stack)
 
 		const forStack = deepCopy(stackItem.do)
-		return this.stackExecute(forStack, callbackStacks)
+		return this.cueStackItem(forStack, callbackStacks)
 
 	}
 
@@ -179,8 +179,9 @@ export default class StackManager {
 		if (this.spaceType === Space.pixles) {
 			this.pathTaken = []
 		}
+		this.timer = undefined
 
-		this.stackExecute(stackToExecute, [])
+		this.cueStackItem(stackToExecute, [])
 	}
 
 	stackEnd(proper: boolean) {
@@ -197,7 +198,10 @@ export default class StackManager {
 		this.eventHandler(StackEvent.openEnd)
 	}
 
-	stackExecute(stack: Stack, callbackStacks: Stack[]) {
+	// wrapper around executeStackItem for pacing and managing the stack/callbackStacks
+	cueStackItem(stack: Stack, callbackStacks: Stack[]) {
+		if (this.timer) { alert('HELP IM BROKEN') }
+
 		// No commands left
 		if (stack.length === 0 && callbackStacks.length === 0) {
 			return this.stackEnd(false)
@@ -205,12 +209,13 @@ export default class StackManager {
 		// Stack exhausted, continue with callbackStacks
 		if (stack.length === 0) {
 			const newStack = callbackStacks.shift()
-			return this.stackExecute(newStack || [], callbackStacks)
+			return this.cueStackItem(newStack || [], callbackStacks)
 		}
 
 		// Freeze game so player can see what's happening, but only for actions that change position
 		const timing = isBracketObject(stack[0].commandID) ? 0 : this.timing
 		this.timer = setTimeout(() => {
+			this.timer = undefined
 			this.executeStackItem(stack, callbackStacks)
 		}, timing)
 	}
@@ -222,8 +227,8 @@ export default class StackManager {
 		// console.log('executing command:', stackItem.commandID, this.ossiePos)
 
 		this.eventHandler(StackEvent.executeCommand, stackItem.objectRef)
-		// For loops prepend the current stack to callbackStacks and call stackExecute with the for stack:
-		// stackExecute(forStack, [currentStack, ...callbackStacks])
+		// For loops prepend the current stack to callbackStacks and call cueStackItem with the for stack:
+		// cueStackItem(forStack, [currentStack, ...callbackStacks])
 		// Everytime this happens, the counter of the forloop updates and when it reaches 0, we continue
 		// with the currentStack
 		if (stackItem.commandID !== 'for') {
@@ -234,7 +239,7 @@ export default class StackManager {
 			case 'if':
 				if (this.conditional(stackItem.condition)) {
 					callbackStacks.unshift(stack)
-					return this.stackExecute(stackItem.do, callbackStacks)
+					return this.cueStackItem(stackItem.do, callbackStacks)
 				}
 				break
 
@@ -244,12 +249,16 @@ export default class StackManager {
 				// console.log('found ifobject for else:', ifObject)
 				if (this.conditional(ifObject.condition) === false) {
 					callbackStacks.unshift(stack)
-					return this.stackExecute(stackItem.do, callbackStacks)
+					return this.cueStackItem(stackItem.do, callbackStacks)
 				}
 				break
 
 			case 'for':
 				return this.executeFor(stackItem, stack, callbackStacks)
+
+			case 'skipPixles':
+				this.stepPixles(stackItem.pixles, false)
+				break
 
 			case 'step':
 				this.step()
@@ -281,6 +290,6 @@ export default class StackManager {
 				console.log('skip command', stackItem.commandID)
 		}
 
-		return this.stackExecute(stack, callbackStacks)
+		return this.cueStackItem(stack, callbackStacks)
 	}
 }

@@ -57,7 +57,7 @@ export default class OssieGame {
 				}, 800)
 				break
 			case StackEvent.ossieposChange:
-				this.interPhaser.updateOssiePos(this.stackManager.getPosition(), this.animate)
+				this.interPhaser.updateOssiePos(this.stackManager.getPosition(), this.animate, data)
 				break
 			case StackEvent.start:
 				// this.interPhaser.disableStackInteraction()

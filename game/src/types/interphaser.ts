@@ -64,6 +64,7 @@ export type GameObjects = {
 	questionmark: Sprite,
 	reset: Sprite,
 	skippixles: GameObjectMap<Container>,
+	stop: Sprite,
 	step: GameObjectMap<Sprite>,
 	stepcount: Sprite,
 	stepcount_slash: Sprite,
@@ -101,6 +102,7 @@ export type ObjectKey =
 	| 'questionmark'
 	| 'reset'
 	| 'skippixles'
+	| 'stop'
 	| 'step'
 	| 'stepcount'
 	| 'stepcount_slash'
@@ -145,6 +147,7 @@ export type InitObject =
 	| 'reset'
 	| 'questionmark'
 	| 'skippixles'
+	| 'stop'
 	| 'step'
 	| 'steppixles'
 	| 'steppixles_back'

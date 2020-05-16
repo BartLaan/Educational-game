@@ -21,7 +21,6 @@ const {
 	MOVEMENT_DURATION,
 	OBJECT_CONFIG,
 	PATH_COLOR,
-	PATH_DRAW_PER_SECOND,
 	PATH_THICKNESS,
 	SCALING_FACTOR_DIV,
 	STACK_AVG_CMD_SIZE,
@@ -104,19 +103,23 @@ export default class InterPhaser {
 	// number, indicating the width of the canvas. Should be equal to window.innerWidth except when resizing
 	width: number
 
+	didInit: false
 	showIntro() {
 		const instructionName = SSKey[this.levelConfig.levelName.replace('level', 'instruction')]
 		const instructionModal = new Modal(this.phaser, instructionName)
 
-		// Hack: use anonymous function so that we can replace the afterIntro
-		// function after creating the InterPhaser instance. This is necessary
-		// because showIntro is called in the constructor.
 		instructionModal.afterHide = () => {
+			loadingScreen.destroy()
 			if (this.afterIntro) {
 				this.afterIntro()
 			}
 		}
 		instructionModal.render()
+
+		// to not show the game screen while loading the intro
+		const loadingScreen = this.phaser.add.rectangle(0, 0, this.width, this.height, 0xffffff)
+		loadingScreen.setOrigin(0, 0)
+		loadingScreen.setDepth(3)
 	}
 
 	initLevel() {
@@ -172,6 +175,7 @@ export default class InterPhaser {
 		}
 		this.objects = objects as GameObjects
 
+		this.objects.stop.setVisible(false)
 		this.objects.path = []
 
 		if (this.levelConfig.spaceType === Space.grid && this.hasObject('questionmark')) {
@@ -183,16 +187,15 @@ export default class InterPhaser {
 		}
 
 		this.objects.execute.on('pointerdown', () => {
-			if (this.running) {
-				return this.abortMission()
-			}
-			this.objects.execute.setTint(0xff0000)
+			this.clearPath()
 			if (this.stackObjects.length === 0) { return }
 
 			const repr = getStackRepresentation(this.stackObjects)
 			this.eventHandler(InterPhaserEvent.start, { stack: repr })
 			this.setRunning(true)
 		})
+
+		this.objects.stop.on('pointerdown', () => this.abortMission())
 
 		this.objects.reset.on('pointerdown', () => {
 			if (this.running) {
@@ -218,10 +221,8 @@ export default class InterPhaser {
 
 	setRunning(running: boolean) {
 		this.running = running
-		const executeTexture = running ? 'stop' : 'execute'
-		console.log(this.objects.execute.texture)
-		this.objects.execute.setTexture(executeTexture)
-		console.log(this.objects.execute.texture)
+		this.objects.execute.setVisible(!this.running)
+		this.objects.stop.setVisible(this.running)
 	}
 
 	resetLevel() {
@@ -496,6 +497,7 @@ export default class InterPhaser {
 
 		const msg = {
 			'for': 'Hoe vaak herhalen?',
+			'skipPixles': 'Hoeveel pixels?',
 			'stepPixles': 'Hoeveel pixels?',
 			'stepPixlesBack': 'Hoeveel pixels?',
 			'turnDegrees': 'Hoeveel graden?',
@@ -520,6 +522,7 @@ export default class InterPhaser {
 
 		const key = {
 			'for': 'counts',
+			'skipPixles': 'pixles',
 			'stepPixles': 'pixles',
 			'stepPixlesBack': 'pixles',
 			'turnDegrees': 'degrees',
@@ -686,7 +689,7 @@ export default class InterPhaser {
 		modal.render()
 		this.updateCurrentCommand()
 		if (this.levelConfig.spaceType === Space.pixles) {
-			this.clearPath()
+			// this.clearPath()
 		}
 		if (this.afterFail) {
 			this.afterFail()
@@ -698,10 +701,16 @@ export default class InterPhaser {
 	 */
 	win() {
 		const modal = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this))
+		// in the pixle levels, wait a bit so the player can see their path result a bit longer
+		if (this.levelConfig.spaceType === Space.pixles) {
+			setTimeout(() => modal.render(), 1000)
+			return
+		}
+
 		modal.render()
 	}
 
-	updateOssiePos(ossiePos: OssiePos, animate?: boolean) {
+	updateOssiePos(ossiePos: OssiePos, animate?: boolean, drawPath?: boolean) {
 		const player = this.objects.player as Sprite
 
 		player.angle = ossiePos.orientation - 90
@@ -721,7 +730,7 @@ export default class InterPhaser {
 		}
 
 		if (animate && this.running) {
-			const movementCallback = this.levelConfig.spaceType === Space.pixles ? this.drawPath.bind(this) : undefined
+			const movementCallback = drawPath ? this.drawPath.bind(this) : undefined
 			animateMovement(player, newCoords, MOVEMENT_DURATION, movementCallback)
 			return
 		}
@@ -732,39 +741,28 @@ export default class InterPhaser {
 		player.y = newCoords.y
 	}
 
-	prevPathDrawTime?: number
 	drawPath(oldCoords: Coords, newCoords: Coords) {
-		if (!this.prevPathDrawTime) {
-			this.prevPathDrawTime = Date.now()
-			return
-		}
-
-		if (Date.now() - this.prevPathDrawTime < (60 / PATH_DRAW_PER_SECOND)) {
-			return
-		}
-		this.prevPathDrawTime = Date.now()
-
 		const originX = ((newCoords.x - oldCoords.x) / 2) + oldCoords.x
 		const originY = ((newCoords.y - oldCoords.y) / 2) + oldCoords.y
 
 		const relNewX = newCoords.x - originX
-		const relOldX = oldCoords.x - originX
 		const relNewY = newCoords.y - originY
+		const relOldX = oldCoords.x - originX
 		const relOldY = oldCoords.y - originY
-		const skewNormal = Math.abs(relNewX) + Math.abs(relNewY)
+		const skewNormal = (Math.abs(relNewX) + Math.abs(relNewY)) || 0.00001 // prevent division by zero
 		const skewX = relNewY / skewNormal
 		const skewY = relNewX / skewNormal
 		const offsetX = skewX * PATH_THICKNESS
 		const offsetY = skewY * PATH_THICKNESS
-
 		const points = [
-			{ x: (relOldX - offsetX) + 2 * Math.random(), y: (relOldY + offsetY) + 2 * Math.random() },
-			{ x: (relOldX + offsetX) + 2 * Math.random(), y: (relOldY - offsetY) + 2 * Math.random() },
-			{ x: (relNewX + offsetX) + 2 * Math.random(), y: (relNewY - offsetY) + 2 * Math.random() },
-			{ x: (relNewX - offsetX) + 2 * Math.random(), y: (relNewY + offsetY) + 2 * Math.random() },
+			{ x: relOldX - offsetX, y: relOldY + offsetY },
+			{ x: relOldX + offsetX, y: relOldY - offsetY },
+			{ x: relNewX + offsetX, y: relNewY - offsetY },
+			{ x: relNewX - offsetX, y: relNewY + offsetY },
 		]
 
 		const polygon = this.phaser.add.polygon(originX, originY, points, PATH_COLOR, 0.7)
+		polygon.setOrigin(0, 0)
 		this.objects.path.push(polygon)
 	}
 

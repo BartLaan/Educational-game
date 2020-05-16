@@ -38,7 +38,7 @@ export default class Level12 extends Phaser.Scene implements PhaserLevel {
 			objects: this.objects,
 			pixleSize: 0.2514,
 			spaceType: Space.pixles,
-			timing: 80,
+			timing: 50,
 		}
 
 		window.ossieGame = new OssieGame(levelConfig, this)

@@ -40,6 +40,7 @@ export const COMMON_OBJECTS: Array<ObjectKey | string> = [
 	'open',
 	'player',
 	'reset',
+	'stop',
 	'stepcount',
 	'stepcount_slash',
 	'levelcomplete',
@@ -60,7 +61,9 @@ export const INIT_OBJECTS: InitObject[] = [
 	'player',
 	'reset',
 	'questionmark',
+	'stop',
 	'step',
+	'skippixles',
 	'steppixles',
 	'steppixles_back',
 	'stepcount',
@@ -79,6 +82,7 @@ export const OBJECTS_MULTIPLE: ObjectKey[] = [
 	'if_padrechts',
 	'if_padvooruit',
 	'open',
+	'skippixles',
 	'step',
 	'steppixles',
 	'steppixles_back',
@@ -88,9 +92,9 @@ export const OBJECTS_MULTIPLE: ObjectKey[] = [
 ]
 export const NUMBER_COMMANDS: ObjectKey[] = [
 	'for_x',
+	'skippixles',
 	'steppixles',
 	'steppixles_back',
-	'skippixles',
 	'turndegrees',
 ]
 export const LEVELS = [

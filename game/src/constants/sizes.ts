@@ -36,7 +36,7 @@ export const BASE_SIZE_X = 1024
 export const BASE_SIZE_Y = 768
 // etc
 export const ANIMATION_FPS = 30
-export const PATH_COLOR = 0xf40977
+export const PATH_COLOR = 0x000000 // pink: 0xf40977
 export const PATH_DRAW_PER_SECOND = 1.5
 export const PATH_THICKNESS = 3
 export const MOVEMENT_DURATION = 250 // ms
@@ -202,12 +202,18 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'skipPixles', pixles: null },
 		depth: 2,
 		draggable: true,
-		numOffsetX: -1,
+		numOffsetX: 4.5,
 		numOffsetY: 0,
 		numScale: 0.45,
 		offsetX: COMMAND_AREA_X + 20.7,
 		offsetY: COMMAND_AREA_Y + 10,
-		spriteID: 'skippixles',
+		spriteID: 'skip-pixles',
+	},
+	stop: {
+		interactive: true,
+		offsetX: 21.3,
+		offsetY: 93.7,
+		spriteID: 'stop',
 	},
 	step: {
 		command: { commandID: 'step' },
@@ -257,6 +263,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numScale: 0.45,
 		offsetX: COMMAND_AREA_X + 35,
 		offsetY: COMMAND_AREA_Y + 5,
+		scaling: 0.95,
 		spriteID: 'steppixles-back',
 	},
 	turndegrees: {
