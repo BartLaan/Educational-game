@@ -60,7 +60,7 @@ export default class StackManager {
 		}
 	}
 
-	stepPixles(pixles: number, drawPath: boolean = true) {
+	stepPixles(pixles: number, drawPath: boolean, onArrival: () => void) {
 		const coords = strToCoord(this.ossiePos.nodeLocation)
 		const radial = this.ossiePos.orientation * Math.PI / 180
 		const unsafeNewX = coords.x + (pixles * Math.sin(radial))
@@ -81,7 +81,7 @@ export default class StackManager {
 			}
 		}
 
-		return this.eventHandler(StackEvent.ossieposChange, drawPath)
+		return this.eventHandler(StackEvent.ossieposChange, { drawPath, onArrival })
 	}
 
 	facingWall() {
@@ -193,8 +193,9 @@ export default class StackManager {
 			return
 		}
 		if (proper) {
-			// this.eventHandler(StackEvent.fail)
+			return this.eventHandler(StackEvent.fail)
 		}
+
 		this.eventHandler(StackEvent.openEnd)
 	}
 
@@ -235,6 +236,10 @@ export default class StackManager {
 			stack.shift()
 		}
 
+		// callback for the step commands, so that the animation can complete before
+		// moving on to the next command
+		const onArrival = () => this.cueStackItem(stack, callbackStacks)
+
 		switch (stackItem.commandID) {
 			case 'if':
 				if (this.conditional(stackItem.condition)) {
@@ -257,20 +262,17 @@ export default class StackManager {
 				return this.executeFor(stackItem, stack, callbackStacks)
 
 			case 'skipPixles':
-				this.stepPixles(stackItem.pixles, false)
-				break
+				return this.stepPixles(stackItem.pixles, false, onArrival)
 
 			case 'step':
 				this.step()
 				break
 
 			case 'stepPixles':
-				this.stepPixles(stackItem.pixles)
-				break
+				return this.stepPixles(stackItem.pixles, true, onArrival)
 
 			case 'stepPixlesBack':
-				this.stepPixles(-stackItem.pixles)
-				break
+				return this.stepPixles(-stackItem.pixles, true, onArrival)
 
 			case 'turnL':
 				this.turnL()

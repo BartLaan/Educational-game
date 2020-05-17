@@ -21,11 +21,15 @@ export default class OssieGame {
 		if (levelConfig.animate !== undefined) {
 			this.animate = levelConfig.animate
 		}
+		if (levelConfig.shouldFail !== undefined) {
+			this.shouldFail = levelConfig.shouldFail
+		}
 	}
 
 	animate = true
 	interPhaser: InterPhaser
 	stackManager: StackManager
+	shouldFail = true
 
 	phaserHandler(eventCode: InterPhaserEvent, data?: any) {
 		console.log('event', eventCode, 'data', data)
@@ -45,6 +49,8 @@ export default class OssieGame {
 
 	stackHandler(eventCode: StackEvent, data: any) {
 		// console.log('OSSIE EVENT: eventCode=' + eventCode + ' data=', data)
+		if (eventCode === StackEvent.fail && !this.shouldFail) { return }
+
 		switch (eventCode) {
 			case StackEvent.executeCommand:
 				this.interPhaser.onCommandExecute(data)
@@ -57,7 +63,7 @@ export default class OssieGame {
 				}, 800)
 				break
 			case StackEvent.ossieposChange:
-				this.interPhaser.updateOssiePos(this.stackManager.getPosition(), this.animate, data)
+				this.interPhaser.movePlayer(this.stackManager.getPosition(), { animate: this.animate, ...data })
 				break
 			case StackEvent.start:
 				// this.interPhaser.disableStackInteraction()

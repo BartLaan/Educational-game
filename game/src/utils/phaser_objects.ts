@@ -1,7 +1,7 @@
 import { Coords } from '~/types/board'
 import { deepCopy } from './etc'
 import { NUMBER_COMMANDS, BRACKET_OBJECTS, OBJECTS_MULTIPLE } from '~/constants/objects'
-import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS, BASE_SIZE_X, BASE_SIZE_Y } from '~/constants/sizes'
+import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS, BASE_SIZE_X, BASE_SIZE_Y, VELOCITY, TURN_SPEED } from '~/constants/sizes'
 import { GameObject, ObjectConfig, Container, Sprite, ObjectKey, DuplicableObject } from '~/types/interphaser'
 import { CommandID } from '~/types/stack'
 
@@ -108,22 +108,48 @@ export function renderNumber(phaser: Phaser.Scene, object: Container, num: numbe
 	}
 }
 
-type MovementCallback = (oldCoords: Coords, newCoords: Coords) => void
-export function animateMovement(object: GameObject, newCoords: Coords, duration: number, callback?: MovementCallback) {
+const pythagoras = (a: number, b: number): number => Math.sqrt((a * a) + (b * b))
+
+interface AnimationOptions {
+	onArrival?(): void
+	onMovement?(oldCoords: Coords, newCoords: Coords): void
+	velocity?: number,
+	turnSpeed?: number,
+}
+export function animateMovement(
+	object: Sprite, newCoords: Coords, newAngle: number, options: AnimationOptions = {},
+) {
+	const { onArrival, onMovement } = options
+
+	// disable angle animation, not working atm
+	setAngle(object, newAngle)
 	// nothing to animate
-	if (object.x === newCoords.x && object.y === newCoords.y) {
+	if (object.x === newCoords.x && object.y === newCoords.y && object.angle === newAngle) {
+		if (onArrival) {
+			onArrival()
+		}
 		return
 	}
 
-	cancelAnimations(object)
+	// cancelAnimations(object)
+
+	const velocity = options.velocity || VELOCITY
+	const distance = pythagoras(Math.abs(newCoords.x - object.x), Math.abs(newCoords.y - object.y))
+	const moveDuration = (distance / velocity) * 1000 // in ms
+
+	const turnSpeed = options.turnSpeed || TURN_SPEED
+	const turnDiff = Math.abs(newAngle - object.angle)
+	const turnDuration = (turnDiff / turnSpeed) * 1000 // in ms
 
 	const frameDuration = 1000 / ANIMATION_FPS
-	const frameAmount = Math.ceil(duration / frameDuration)
+	const frameAmount = Math.ceil(Math.max(moveDuration, turnDuration) / frameDuration)
 
 	const stepX = (newCoords.x - object.x) / frameAmount
 	const stepY = (newCoords.y - object.y) / frameAmount
+	const stepAngle = (object.angle - newAngle) / frameAmount
 	const moveRight = object.x < newCoords.x
 	const moveDown = object.y < newCoords.y
+	const moveClock = object.angle < newAngle
 
 	const interval = setInterval(() => {
 		const potentialNewX = object.x + stepX
@@ -136,18 +162,28 @@ export function animateMovement(object: GameObject, newCoords: Coords, duration:
 			? potentialNewY > newCoords.y
 			: potentialNewY < newCoords.y
 
-		if (overShootX || overShootY) {
+		const potentialNewAngle = object.angle + stepAngle
+		const overShootAngle = moveClock
+			? potentialNewAngle > newAngle
+			: potentialNewAngle < newAngle
+
+		if (overShootX || overShootY || overShootAngle) {
+			clearInterval(interval)
 			object.x = newCoords.x
 			object.y = newCoords.y
-			clearInterval(interval)
+			setAngle(object, newAngle)
+			if (onArrival) {
+				onArrival()
+			}
 			return
 		}
 
 		const oldCoords = { x: object.x, y: object.y }
 		object.x = potentialNewX
 		object.y = potentialNewY
-		if (callback) {
-			callback(oldCoords, { x: object.x, y: object.y })
+		setAngle(object, newAngle)
+		if (onMovement) {
+			onMovement(oldCoords, { x: object.x, y: object.y })
 		}
 
 	}, frameDuration)
@@ -157,6 +193,18 @@ export function animateMovement(object: GameObject, newCoords: Coords, duration:
 	}
 	const existingAnimations = object.getData('animatedMovement')
 	existingAnimations.push(interval)
+}
+
+export const setAngle = (object: Sprite, angle: number) => {
+	object.angle = angle
+	// Make sure that the avatar is not upside-down
+	if (object.angle > 90 || object.angle < -90) {
+		// object.angle = 360 - object.angle
+		object.setFlipY(true)
+	} else {
+		object.setFlipY(false)
+	}
+
 }
 
 export function cancelAnimations(object: GameObject) {

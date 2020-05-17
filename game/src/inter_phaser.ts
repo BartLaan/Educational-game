@@ -6,7 +6,7 @@ import FailModal from './modals/fail'
 import LevelCompleteModal from './modals/level_complete'
 import { Coords, OssiePos } from './types/board'
 import { LevelConfig, Space } from './types/game_config'
-import { InterPhaserEvent, GameObject, Pointer, Sprite, Container, PhaserImage, GameObjects } from './types/interphaser'
+import { InterPhaserEvent, GameObject, Pointer, Sprite, Container, PhaserImage, GameObjects, ObjectKey } from './types/interphaser'
 import { strToCoord } from './utils/level_setup'
 import * as phaser_objects from './utils/phaser_objects'
 import { getStackRepresentation } from './utils/stack'
@@ -18,7 +18,6 @@ const {
 	BOARD_STEPSIZE_X,
 	BOARD_STEPSIZE_Y,
 	HOVER_SCALING,
-	MOVEMENT_DURATION,
 	OBJECT_CONFIG,
 	PATH_COLOR,
 	PATH_THICKNESS,
@@ -43,11 +42,12 @@ const {
 	isSprite,
 	isContainer,
 	renderNumber,
+	setAngle,
 	setGameObject,
 	w,
 } = phaser_objects
 
-type ObjectKey = string
+interface MovePlayerOptions { animate?: boolean, drawPath?: boolean, onArrival?: () => void }
 export type InterPhaserHandler = (stackEvent: InterPhaserEvent, data?: any) => void
 
 export default class InterPhaser {
@@ -103,13 +103,14 @@ export default class InterPhaser {
 	// number, indicating the width of the canvas. Should be equal to window.innerWidth except when resizing
 	width: number
 
-	didInit: false
 	showIntro() {
 		const instructionName = SSKey[this.levelConfig.levelName.replace('level', 'instruction')]
 		const instructionModal = new Modal(this.phaser, instructionName)
 
 		instructionModal.afterHide = () => {
-			loadingScreen.destroy()
+			if (loadingScreen) {
+				loadingScreen.destroy()
+			}
 			if (this.afterIntro) {
 				this.afterIntro()
 			}
@@ -207,7 +208,7 @@ export default class InterPhaser {
 
 		this.objects.backButton.on('pointerdown', this.showIntro.bind(this))
 
-		this.updateOssiePos(this.levelConfig.initPosition)
+		this.movePlayer(this.levelConfig.initPosition)
 	}
 
 	abortMission() {
@@ -432,26 +433,6 @@ export default class InterPhaser {
 		this.dropObjectOnStack(gameObject)
 		this.duplicateObject(gameObject)
 	}
-
-	// //  Just a visual display of the drop zone
-	// renderDropZone() {
-	// 	if (this.graphics === null) {
-	// 		this.graphics = this.phaser.add.graphics()
-	// 		this.graphics.lineStyle(2, 0xffff00)
-	// 	}
-	// 	this.graphics.strokeRect(
-	// 		w(BOARD_OFFSET_X),
-	// 		h(BOARD_OFFSET_Y),
-	// 		w(BOARD_STEPSIZE_X * 8),
-	// 		h(BOARD_STEPSIZE_Y * 5)
-	// 	)
-	// 	this.graphics.strokeRect(
-	// 		w(BOARD_OFFSET_X),
-	// 		h(BOARD_OFFSET_Y),
-	// 		w(BOARD_STEPSIZE_X),
-	// 		h(BOARD_STEPSIZE_Y)
-	// 	)
-	// }
 
 	inDropZone(location: Coords) {
 		return (
@@ -710,18 +691,10 @@ export default class InterPhaser {
 		modal.render()
 	}
 
-	updateOssiePos(ossiePos: OssiePos, animate?: boolean, drawPath?: boolean) {
+	movePlayer(ossiePos: OssiePos, options: MovePlayerOptions = {}) {
 		const player = this.objects.player as Sprite
 
-		player.angle = ossiePos.orientation - 90
-
-		// Make sure that the avatar is not upside-down
-		if (player.angle > 90 || player.angle < -90) {
-			// player.angle = 360 - player.angle
-			player.setFlipY(true)
-		} else {
-			player.setFlipY(false)
-		}
+		const newAngle = ossiePos.orientation - 90
 
 		const ossieCoords = strToCoord(ossiePos.nodeLocation)
 		const newCoords = {
@@ -729,16 +702,23 @@ export default class InterPhaser {
 			y: this.boardOffsetY + (this.stepsizeY * ossieCoords.y),
 		}
 
-		if (animate && this.running) {
-			const movementCallback = drawPath ? this.drawPath.bind(this) : undefined
-			animateMovement(player, newCoords, MOVEMENT_DURATION, movementCallback)
+		if (options.animate && this.running) {
+			const onMovement = options.drawPath ? this.drawPath.bind(this) : undefined
+			const animOptions = { onMovement, onArrival: options.onArrival }
+			animateMovement(player, newCoords, newAngle, animOptions)
 			return
 		}
-		if (this.running && this.levelConfig.spaceType === Space.pixles) {
+
+		// not animated
+		if (this.running && options.drawPath) {
 			this.drawPath(player, newCoords)
 		}
+		setAngle(player, newAngle)
 		player.x = newCoords.x
 		player.y = newCoords.y
+		if (options.onArrival) {
+			options.onArrival()
+		}
 	}
 
 	drawPath(oldCoords: Coords, newCoords: Coords) {

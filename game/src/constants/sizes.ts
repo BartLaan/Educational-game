@@ -39,9 +39,10 @@ export const ANIMATION_FPS = 30
 export const PATH_COLOR = 0x000000 // pink: 0xf40977
 export const PATH_DRAW_PER_SECOND = 1.5
 export const PATH_THICKNESS = 3
-export const MOVEMENT_DURATION = 250 // ms
+export const VELOCITY = 500 // phaser distance unit / sec
 export const COMMAND_TIMING = 400 // ms
 export const SCALING_FACTOR_DIV = 1024
+export const TURN_SPEED = 360 // angle / sec
 export const VICTORY_TIMEOUT = 1500 // ms
 export const WH_RATIO = 1.3333333333
 
@@ -205,7 +206,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numOffsetX: 4.5,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 20.7,
+		offsetX: COMMAND_AREA_X + 20.4,
 		offsetY: COMMAND_AREA_Y + 10,
 		spriteID: 'skip-pixles',
 	},
@@ -250,7 +251,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numOffsetX: -1,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 20.7,
+		offsetX: COMMAND_AREA_X + 20.9,
 		offsetY: COMMAND_AREA_Y + 5,
 		spriteID: 'steppixles',
 	},

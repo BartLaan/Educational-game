@@ -36,7 +36,7 @@ export default class Level16 extends Phaser.Scene implements PhaserLevel {
 	create() {
 		const levelConfig: LevelConfigPixle = {
 			animate: true,
-			goalPath: [],
+			goalPath: ['CANT WIN'],
 			initPosition: {
 				orientation: 90,
 				nodeLocation: '220,200',
@@ -45,6 +45,7 @@ export default class Level16 extends Phaser.Scene implements PhaserLevel {
 			levelName: this.levelName,
 			objects: this.objects,
 			pixleSize: 0.135,
+			shouldFail: false,
 			spaceType: Space.pixles,
 			timing: 200,
 		}
@@ -56,7 +57,6 @@ export default class Level16 extends Phaser.Scene implements PhaserLevel {
 			ossieGame.interPhaser.objects.stepcount.setVisible(false)
 			ossieGame.interPhaser.objects.stepcount_total.setVisible(false)
 			ossieGame.interPhaser.objects.stepcount_slash.setVisible(false)
-			ossieGame.interPhaser.fail = () => { /* no-op */ }
 		}
 
 		const timeout = true ? 5 : 5000
