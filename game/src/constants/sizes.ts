@@ -87,7 +87,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
 		offsetY: COMMAND_AREA_Y + 7.7,
-		scaling: 0.9,
+		scaling: 0.8,
 		spriteID: 'close',
 	},
 	else: {
@@ -180,7 +180,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		draggable: true,
 		offsetX: COMMAND_AREA_X,
 		offsetY: COMMAND_AREA_Y + 1.8,
-		scaling: 0.9,
+		scaling: 0.8,
 		spriteID: 'open',
 	},
 	player: {
