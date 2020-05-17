@@ -68,7 +68,7 @@ class Level3b extends Phaser.Scene implements PhaserLevel {
 				return
 			}
 			forCounter += 1
-			if (goal && forCounter <= 7) {
+			if (!goal || forCounter <= 7) {
 				return
 			}
 
