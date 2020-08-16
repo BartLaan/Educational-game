@@ -10,7 +10,7 @@ export const BOARD_OFFSET_X = 33
 export const BOARD_OFFSET_Y = -2.8
 export const CONFIRM_POS_X = 40
 export const CONFIRM_POS_Y = 74
-export const COMMAND_AREA_X = 45
+export const COMMAND_AREA_X = 44
 export const COMMAND_AREA_Y = 78
 export const FAILBUTTON_X = 40
 export const FAILBUTTON_Y = 60
@@ -27,7 +27,7 @@ export const STACK_ZONE_POS_X = 10
 export const STACK_ZONE_POS_Y = 4
 export const STACK_ZONE_HEIGHT = 92
 export const STACK_ZONE_WIDTH = 21
-export const STEP_COUNT_DISPLAY_X = 3.9
+export const STEP_COUNT_DISPLAY_X = 3.8
 export const STEP_COUNT_DISPLAY_Y = 95.8
 export const STEP_COUNT_SPACING = 1.9
 export const WINBUTTON_Y = 88
@@ -94,8 +94,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'else' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 11.7,
-		offsetY: COMMAND_AREA_Y + 9.6,
+		offsetX: COMMAND_AREA_X + 35,
+		offsetY: COMMAND_AREA_Y + 7.8,
 		spriteID: 'else',
 	},
 	execute: {
@@ -108,8 +108,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'for', counts: 9999 },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 43,
-		offsetY: COMMAND_AREA_Y,
+		offsetX: COMMAND_AREA_X + 45,
+		offsetY: COMMAND_AREA_Y + 2,
 		scaling: 0.9,
 		spriteID: 'for',
 	},
@@ -117,9 +117,9 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'for', autoStop: true },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 44,
-		offsetY: COMMAND_AREA_Y + 8.2,
-		scaling: 0.9,
+		offsetX: COMMAND_AREA_X + 46,
+		offsetY: COMMAND_AREA_Y + 9,
+		scaling: 0.95,
 		spriteID: 'for-till',
 	},
 	for_x: {
@@ -128,8 +128,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		draggable: true,
 		numOffsetX: 2.8,
 		numOffsetY: 2,
-		offsetX: COMMAND_AREA_X + 44,
-		offsetY: COMMAND_AREA_Y,
+		offsetX: COMMAND_AREA_X + 46,
+		offsetY: COMMAND_AREA_Y + 1,
 		scaling: 0.9,
 		spriteID: 'for-x',
 	},
@@ -137,8 +137,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'if', condition: Conditional.leftfree },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 12.4,
-		offsetY: COMMAND_AREA_Y + 4.8,
+		offsetX: COMMAND_AREA_X + 24,
+		offsetY: COMMAND_AREA_Y + 1.8,
 		scaling: 1,
 		spriteID: 'if-padlinks',
 	},
@@ -146,8 +146,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'if', condition: Conditional.rightfree },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 23,
-		offsetY: COMMAND_AREA_Y + 4.8,
+		offsetX: COMMAND_AREA_X + 35,
+		offsetY: COMMAND_AREA_Y + 1.8,
 		scaling: 1,
 		spriteID: 'if-padrechts',
 	},
@@ -155,8 +155,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'if', condition: Conditional.forwardfree },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 33.7,
-		offsetY: COMMAND_AREA_Y + 4.8,
+		offsetX: COMMAND_AREA_X + 24,
+		offsetY: COMMAND_AREA_Y + 7.8,
 		scaling: 1,
 		spriteID: 'if-padvooruit',
 	},
@@ -206,8 +206,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numOffsetX: 4.5,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 20.4,
-		offsetY: COMMAND_AREA_Y + 10,
+		offsetX: COMMAND_AREA_X + 45,
+		offsetY: COMMAND_AREA_Y + 8,
 		spriteID: 'skip-pixles',
 	},
 	stop: {
@@ -220,8 +220,10 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'step' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 10,
+		offsetX: COMMAND_AREA_X + 12,
 		offsetY: COMMAND_AREA_Y,
+		offsetX2: COMMAND_AREA_X + 15,
+		offsetY2: COMMAND_AREA_Y + 2,
 		scaling: 0.9,
 		spriteID: 'step',
 	},
@@ -251,8 +253,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numOffsetX: -1,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 20.9,
-		offsetY: COMMAND_AREA_Y + 5,
+		offsetX: COMMAND_AREA_X + 29,
+		offsetY: COMMAND_AREA_Y + 2,
 		spriteID: 'steppixles',
 	},
 	steppixles_back: {
@@ -262,9 +264,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numOffsetX: -1.5,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 35,
-		offsetY: COMMAND_AREA_Y + 5,
-		scaling: 0.95,
+		offsetX: COMMAND_AREA_X + 29,
+		offsetY: COMMAND_AREA_Y + 8,
 		spriteID: 'steppixles-back',
 	},
 	turndegrees: {
@@ -273,8 +274,10 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		draggable: true,
 		numOffsetX: 4.5,
 		numOffsetY: 0,
-		offsetX: COMMAND_AREA_X + 20,
-		offsetY: COMMAND_AREA_Y,
+		offsetX: COMMAND_AREA_X + 12,
+		offsetY: COMMAND_AREA_Y + 10,
+		offsetX2: COMMAND_AREA_X + 13,
+		offsetY2: COMMAND_AREA_Y + 2,
 		scaling: 0.9,
 		spriteID: 'turndegrees',
 	},
@@ -282,8 +285,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'turnL' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 19,
-		offsetY: COMMAND_AREA_Y,
+		offsetX: COMMAND_AREA_X + 12,
+		offsetY: COMMAND_AREA_Y + 5,
 		scaling: 0.9,
 		spriteID: 'turnleft',
 	},
@@ -291,8 +294,8 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'turnR' },
 		depth: 2,
 		draggable: true,
-		offsetX: COMMAND_AREA_X + 31.5,
-		offsetY: COMMAND_AREA_Y,
+		offsetX: COMMAND_AREA_X + 12,
+		offsetY: COMMAND_AREA_Y + 10,
 		scaling: 0.9,
 		spriteID: 'turnright',
 	},

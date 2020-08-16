@@ -24,7 +24,9 @@ export type ObjectConfig = {
 	numOffsetY?: number
 	numScale?: number
 	offsetX?: number,
+	offsetX2?: number,
 	offsetY?: number,
+	offsetY2?: number,
 	scaling?: number,
 	spriteID: string,
 }

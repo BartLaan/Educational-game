@@ -161,14 +161,14 @@ export default class InterPhaser {
 
 			// normal objects
 			if (!isDuplicableObject(objectName)) {
-				const object = setGameObject(this.phaser, objConfig, objectName)
+				const object = setGameObject(this.phaser, objConfig, objectName, this.levelConfig.spaceType)
 				object.name = objectName
 				objects[objectName] = object as Sprite
 
 			} else { // draggable commands can have multiple versions
 				const objectMap = {}
 				const objectRef = `${objectName}-${0}`
-				const object = setGameObject(this.phaser, objConfig, objectRef)
+				const object = setGameObject(this.phaser, objConfig, objectRef, this.levelConfig.spaceType)
 				object.setData('i', 0)
 				objectMap[0] = object
 				objects[objectName] = objectMap
@@ -374,7 +374,7 @@ export default class InterPhaser {
 	duplicateObject(gameObject: GameObject) {
 		const newObjectI = gameObject.getData('i') + 1
 		const newObjectRef = `${gameObject.name}-${newObjectI}`
-		const newObject = setGameObject(this.phaser, OBJECT_CONFIG[gameObject.name], newObjectRef)
+		const newObject = setGameObject(this.phaser, OBJECT_CONFIG[gameObject.name], newObjectRef, this.levelConfig.spaceType)
 		newObject.setData('i', newObjectI)
 		this.objects[gameObject.name][newObjectI] = newObject
 	}

@@ -4,6 +4,7 @@ import { NUMBER_COMMANDS, BRACKET_OBJECTS, OBJECTS_MULTIPLE } from '~/constants/
 import { OBJECT_CONFIG, NUM_SCALING, NUM_SPACING, ANIMATION_FPS, BASE_SIZE_X, BASE_SIZE_Y, VELOCITY, TURN_SPEED } from '~/constants/sizes'
 import { GameObject, ObjectConfig, Container, Sprite, ObjectKey, DuplicableObject } from '~/types/interphaser'
 import { CommandID } from '~/types/stack'
+import { Space } from '~/types/game_config'
 
 // Helpers for converting height/width units to pixel values, so the whole game is scalable
 export function h(heightInUnits: number) { return window.gameHeight * (heightInUnits / 100) }
@@ -19,7 +20,7 @@ export function isDuplicableObject(objectKey: ObjectKey): objectKey is Duplicabl
 	return OBJECTS_MULTIPLE.indexOf(objectKey) > -1
 }
 
-export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: string) {
+export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: string, spaceType?: Space) {
 	const scaling = (config.scaling || 1) * window.gameScale
 	const objectName = id.split('-')[0] as ObjectKey
 
@@ -49,8 +50,9 @@ export function setGameObject(phaser: Phaser.Scene, config: ObjectConfig, id: st
 		}
 	}
 	if (config.offsetX !== undefined && config.offsetY !== undefined) {
-		gameObject.x = w(config.offsetX)
-		gameObject.y = h(config.offsetY)
+		const altPosition = spaceType === Space.pixles
+		gameObject.x = w(altPosition && config.offsetX2 ? config.offsetX2 : config.offsetX)
+		gameObject.y = h(altPosition && config.offsetY2 ? config.offsetY2 : config.offsetY)
 	}
 
 	gameObject.setDepth(1)
