@@ -38,7 +38,7 @@ export const BASE_SIZE_Y = 768
 export const ANIMATION_FPS = 30
 export const PATH_COLOR = 0x000000 // pink: 0xf40977
 export const PATH_DRAW_PER_SECOND = 1.5
-export const PATH_THICKNESS = 3
+export const PATH_THICKNESS = 5
 export const VELOCITY = 500 // phaser distance unit / sec
 export const COMMAND_TIMING = 400 // ms
 export const SCALING_FACTOR_DIV = 1024
@@ -250,10 +250,10 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		command: { commandID: 'stepPixles', pixles: null },
 		depth: 2,
 		draggable: true,
-		numOffsetX: -1,
+		numOffsetX: -1.5,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 29,
+		offsetX: COMMAND_AREA_X + 30,
 		offsetY: COMMAND_AREA_Y + 2,
 		spriteID: 'steppixles',
 	},
@@ -264,7 +264,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		numOffsetX: -1.5,
 		numOffsetY: 0,
 		numScale: 0.45,
-		offsetX: COMMAND_AREA_X + 29,
+		offsetX: COMMAND_AREA_X + 30,
 		offsetY: COMMAND_AREA_Y + 8,
 		spriteID: 'steppixles-back',
 	},
@@ -274,7 +274,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 		draggable: true,
 		numOffsetX: 4.5,
 		numOffsetY: 0,
-		offsetX: COMMAND_AREA_X + 12,
+		offsetX: COMMAND_AREA_X + 13,
 		offsetY: COMMAND_AREA_Y + 10,
 		offsetX2: COMMAND_AREA_X + 13,
 		offsetY2: COMMAND_AREA_Y + 2,

@@ -722,28 +722,13 @@ export default class InterPhaser {
 	}
 
 	drawPath(oldCoords: Coords, newCoords: Coords) {
-		const originX = ((newCoords.x - oldCoords.x) / 2) + oldCoords.x
-		const originY = ((newCoords.y - oldCoords.y) / 2) + oldCoords.y
-
-		const relNewX = newCoords.x - originX
-		const relNewY = newCoords.y - originY
-		const relOldX = oldCoords.x - originX
-		const relOldY = oldCoords.y - originY
-		const skewNormal = (Math.abs(relNewX) + Math.abs(relNewY)) || 0.00001 // prevent division by zero
-		const skewX = relNewY / skewNormal
-		const skewY = relNewX / skewNormal
-		const offsetX = skewX * PATH_THICKNESS
-		const offsetY = skewY * PATH_THICKNESS
-		const points = [
-			{ x: relOldX - offsetX, y: relOldY + offsetY },
-			{ x: relOldX + offsetX, y: relOldY - offsetY },
-			{ x: relNewX + offsetX, y: relNewY - offsetY },
-			{ x: relNewX - offsetX, y: relNewY + offsetY },
-		]
-
-		const polygon = this.phaser.add.polygon(originX, originY, points, PATH_COLOR, 0.7)
-		polygon.setOrigin(0, 0)
-		this.objects.path.push(polygon)
+		const distanceX = Math.abs(oldCoords.x - newCoords.x)
+		const distanceY = Math.abs(oldCoords.y - newCoords.y)
+		const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2) + (PATH_THICKNESS / 2)
+		const rect = this.phaser.add.rectangle(oldCoords.x, oldCoords.y, distance, PATH_THICKNESS, PATH_COLOR, 0.7)
+		rect.setOrigin(0, 0)
+		rect.setRotation(this.objects.player.rotation)
+		this.objects.path.push(rect)
 	}
 
 	clearPath() {

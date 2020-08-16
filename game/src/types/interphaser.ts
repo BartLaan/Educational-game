@@ -61,7 +61,7 @@ export type GameObjects = {
 	nextButton: Sprite,
 	okButton: Sprite,
 	open: GameObjectMap<Sprite>,
-	path: Phaser.GameObjects.Polygon[],
+	path: Phaser.GameObjects.Rectangle[],
 	player: Sprite,
 	questionmark: Sprite,
 	reset: Sprite,

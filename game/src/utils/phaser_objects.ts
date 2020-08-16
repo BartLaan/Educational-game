@@ -169,8 +169,13 @@ export function animateMovement(
 			? potentialNewAngle > newAngle
 			: potentialNewAngle < newAngle
 
+		const oldCoords = { x: object.x, y: object.y }
+
 		if (overShootX || overShootY || overShootAngle) {
 			clearInterval(interval)
+			if (onMovement) {
+				onMovement(oldCoords, { x: newCoords.x, y: newCoords.y })
+			}
 			object.x = newCoords.x
 			object.y = newCoords.y
 			setAngle(object, newAngle)
@@ -180,7 +185,6 @@ export function animateMovement(
 			return
 		}
 
-		const oldCoords = { x: object.x, y: object.y }
 		object.x = potentialNewX
 		object.y = potentialNewY
 		setAngle(object, newAngle)

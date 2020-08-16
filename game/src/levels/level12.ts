@@ -26,8 +26,9 @@ export default class Level12 extends Phaser.Scene implements PhaserLevel {
 	}
 
 	create() {
-		const goalPath = ['170,77', '187,118', '170,158', '139,174', '96,164', '72,118', '89,77', '130,60']
+		const goalPath = ['171,77', '188,118', '171,158', '130,175', '90,157', '73,117', '90,76', '130,60']
 		const levelConfig: LevelConfigPixle = {
+			animate: false,
 			goalPath,
 			initPosition: {
 				orientation: 90,

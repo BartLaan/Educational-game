@@ -18,6 +18,7 @@ export default class StackManager {
 	initPosition: OssiePos
 	ossiePos: OssiePos
 	pathTaken: string[]
+	printPath = true // for debugging
 	spaceType: Space
 	stack?: Stack
 	timer?: number
@@ -76,7 +77,7 @@ export default class StackManager {
 		if (this.goalPath) {
 			const nextRequiredNode = this.goalPath[this.pathTaken.length]
 			const roundedLocation = coordToStr(Math.round(newX), Math.round(newY))
-			if (roundedLocation === nextRequiredNode) {
+			if (roundedLocation === nextRequiredNode || this.printPath) {
 				this.pathTaken.push(roundedLocation)
 			}
 		}
@@ -185,6 +186,9 @@ export default class StackManager {
 	}
 
 	stackEnd(proper: boolean) {
+		if (this.printPath) {
+			console.log(JSON.stringify(this.pathTaken))
+		}
 		if (proper && this.hasReachedGoal()) {
 			this.eventHandler(StackEvent.win)
 			if (window.debug) {
