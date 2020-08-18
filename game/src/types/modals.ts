@@ -1,5 +1,6 @@
 export enum ModalKey {
-	fail = 'fail',
-	levelComplete = 'levelComplete',
 	event = 'event',
+	fail = 'fail',
+	input = 'input',
+	levelComplete = 'levelComplete',
 }

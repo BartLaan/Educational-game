@@ -11,6 +11,7 @@ import { strToCoord } from './utils/level_setup'
 import * as phaser_objects from './utils/phaser_objects'
 import { getStackRepresentation } from './utils/stack'
 import { SSKey } from './types/spritesheets'
+import InputPopup, { InputType } from './input_popup'
 
 const {
 	BOARD_OFFSET_X,
@@ -451,13 +452,7 @@ export default class InterPhaser {
 		const noExistingInput = !command.counts && !command.pixles && !command.degrees
 		const askForCounts = NUMBER_COMMANDS.indexOf(gameObject.name) > -1 && noExistingInput
 		if (askForCounts && isContainer(gameObject)) {
-			const result = this.askCounts(gameObject)
-			if (result === false) {
-				// user cancelled input
-				delete this.objects[command.objectRef]
-				gameObject.destroy()
-				return this.positionCommands()
-			}
+			this.askCounts(gameObject)
 		}
 
 		// Add object to internal InterPhaser stack
@@ -476,41 +471,28 @@ export default class InterPhaser {
 	askCounts(gameObject: Container) {
 		const command = gameObject.getData('command')
 
-		const msg = {
-			'for': 'Hoe vaak herhalen?',
-			'skipPixles': 'Hoeveel pixels?',
-			'stepPixles': 'Hoeveel pixels?',
-			'stepPixlesBack': 'Hoeveel pixels?',
-			'turnDegrees': 'Hoeveel graden?',
+		const inputType = {
+			'for': InputType.counts,
+			'turnDegrees': InputType.degrees,
+			'skipPixles': InputType.pixles,
+			'stepPixles': InputType.pixles,
+			'stepPixlesBack': InputType.pixles,
 		}[command.commandID]
 
-		const promptForInput = (wrongInput?: boolean): number | false => {
-			const question = wrongInput ? 'Er is iets fout gegaan. Heb je een getal ingevoerd? \n \n' + msg : msg
-			const promptResult = window.prompt(question, 'Voer een getal in')
-			if (promptResult === null) { return false } // Cancel
-
-			const counts = parseInt(promptResult, 10)
-			const minRange = command.commandID === 'turnDegrees' ? -1000 : 0
-			if (!isNaN(counts) && counts < 1000 && counts > minRange) {
-				return counts
+		const inputCallback = (result?: number) => {
+			if (result === undefined) {
+				// user cancelled input
+				this.removeFromStack(gameObject)
+				delete this.objects[command.objectRef]
+				gameObject.destroy()
+				return this.positionCommands()
 			}
-
-			return promptForInput(true)
+			command[inputType] = result
+			renderNumber(this.phaser, gameObject, result)
 		}
 
-		const result = promptForInput()
-		if (result === false) { return false }
-
-		const key = {
-			'for': 'counts',
-			'skipPixles': 'pixles',
-			'stepPixles': 'pixles',
-			'stepPixlesBack': 'pixles',
-			'turnDegrees': 'degrees',
-		}
-		command[key[command.commandID]] = result
-		renderNumber(this.phaser, gameObject, result)
-		return true
+		const inputPopup = new InputPopup(inputType, inputCallback)
+		inputPopup.render()
 	}
 
 	positionCommands(pointer?: Coords) {

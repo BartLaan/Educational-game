@@ -84,6 +84,62 @@ canvas {
 	height: 15.8%;
 	width: 28.9%;
 }
+#inputPopup {
+	align-items: center;
+	background-color: rgba(0,0,0,0.5);
+	display: none;
+	justify-content: center;
+	height: calc(100vw / 1.3333);
+	max-height: 100vh;
+	max-width: calc(100vh * 1.3333);
+	position: fixed;
+	width: 100vw;
+	z-index: 2;
+}
+#inputPopup.visible {
+	display: flex;
+}
+#inputPopupWrapper {
+	background-size: cover;
+	box-shadow: black -16px 16px 16px -16px;
+	height: 30.08%;
+	width: 41.1%;
+}
+#inputPopupWrapper,
+#inputPopup .button,
+#inputPopup input {
+	position: absolute;
+}
+#inputPopupWrapper,
+#inputPopup .button {
+	background-size: cover;
+}
+#inputPopup input {
+	font-size: 14px;
+	text-align: center;
+    top: 44%;
+    left: 12%;
+    width: 44%;
+    height: 11%;
+}
+#inputPopupOkButton {
+	background-image: url('assets/popups/input/btn-ok.png');
+    height: 13.9%;
+    width: 27.83%;
+    top: 66%;
+    left: 3%;
+}
+#inputPopup .button:hover {
+	transform: scale(1.08);
+	cursor: pointer;
+}
+#inputPopupCancelButton {
+	background-image: url('assets/popups/input/btn-annuleer.png');
+	height: 13.85%;
+    width: 27.32%;
+    top: 66%;
+    left: 32%;
+}
 #afterlvl10 .invisibleButton, #beforelvl16 .invisibleButton {
 	left: 10%;
 	top: 90%;
