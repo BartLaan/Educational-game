@@ -64,7 +64,7 @@ export const SPRITE_PATHS = {
 	'background8':					'assets/backgrounds/8.jpg',
 	'background9':					'assets/backgrounds/9.jpg',
 	'background10':					'assets/backgrounds/10.jpg',
-	'background11':					'assets/backgrounds/background-11/0012.png',
+	'background11':					'assets/backgrounds/11.png',
 	'background12':					'assets/backgrounds/12.jpg',
 	'background13':					'assets/backgrounds/13.jpg',
 	'background14':					'assets/backgrounds/14.jpg',
