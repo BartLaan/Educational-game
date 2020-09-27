@@ -1,17 +1,17 @@
-import StackManager from './stack'
-import { InterPhaserEvent } from './types/interphaser'
-import { LevelConfig } from './types/game_config'
-import { StackEvent } from './types/stack'
+import { LEVELS } from './constants/objects'
 import InterPhaser from './inter_phaser'
+import StackManager from './stack'
+import { LevelConfig } from './types/game_config'
+import { InterPhaserEvent } from './types/interphaser'
+import { StackEvent } from './types/stack'
+import { setCookie } from './utils/cookies'
 
 // Constructor for OssieGame instance. See OssieGame.checkLevelConfig for details on levelConfig.
 export default class OssieGame {
 	constructor(levelConfig: LevelConfig, scene: Phaser.Scene) {
-		if (window.activeLevel === levelConfig.levelName) {
-			return
-		}
 		window.activeLevel = levelConfig.levelName
 		window.location.hash = levelConfig.levelName
+		this.levelName = levelConfig.levelName
 
 		this.stackManager = new StackManager(levelConfig, this.stackHandler.bind(this))
 		this.interPhaser = new InterPhaser(scene, levelConfig, this.phaserHandler.bind(this))
@@ -28,6 +28,7 @@ export default class OssieGame {
 
 	animate = true
 	interPhaser: InterPhaser
+	levelName: string
 	stackManager: StackManager
 	shouldFail = true
 
@@ -72,6 +73,7 @@ export default class OssieGame {
 				console.log('BONK, you walked into a wall')
 				break
 			case StackEvent.win:
+				setCookie('level_progress', LEVELS.indexOf(this.levelName).toString())
 				this.interPhaser.win()
 				break
 			case StackEvent.forgotOpen:

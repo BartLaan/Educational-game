@@ -1,4 +1,4 @@
-import Modal from '~/modal'
+import Modal from '~/modal_html'
 import { SSKey } from '~/types/spritesheets'
 
 export default class EventModal extends Modal {
@@ -17,7 +17,6 @@ export default class EventModal extends Modal {
 			zone.setOrigin(0, 0)
 			zone.setInteractive()
 			zone.on('pointerdown', this.dismissHandler, this)
-			console.log(zone)
 			this.modalParts.push(zone)
 		}, this.timeout)
 	}

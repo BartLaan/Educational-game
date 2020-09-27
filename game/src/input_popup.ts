@@ -27,6 +27,7 @@ const submitOnEnter = (e) => {
 
 type InputCallback = (input?: number) => void
 
+// HTML because I'm too lazy to find out how to make an input element in phaser
 export default class InputPopup {
 	backgroundEl: HTMLDivElement | null
 	inputCallback: InputCallback
@@ -88,7 +89,7 @@ export default class InputPopup {
 		const stringValue = this.inputEl.value
 
 		const numValue = parseInt(stringValue, 10)
-		const minRange = this.inputType === InputType.degrees ? -1000 : 0
+		const minRange = (this.inputType === InputType.degrees || this.inputType === InputType.pixles) ? -1000 : 0
 		if (!isNaN(numValue) && numValue < 1000 && numValue > minRange && Math.round(numValue) === numValue) {
 			this.hide()
 			return this.inputCallback(numValue)

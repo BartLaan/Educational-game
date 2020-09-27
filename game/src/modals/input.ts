@@ -1,4 +1,4 @@
-import Modal from '~/modal'
+import Modal from '~/modal_html'
 import { SSKey } from '~/types/spritesheets'
 
 export default class InputModal extends Modal {

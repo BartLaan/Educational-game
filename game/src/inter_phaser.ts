@@ -1,17 +1,17 @@
-import { COMMON_OBJECTS, NUMBER_COMMANDS, INIT_OBJECTS } from './constants/objects'
+import { COMMON_OBJECTS, INIT_OBJECTS, NUMBER_COMMANDS } from './constants/objects'
 import { SPRITE_PATHS } from './constants/paths'
 import * as SIZES from './constants/sizes'
-import Modal from './modal'
+import InputPopup, { InputType } from './input_popup'
 import FailModal from './modals/fail'
+import InstructionModal from './modals/instruction'
 import LevelCompleteModal from './modals/level_complete'
 import { Coords, OssiePos } from './types/board'
 import { LevelConfig, Space } from './types/game_config'
-import { InterPhaserEvent, GameObject, Pointer, Sprite, Container, PhaserImage, GameObjects, ObjectKey } from './types/interphaser'
+import { Container, GameObject, GameObjects, InterPhaserEvent, ObjectKey, PhaserImage, Pointer, Sprite } from './types/interphaser'
+import { SSKey } from './types/spritesheets'
 import { strToCoord } from './utils/level_setup'
 import * as phaser_objects from './utils/phaser_objects'
 import { getStackRepresentation } from './utils/stack'
-import { SSKey } from './types/spritesheets'
-import InputPopup, { InputType } from './input_popup'
 
 const {
 	BOARD_OFFSET_X,
@@ -77,6 +77,7 @@ export default class InterPhaser {
 	// number, offsets for the playing field/space that the avatar can move in
 	boardOffsetX: number
 	boardOffsetY: number
+	disableInteraction: boolean = false
 	eventHandler: InterPhaserHandler
 	// height to use. callculated based on width in constructor
 	height: number
@@ -106,7 +107,7 @@ export default class InterPhaser {
 
 	showIntro() {
 		const instructionName = SSKey[this.levelConfig.levelName.replace('level', 'instruction')]
-		const instructionModal = new Modal(this.phaser, instructionName)
+		const instructionModal = new InstructionModal(this.phaser, instructionName)
 
 		instructionModal.afterHide = () => {
 			if (loadingScreen) {
@@ -188,7 +189,7 @@ export default class InterPhaser {
 			this.objects.questionmark.y += this.stepsizeY * questionmarkCoords.y
 		}
 
-		this.objects.execute.on('pointerdown', () => {
+		this.addListener(this.objects.execute, 'pointerdown', () => {
 			this.clearPath()
 			if (this.stackObjects.length === 0) { return }
 
@@ -197,9 +198,9 @@ export default class InterPhaser {
 			this.setRunning(true)
 		})
 
-		this.objects.stop.on('pointerdown', () => this.abortMission())
+		this.addListener(this.objects.stop, 'pointerdown', () => this.abortMission())
 
-		this.objects.reset.on('pointerdown', () => {
+		this.addListener(this.objects.reset, 'pointerdown', () => {
 			if (this.running) {
 				this.abortMission()
 			} else {
@@ -207,9 +208,16 @@ export default class InterPhaser {
 			}
 		})
 
-		this.objects.backButton.on('pointerdown', this.showIntro.bind(this))
+		this.addListener(this.objects.backButton, 'pointerdown', () => this.showIntro())
 
 		this.movePlayer(this.levelConfig.initPosition)
+	}
+
+	addListener(object: GameObject | Container | Phaser.Input.InputPlugin, eventName: string, func: any) {
+		object.on(eventName, (...args) => {
+			if (this.disableInteraction || window.modalVisible !== null) { return }
+			func(...args)
+		})
 	}
 
 	abortMission() {
@@ -236,6 +244,7 @@ export default class InterPhaser {
 		this.stackIndex = null
 		this.setRunning(false)
 		this.maxedOut = false
+		this.disableInteraction = false
 
 		// Lots of implicit knowledge here, not really nice. Maybe move to a config, i.e. resettableObjects = []
 		for (const objectName of INIT_OBJECTS) {
@@ -265,7 +274,6 @@ export default class InterPhaser {
 			// this.objects[objectName] = undefined
 		}
 		this.clearPath()
-		delete this.stackObjects
 		this.stackObjects = []
 
 		// Cleaned up old data, now we need to reinitialize. That's easy:
@@ -283,7 +291,7 @@ export default class InterPhaser {
 
 		let fastClickTimeout: number | undefined
 		let fastClick = false
-		phsr.input.on('gameobjectdown', (pointer: Coords, gameObject: GameObject) => {
+		this.addListener(phsr.input, 'gameobjectdown', (pointer: Coords, gameObject: GameObject) => {
 			if (this.running === true) { return }
 			// Only allow command objects to be dragged
 			if (gameObject.getData('commandID') === undefined) { return }
@@ -300,7 +308,7 @@ export default class InterPhaser {
 			phsr.input.setDefaultCursor('grabbing')
 		})
 
-		phsr.input.on('drag', (pointer: Coords, gameObject: GameObject, dragX: number, dragY: number) => {
+		this.addListener(phsr.input, 'drag', (pointer: Coords, gameObject: GameObject, dragX: number, dragY: number) => {
 			if (this.running === true) { return }
 			if (this.maxedOut && !this.inDropZone(pointer)) { return }
 			if (firstDrag) {
@@ -330,7 +338,7 @@ export default class InterPhaser {
 			}
 		})
 
-		phsr.input.on('dragend', (pointer: Pointer, gameObject: GameObject) => {
+		this.addListener(phsr.input, 'dragend', (pointer: Pointer, gameObject: GameObject) => {
 			if (this.running === true) { return }
 			this.clearHoverTexture(gameObject)
 			gameObject.setDepth(2)
@@ -357,14 +365,14 @@ export default class InterPhaser {
 			gameObject.destroy()
 		})
 
-		phsr.input.on('pointerover', (__: Pointer, gameObjectList: GameObject[]) => {
+		this.addListener(phsr.input, 'pointerover', (__: Pointer, gameObjectList: GameObject[]) => {
 			const object = gameObjectList[0]
 			if (object !== undefined) {
 				this.setHoverTexture(object)
 			}
 		})
 
-		phsr.input.on('pointerout', (__: Pointer, gameObjectList: GameObject[]) => {
+		this.addListener(phsr.input, 'pointerout', (__: Pointer, gameObjectList: GameObject[]) => {
 			if (gameObjectList.length > 0) {
 				this.clearHoverTexture(gameObjectList[0])
 			}
@@ -469,6 +477,7 @@ export default class InterPhaser {
 	}
 
 	askCounts(gameObject: Container) {
+		this.disableInteraction = true
 		const command = gameObject.getData('command')
 
 		const inputType = {
@@ -480,6 +489,7 @@ export default class InterPhaser {
 		}[command.commandID]
 
 		const inputCallback = (result?: number) => {
+			this.disableInteraction = false
 			if (result === undefined) {
 				// user cancelled input
 				this.removeFromStack(gameObject)

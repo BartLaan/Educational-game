@@ -1,12 +1,13 @@
 import { modalConfig } from '~/constants/modals'
-import { Orientation } from '~/types/game_config'
-import { Board, BoardNode, Coords, Nodes } from '~/types/board'
-import { GIF_PATHS, SPRITESHEET_PATHS, SPRITE_PATHS } from '~/constants/paths'
-import { SSKey } from '~/types/spritesheets'
 import { COMMON_SPRITES } from '~/constants/objects'
+import { SPRITESHEET_PATHS, SPRITE_PATHS } from '~/constants/paths'
 import { OBJECT_CONFIG } from '~/constants/sizes'
-import { isBracketObject } from './phaser_objects'
+import { loadHTMLModal } from '~/modal_html'
 import { PhaserLevel } from '~/types'
+import { Board, BoardNode, Coords, Nodes } from '~/types/board'
+import { Orientation } from '~/types/game_config'
+import { SSKey } from '~/types/spritesheets'
+import { isBracketObject } from './phaser_objects'
 
 // WIDTH/COLUMNS FIRST, START AT 0,0
 export function coordToStr(x: number, y: number): string {
@@ -231,26 +232,4 @@ export function loadModals(phaser: PhaserLevel) {
 			loadSpritesheet(phaser, modalKey)
 		}
 	}
-}
-// Preload modal gifs to work around loading times
-export function loadHTMLModal(modalKey: string) {
-	const modalContainer = document.getElementById('modalContainer')
-	const modalElId = modalKey + '_modal'
-	if (document.getElementById(modalElId) !== null || modalContainer === null) { return }
-
-	const modalEl = document.createElement('div')
-	modalEl.id = modalElId
-	modalEl.className = 'modal'
-
-	const modalBg = document.createElement('img')
-	modalBg.src = GIF_PATHS[modalKey]
-	modalBg.className = 'fullscreenGif'
-	modalEl.appendChild(modalBg)
-	for (const buttonName of modalConfig[modalKey].buttons) {
-		const buttonEl = document.createElement('div')
-		buttonEl.className = 'modalButton ' + buttonName
-		modalEl.appendChild(buttonEl)
-	}
-
-	modalContainer.appendChild(modalEl)
 }

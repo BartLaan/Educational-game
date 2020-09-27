@@ -22,7 +22,7 @@ export const modalConfig = {
 		mode: 'html',
 	},
 	'instruction': {
-		buttons: [ 'okButton' ],
+		buttons: [ 'okButton', 'overviewButton' ],
 		frameRate: 1,
 		mode: 'html',
 	},

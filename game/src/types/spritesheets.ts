@@ -26,4 +26,5 @@ export enum SSKey {
 	instruction16 = 'instruction16',
 	intro = 'intro',
 	levelcomplete = 'levelcomplete',
+	leveloverview = 'leveloverview',
 }

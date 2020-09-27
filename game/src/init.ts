@@ -19,6 +19,7 @@ import Level7 from './levels/level7'
 import Level8 from './levels/level8'
 import Level9 from './levels/level9'
 import OssieGame from './ossie_game'
+import { getCookie } from './utils/cookies'
 
 export { }
 
@@ -92,11 +93,16 @@ const config = {
 	],
 }
 
-function runLevelFromUrl() {
-	const level = location.hash.replace('#', '')
+function pickLevel() {
+	const hashLevel = location.hash.replace('#', '')
+	const progress = parseInt(getCookie('level_progress') || '-1', 10)
+	const progressLevel = progress ? LEVELS[progress + 1] || '' : ''
+	const level = hashLevel !== '' ? hashLevel : progressLevel
+
 	if (level === '') {
 		return
 	}
+
 	// Phaser runs the first scene in the config array, so in order to change the loaded level,
 	// we find the levelIndex and move it to the front of the array
 	const levelIndex = LEVELS.indexOf(level)
@@ -108,7 +114,7 @@ function runLevelFromUrl() {
 	config.scene.splice(levelIndex, 1)
 	config.scene.unshift(scene)
 }
-runLevelFromUrl()
+pickLevel()
 
 addEventListener('hashchange', () => {
 	const nextLevel = window.location.hash.replace('#', '')

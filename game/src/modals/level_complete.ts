@@ -1,6 +1,6 @@
 import { LEVELS } from '~/constants/objects'
 import { VICTORY_TIMEOUT } from '~/constants/sizes'
-import Modal from '~/modal'
+import Modal from '~/modal_html'
 import { SSKey } from '~/types/spritesheets'
 
 // Win modal

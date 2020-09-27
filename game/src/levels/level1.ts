@@ -29,6 +29,7 @@ class Level1 extends Phaser.Scene implements PhaserLevel {
 
 	create() {
 		const startLevel1 = () => {
+			console.log('startlevel1')
 			const gameboard = [
 				[0,0,0,0,0,0,0,0,0],
 				[0,0,0,0,0,0,0,0,0],
@@ -39,7 +40,6 @@ class Level1 extends Phaser.Scene implements PhaserLevel {
 				[1,1,1,1,1,1,1,2,1],
 			] as Board
 			const [nodes, goalPosition] = boardToNodes(gameboard)
-			console.log(nodes, goalPosition)
 			const levelConfig: LevelConfigGrid = {
 				goalPosition,
 				initPosition: {

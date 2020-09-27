@@ -47,6 +47,16 @@ canvas {
 .okButton:hover {
 	background-image: url('assets/buttons/ok-hover.png');
 }
+.overviewButton {
+	background-image: url('assets/popups/overzicht levels/overzicht-btn.png');
+	top: 4%;
+	left: 81.5%;
+	height: 7.16%;
+	width: 18.55%;
+}
+.overviewButton:hover {
+	background-image: url('assets/popups/overzicht levels/overzicht-btn-hover.png');
+}
 .nextButton, .prevButton {
 	display: none;
 }
@@ -102,8 +112,8 @@ canvas {
 #inputPopupWrapper {
 	background-size: cover;
 	box-shadow: black -16px 16px 16px -16px;
-	height: 30.08%;
-	width: 41.1%;
+	height: 60.16%;
+	width: 82.2%;
 }
 #inputPopupWrapper,
 #inputPopup .button,
@@ -148,7 +158,7 @@ canvas {
 	left: 80%;
 	top: 55%;
 }
-#intro .invisibleButton {
-	left: 50%;
-	top: 6%;
+#intro_modal .invisibleButton {
+    left: 42%;
+	top: 3%;
 }
