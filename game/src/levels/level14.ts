@@ -1,11 +1,12 @@
 import Phaser from 'phaser'
 import { COMMON_MODALS, COMMON_OBJECTS } from '~/constants/objects'
-import EventModal from '~/modals/event'
+import InstructionModal from '~/modals/instruction'
+import { loadHTMLModal } from '~/modal_html'
 import OssieGame from '~/ossie_game'
 import { PhaserLevel } from '~/types'
 import { LevelConfigPixle, Space } from '~/types/game_config'
-import { preloadLevel } from '~/utils/level_setup'
 import { SSKey } from '~/types/spritesheets'
+import { preloadLevel } from '~/utils/level_setup'
 
 const LEVELNAME = 'level14'
 export default class Level14 extends Phaser.Scene implements PhaserLevel {
@@ -26,6 +27,7 @@ export default class Level14 extends Phaser.Scene implements PhaserLevel {
 
 	preload() {
 		preloadLevel(this)
+		loadHTMLModal(SSKey.instruction14b)
 	}
 
 	create() {
@@ -42,17 +44,11 @@ export default class Level14 extends Phaser.Scene implements PhaserLevel {
 			spaceType: Space.pixles,
 		}
 		window.ossieGame = new OssieGame(levelConfig, this)
-
-		let counter = 0
-		const afterFail = () => {
-			if (counter < 2) {
-				return counter += 1
-			}
-			const modal = new EventModal(this, SSKey.instruction14b, 2000)
-			modal.render()
-			counter = 0
+		const extraInstruction = () => {
+			const instruction14b = new InstructionModal(this, SSKey.instruction14b)
+			instruction14b.render()
 		}
-		window.ossieGame.interPhaser.afterFail = afterFail
+		window.ossieGame.interPhaser.afterIntro = extraInstruction
 	}
 }
 

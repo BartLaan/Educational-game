@@ -111,9 +111,10 @@ canvas {
 }
 #inputPopupWrapper {
 	background-size: cover;
+	bottom: 6%;
 	box-shadow: black -16px 16px 16px -16px;
-	height: 60.16%;
-	width: 82.2%;
+	height: 30.8%;
+	width: 41.1%;
 }
 #inputPopupWrapper,
 #inputPopup .button,

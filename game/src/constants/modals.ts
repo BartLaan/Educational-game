@@ -1,6 +1,6 @@
 import { LEVELS } from './objects'
 
-export const modalConfig = {
+export const modalConfig: {[key: string]: any} = {
 	'afterlvl10': {
 		buttons: [ 'invisibleButton' ],
 		mode: 'html',
@@ -41,4 +41,5 @@ export const modalConfig = {
 for (const levelName of LEVELS) {
 	const instructionName = levelName.replace('level', 'instruction')
 	modalConfig[instructionName] = modalConfig.instruction
+	modalConfig.instruction14b = modalConfig.instruction
 }

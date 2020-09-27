@@ -121,6 +121,7 @@ addEventListener('hashchange', () => {
 	if (nextLevel === window.activeLevel || LEVELS.indexOf(nextLevel) === undefined) {
 		return
 	}
+	window.modalVisible?.hide()
 	window.game.scene.stop(window.activeLevel)
 	window.game.scene.start(nextLevel)
 })

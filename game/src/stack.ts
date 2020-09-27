@@ -18,7 +18,7 @@ export default class StackManager {
 	initPosition: OssiePos
 	ossiePos: OssiePos
 	pathTaken: string[]
-	printPath = true // for debugging
+	printPath = false // for debugging
 	spaceType: Space
 	stack?: Stack
 	timer?: number
