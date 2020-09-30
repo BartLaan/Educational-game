@@ -714,12 +714,16 @@ export default class InterPhaser {
 	}
 
 	drawPath(oldCoords: Coords, newCoords: Coords) {
-		const distanceX = Math.abs(oldCoords.x - newCoords.x)
-		const distanceY = Math.abs(oldCoords.y - newCoords.y)
-		const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2) + (PATH_THICKNESS / 2)
+		const distanceX = newCoords.x - oldCoords.x
+		const distanceY = newCoords.y - oldCoords.y
+		const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2)
+		if (distance === 0) { return }
+
 		const rect = this.phaser.add.rectangle(oldCoords.x, oldCoords.y, distance, PATH_THICKNESS, PATH_COLOR, 0.7)
-		rect.setOrigin(0, 0)
-		rect.setRotation(this.objects.player.rotation)
+		rect.setOrigin(0, 0.5);
+		const naiveRotation = Math.acos(distanceX / distance)
+		const rotation = distanceY >= 0 ? naiveRotation : Math.PI * 2 - naiveRotation
+		rect.setRotation(rotation)
 		this.objects.path.push(rect)
 	}
 

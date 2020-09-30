@@ -148,7 +148,7 @@ export function animateMovement(
 
 	const stepX = (newCoords.x - object.x) / frameAmount
 	const stepY = (newCoords.y - object.y) / frameAmount
-	const stepAngle = (object.angle - newAngle) / frameAmount
+	const stepAngle = (newAngle - object.angle) / frameAmount
 	const moveRight = object.x < newCoords.x
 	const moveDown = object.y < newCoords.y
 	const moveClock = object.angle < newAngle
