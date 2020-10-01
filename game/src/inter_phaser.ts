@@ -720,7 +720,7 @@ export default class InterPhaser {
 		if (distance === 0) { return }
 
 		const rect = this.phaser.add.rectangle(oldCoords.x, oldCoords.y, distance, PATH_THICKNESS, PATH_COLOR, 0.7)
-		rect.setOrigin(0, 0.5);
+		rect.setOrigin(0, 0.5)
 		const naiveRotation = Math.acos(distanceX / distance)
 		const rotation = distanceY >= 0 ? naiveRotation : Math.PI * 2 - naiveRotation
 		rect.setRotation(rotation)
