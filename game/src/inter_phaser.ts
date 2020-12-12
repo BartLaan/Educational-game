@@ -673,14 +673,15 @@ export default class InterPhaser {
 	 * displays a levelcomplete image on screen when victory event is fired
 	 */
 	win() {
-		const modal = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this))
-		// in the pixle levels, wait a bit so the player can see their path result a bit longer
 		if (this.levelConfig.spaceType === Space.pixles) {
-			setTimeout(() => modal.render(), 1000)
+			// in the pixle levels, wait a bit so the player can see their path result a bit longer
+			const modal = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, this.abortMission.bind(this))
+			setTimeout(() => modal.render(), 1500)
 			return
 		}
 
-		modal.render()
+		const modal2 = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, this.resetLevel.bind(this))
+		modal2.render()
 	}
 
 	movePlayer(ossiePos: OssiePos, options: MovePlayerOptions = {}) {
