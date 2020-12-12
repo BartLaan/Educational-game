@@ -185,7 +185,7 @@ export const OBJECT_CONFIG: ObjectConfigs = {
 	},
 	player: {
 		depth: 3,
-		scaling: 0.13,
+		scaling: 0.93,
 		spriteID: 'ossie',
 	},
 	questionmark: {

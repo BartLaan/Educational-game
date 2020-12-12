@@ -11,6 +11,7 @@ export enum Space {
 
 type LevelConfigProto = {
 	animate?: boolean,
+	hideMaxCommands?: boolean
 	initPosition: OssiePos,
 	levelName: string,
 	maxCommands: number,

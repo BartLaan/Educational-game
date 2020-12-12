@@ -151,6 +151,11 @@ export default class InterPhaser {
 		const stepCountTotal = setGameObject(this.phaser, OBJECT_CONFIG.stepcount_total, 'stepcount_total')
 		this.objects.stepcount_total = stepCountTotal as Sprite
 
+		if (this.levelConfig.hideMaxCommands && !isContainer(stepCountTotal)) {
+			stepCountTotal.setTexture('questionmark')
+			stepCountTotal.setScale(this.scalingFactor * 0.75)
+		}
+
 		this.setInteractions()
 	}
 
@@ -310,7 +315,7 @@ export default class InterPhaser {
 
 		this.addListener(phsr.input, 'drag', (pointer: Coords, gameObject: GameObject, dragX: number, dragY: number) => {
 			if (this.running === true) { return }
-			if (this.maxedOut && !this.inDropZone(pointer)) { return }
+			if (this.maxedOut && !this.inDropZone(gameObject)) { return }
 			if (firstDrag) {
 				// First drag event doesn't count, as it fires on initial mouse click without any movement
 				return firstDrag = false
@@ -423,6 +428,7 @@ export default class InterPhaser {
 		gameObject.setTexture(newTexture)
 
 	}
+
 	fastClick(pointer: Pointer, gameObject: GameObject) {
 		this.stackIndex = null
 		const inDropZone = this.inDropZone(pointer)
@@ -453,8 +459,6 @@ export default class InterPhaser {
 	}
 
 	dropObjectOnStack(gameObject: GameObject) {
-		// console.log('Drop object', gameObject, 'stackIndex:', this.stackIndex, 'stackObjects', this.stackObjects)
-
 		// First input the amount for commands that require it
 		const command = gameObject.getData('command')
 		const noExistingInput = !command.counts && !command.pixles && !command.degrees
@@ -675,7 +679,7 @@ export default class InterPhaser {
 	win() {
 		if (this.levelConfig.spaceType === Space.pixles) {
 			// in the pixle levels, wait a bit so the player can see their path result a bit longer
-			const modal = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, this.abortMission.bind(this))
+			const modal = new LevelCompleteModal(this.phaser, this.levelConfig.levelName, () => this.setRunning(false))
 			setTimeout(() => modal.render(), 1500)
 			return
 		}

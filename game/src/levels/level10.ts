@@ -47,6 +47,7 @@ export default class Level10 extends Phaser.Scene implements PhaserLevel {
 		const [nodes, goalPosition] = boardToNodes(gameboard)
 		const levelConfig: LevelConfigGrid = {
 			goalPosition: goalPosition,
+			hideMaxCommands: true,
 			initPosition: {
 				orientation: 90,
 				nodeLocation: '0,6',

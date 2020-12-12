@@ -73,12 +73,20 @@ export default class StackManager {
 			this.eventHandler(StackEvent.walkintowall)
 		}
 		this.ossiePos.nodeLocation = coordToStr(newX, newY)
+
 		// track goal completion
 		if (this.goalPath) {
-			const nextRequiredNode = this.goalPath[this.pathTaken.length]
-			const roundedLocation = coordToStr(Math.round(newX), Math.round(newY))
-			if (roundedLocation === nextRequiredNode || this.printPath) {
-				this.pathTaken.push(roundedLocation)
+			const nextRequiredNode = this.goalPath[this.pathTaken.length] || undefined
+
+			if (nextRequiredNode !== undefined) {
+				const nextRequiredCoords = strToCoord(nextRequiredNode)
+				const closeEnough = Math.abs(newX - nextRequiredCoords.x) < 1 && Math.abs(newY - nextRequiredCoords.y) < 1
+				// debug
+				if (this.printPath) {
+					this.pathTaken.push(coordToStr(newX, newY))
+				} else if (closeEnough) {
+					this.pathTaken.push(nextRequiredNode)
+				}
 			}
 		}
 
