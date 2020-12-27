@@ -29,7 +29,7 @@ export default class LevelOverviewModal extends ModalPhaser {
 			window.ossieGame.interPhaser.showIntro()
 		})
 
-		const okButtonHover = hoverZoom(okButton, this.phaser)
+		const okButtonHover = hoverImage(okButton, this.phaser)
 		okButton.on('pointerover', okButtonHover.onMouseOver)
 		okButton.on('pointerout', okButtonHover.onMouseOut)
 
@@ -67,6 +67,19 @@ const hoverZoom = (gameObject, phaser: Phaser.Scene) => {
 	}
 	const onMouseOut = () => {
 		gameObject.setScale(defaultScale)
+		phaser.input.setDefaultCursor('default')
+	}
+	return { onMouseOver, onMouseOut }
+}
+
+const hoverImage = (gameObject, phaser: Phaser.Scene) => {
+	const normalTexture = gameObject.texture.key
+	const onMouseOver = () => {
+		gameObject.setTexture(normalTexture + '-hover')
+		phaser.input.setDefaultCursor('pointer')
+	}
+	const onMouseOut = () => {
+		gameObject.setTexture(normalTexture)
 		phaser.input.setDefaultCursor('default')
 	}
 	return { onMouseOver, onMouseOut }
@@ -161,7 +174,7 @@ const levelOverviewConfigs: { [key: string]: ObjectConfig } = {
 		interactive: true,
 		offsetX: 41.0859375,
 		offsetY: 23.442708333919404,
-		spriteID: 'h-1',
+		spriteID: 'i-1',
 	},
 	'e-3': {
 		depth: 11,
@@ -220,12 +233,3 @@ const levelOverviewConfigs: { [key: string]: ObjectConfig } = {
 		spriteID: 'overview-ok',
 	},
 }
-
-// this.phaser.input.on('drag', (_pointer, gameObject, dragX: number, dragY: number) => {
-// 	gameObject.x = dragX
-// 	gameObject.y = dragY
-// })
-// this.phaser.input.on('dragend', (_pointer, gameObject) => {
-// 	console.log(gameObject.x / 1024, gameObject.y / 768)
-// })
-// levelButton.addListener('mousemove', () => console.log(levelButton.x, levelButton.y))

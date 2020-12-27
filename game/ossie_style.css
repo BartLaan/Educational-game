@@ -4,24 +4,23 @@ body {
 	margin: 0;
 }
 canvas {
-	position: fixed;
+	position: absolute;
 	top: 0;
 	z-index: 1;
 }
 #modalContainer {
-	position: fixed;
+	left: -9999px;
+	position: absolute;
 	z-index: 2;
 }
 #modalContainer .modal {
-	height: calc(100vw / 1.3333);
-	left: -100vw;
-	max-height: 100vh;
-	max-width: calc(100vh * 1.3333);
+	height: 100%;
 	position: absolute;
-	width: 100vw;
+	width: 100%;
 }
 #modalContainer .modal.active {
-	left: auto;
+	position: absolute;
+	left: 9999px;
 }
 .modal .fullscreenGif {
 	height: 100%;
@@ -98,11 +97,7 @@ canvas {
 	align-items: center;
 	background-color: rgba(0,0,0,0.5);
 	display: none;
-	height: calc(100vw / 1.3333);
-	max-height: 100vh;
-	max-width: calc(100vh * 1.3333);
-	position: fixed;
-	width: 100vw;
+	position: absolute;
 	z-index: 2;
 }
 #inputPopup.visible {

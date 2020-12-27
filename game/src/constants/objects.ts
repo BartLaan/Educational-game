@@ -48,6 +48,7 @@ export const COMMON_OBJECTS: Array<ObjectKey | string> = [
 	'h-1', 'e-1', 'l-1', 'l-2', 'o-1', 'o-2', 's-1', 's-2', 'i-1', 'e-3', '!-1', 'y-1', 'e-4', 'a-1', 'h-2', '!-2',
 	'overview-questionmark',
 	'overview-ok',
+	'overview-ok-hover',
 ]
 
 export const INIT_OBJECTS: InitObject[] = [

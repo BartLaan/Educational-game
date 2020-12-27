@@ -59,9 +59,19 @@ window.gameWidth = widthThatWillFit
 window.gameHeight = widthThatWillFit / WH_RATIO
 window.gameScale = widthThatWillFit / BASE_SIZE_X
 
-// const modalEl = document.getElementById('modal')
-// modalEl.style.width = widthThatWillFit
-// modalEl.style.height = widthThatWillFit / WH_RATIO
+let called = false
+document.addEventListener('readystatechange', () => {
+	if (called || document.readyState === 'loading') { return }
+
+	const modalContainer = document.getElementById('modalContainer')!
+	modalContainer.style.width = `${widthThatWillFit}px`
+	modalContainer.style.height = `${widthThatWillFit / WH_RATIO}px`
+	const inputPopupContainer = document.getElementById('inputPopup')!
+	inputPopupContainer.style.width = `${widthThatWillFit}px`
+	inputPopupContainer.style.height = `${widthThatWillFit / WH_RATIO}px`
+
+	called = true
+})
 
 const config = {
 	type: Phaser.WEBGL,
